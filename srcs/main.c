@@ -1,3 +1,7 @@
 #include "../ft_nmap.h"
 
-int main() { printf("lol\n"); }
+int main() {
+    nmap nmap = {0};
+
+    printf("lol\n");
+}

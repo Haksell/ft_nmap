@@ -2,7 +2,7 @@ UseTab: Never
 IndentWidth: 4
 TabWidth: 4
 AccessModifierOffset: -4
-ColumnLimit: 100
+ColumnLimit: 999
 PointerAlignment: Left
 AlignOperands: true
 BreakBeforeBraces: Custom

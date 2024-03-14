@@ -65,11 +65,15 @@ typedef struct {
     struct sockaddr_in hostaddr;
 
     uint32_t opt;
-    FILE* file; // pas faire confiance
-    uint16_t ports[MAX_PORTS];
+    FILE* file; // TODO: close
+    uint64_t ports[1024];
     uint8_t scan; // TODO: maybe 16
     uint8_t threads;
 } nmap;
 
 // help.c
 void print_help();
+
+// ports.c
+bool get_port(uint64_t* ports, uint16_t port);
+void set_port(uint64_t* ports, uint16_t port);
