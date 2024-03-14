@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-x, c-header, -std=gnu17]
+  Add: [-x, c-header, -std=gnu17, -Iinclude]

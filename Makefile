@@ -1,5 +1,5 @@
 NAME := ft_nmap
-HEADER := ft_nmap.h
+HEADER := include/ft_nmap.h
 
 PATH_SRCS := srcs
 PATH_OBJS := objs
@@ -7,7 +7,7 @@ PATH_OBJS := objs
 SRCS := $(wildcard $(PATH_SRCS)/*.c)
 OBJS := $(SRCS:$(PATH_SRCS)/%.c=$(PATH_OBJS)/%.o)
 
-CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=address,undefined
+CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=address,undefined -Iinclude
 
 RESET := \033[0m
 RED := \033[1m\033[31m

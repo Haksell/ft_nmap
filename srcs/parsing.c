@@ -1,6 +1,4 @@
-#include "../ft_nmap.h" // TODO: Lorenzo aime pas (.clangd)
-#include <stdint.h>
-#include <stdlib.h>
+#include "ft_nmap.h"
 
 const option valid_opt[] = {
     {OPT_FILE,    'f', "file",    true },
@@ -95,25 +93,32 @@ static void parse_ports(char* value, uint64_t* ports) {
     }
 }
 
-static uint8_t parse_scan(char* value) {
-    uint8_t scan = 0;
-    while (true) {
-        char* comma = strchr(value, ',');
-        bool is_last = *comma == '\0';
-        *comma = '\0';
+static void parse_scan(char* value, uint8_t* scan) {
+    char* end = strchr(value, '\0');
+    char* comma = end;
+
+    while (comma) {
+        comma = strchr(value, ',');
+        if (value == comma || comma == end - 1) {
+            fprintf(stderr, "nmap: invalid scan value (`%s')\n", comma);
+            exit(EXIT_FAILURE);
+        }
+        if (comma) *comma = '\0';
+
         bool valid_scan = false;
         for (size_t j = 0; valid_scans[j].type; ++j) {
-            if (strcmp(value, valid_scans[j].name)) {
-                scan |= valid_scans[j].type;
+            if (!strcmp(value, valid_scans[j].name)) {
+                *scan |= valid_scans[j].type;
                 valid_scan = true;
                 break;
             }
         }
+
         if (!valid_scan) {
             fprintf(stderr, "nmap: invalid scan value (`%s')\n", value);
             exit(EXIT_FAILURE);
         }
-        if (is_last) return scan;
+
         value = comma + 1;
     }
 }
@@ -125,7 +130,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
         args_error();
     }
     // TODO: Lorenzo error messages
-    if (nmap->opt & opt) {
+    if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443, de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le parsing avec la map uint64_t, donc en vrai balec
         if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
         else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
         args_error();
@@ -133,9 +138,12 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
 
     nmap->opt |= opt;
     switch (opt) {
-        case OPT_FILE: break;                                   // TODO: file
-        case OPT_PORTS: parse_ports(value, nmap->ports); break; // TODO: parse_ports(value)
-        case OPT_SCAN: nmap->scan = parse_scan(value); break;
+        case OPT_FILE:
+            nmap->file = fopen(value, "r");
+            if (!nmap->file) error("Failed to open input file for reading");
+            break;
+        case OPT_PORTS: parse_ports(value, nmap->ports); break;
+        case OPT_SCAN: parse_scan(value, &nmap->scan); break;
         case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads", true); break;
     }
     return true;

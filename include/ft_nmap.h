@@ -74,9 +74,15 @@ typedef struct {
 // help.c
 void print_help();
 
+// main.c
+void verify_arguments(int argc, char* argv[], nmap* nmap);
+
+// ping_utils.c
+void error(char *message);
+void g_error(int status);
+void hostname_to_ip(nmap *nmap);
+bool ip_to_hostname(struct in_addr ip_address, char *host, size_t hostlen);
+
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(uint64_t* ports, uint16_t port);
-
-// main.c
-void verify_arguments(int argc, char* argv[], nmap* nmap);
