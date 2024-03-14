@@ -8,7 +8,12 @@
 -   [ ] You must manage FQDN however you don’t have to make the DNS resolution.
 -   [ ] It must be possible to choose the number of threads (default:0 max:250) to make the scan faster
 -   [ ] It must be possible to read a list of IPv4 addresses and hostname from a file (formatting is free).
--   [ ] Your program must be able to run the following scans: SYN, NULL, ACK, FIN, XMAS, UDP
+-   [ ] Your program must be able to run the following scan: SYN
+-   [ ] Your program must be able to run the following scan: NULL
+-   [ ] Your program must be able to run the following scan: ACK
+-   [ ] Your program must be able to run the following scan: FIN
+-   [ ] Your program must be able to run the following scan: XMAS
+-   [ ] Your program must be able to run the following scan: UDP
 -   [ ] If the scan type is not specified then all scan types must be used.
 -   [ ] We must be able to run each type of scan individually, and several scans simultaneously.
 -   [ ] The ports to be scanned can be read as a range or individually.
