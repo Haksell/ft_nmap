@@ -51,4 +51,4 @@ run: all
 
 rerun: fclean run
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re run rerun
