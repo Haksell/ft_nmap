@@ -10,7 +10,16 @@ Vagrant.configure("2") do |config|
     export DEBIAN_FRONTEND=noninteractive
 
     apt-get update
-    apt-get install -y binutils curl clang git make nmap valgrind zsh
+    apt-get install -y binutils build-essential bzip2 curl clang git make valgrind wget zsh openssl libssl-dev python3 python3-distutils
+    
+    wget https://nmap.org/dist/nmap-7.94.tar.bz2
+    bzip2 -cd nmap-7.94.tar.bz2 | tar xvf -
+    cd nmap-7.94
+    ./configure
+    make
+    make install
+    cd ..
+    rm -rf nmap-*
 
     su -l vagrant -s "/bin/sh" -c "curl -fsSO https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh; chmod 755 install.sh; ./install.sh --unattended"
     sed -i 's/ZSH_THEME=".*"/ZSH_THEME="jonathan"/g' /home/vagrant/.zshrc
