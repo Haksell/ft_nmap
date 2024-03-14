@@ -51,5 +51,5 @@
 ## resources
 
 -   https://en.wikipedia.org/wiki/Nmap
--   https://nmap.org/book/preface.html
+-   https://nmap.org/book/
 -   https://nmap.org/book/man.html
