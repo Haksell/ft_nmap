@@ -62,13 +62,24 @@ static int atoi_check(char* s, int max, char* opt_name, bool zero_allowed) {
     return n;
 }
 
-// --ports 80,81,82-100\079
 static void parse_ports(char* value, uint64_t* ports) {
-    while (true) {
-        char* comma = strchr(value, ',');
-        bool is_last = comma == NULL;
+    char* end = strchr(value, '\0');
+    char* comma = end;
+
+    while (comma) {
+        comma = strchr(value, ',');
+        if (value == comma || comma == end - 1) {
+            fprintf(stderr, "nmap: invalid port value (`%s')\n", comma);
+            exit(EXIT_FAILURE);
+        }
         if (comma) *comma = '\0';
+
         char* hyphen = strchr(value, '-');
+        if (value == hyphen || hyphen == end - 1) {
+            fprintf(stderr, "nmap: invalid port value (`%s')\n", hyphen);
+            exit(EXIT_FAILURE);
+        }
+
         if (hyphen) {
             *hyphen = '\0';
             int left = atoi_check(value, UINT16_MAX, "port", true);
@@ -78,19 +89,8 @@ static void parse_ports(char* value, uint64_t* ports) {
                 exit(EXIT_FAILURE);
             }
             for (int i = left; i <= right; ++i) set_port(ports, i);
+        } else set_port(ports, atoi_check(value, UINT16_MAX, "port", true));
 
-        } else {
-            set_port(ports, atoi_check(value, UINT16_MAX, "port", true));
-        }
-        if (is_last) {
-            int total_ports = 0;
-            for (int port = 0; port <= UINT16_MAX; ++port) total_ports += get_port(ports, port);
-            if (total_ports > MAX_PORTS) {
-                fprintf(stderr, "Too many ports specified\n"); // TODO: better error message
-                exit(EXIT_FAILURE);
-            }
-            return;
-        }
         value = comma + 1;
     }
 }
