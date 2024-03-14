@@ -51,4 +51,5 @@
 ## resources
 
 -   https://en.wikipedia.org/wiki/Nmap
--   https://linux.die.net/man/1/nmap
+-   https://nmap.org/book/preface.html
+-   https://nmap.org/book/man.html
