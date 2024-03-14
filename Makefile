@@ -47,7 +47,7 @@ re: fclean
 	@$(MAKE) -s $(NAME)
 
 run: all
-	@./$(NAME) 93.184.216.34
+	@./$(NAME) --help
 
 rerun: fclean run
 
