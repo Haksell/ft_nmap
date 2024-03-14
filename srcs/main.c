@@ -1,7 +1,6 @@
 #include "../ft_nmap.h"
 
-int main() {
+int main(int argc, char* argv[]) {
     nmap nmap = {0};
-
-    printf("lol\n");
+    verify_arguments(argc, argv, &nmap);
 }

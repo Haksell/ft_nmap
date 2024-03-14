@@ -77,3 +77,6 @@ void print_help();
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(uint64_t* ports, uint16_t port);
+
+// main.c
+void verify_arguments(int argc, char* argv[], nmap* nmap);

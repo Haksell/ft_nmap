@@ -15,7 +15,7 @@ void set_port(uint64_t* ports, uint16_t port) {
 
     if (!warning && (ports[page] >> index) & 1) {
         warning = true;
-        fprintf(stderr, "WARNING: Duplicate port number(s) specified.  Are you alert enough to be using Nmap?  Have some coffee or Jolt(tm).");
+        fprintf(stderr, "WARNING: Duplicate port number(s) specified.  Are you alert enough to be using Nmap?  Have some coffee or Jolt(tm).\n");
     }
-    ports[page] |= 1 << index;
+    ports[page] |= 1ull << index;
 }

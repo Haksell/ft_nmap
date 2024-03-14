@@ -1,4 +1,5 @@
 #include "../ft_nmap.h" // TODO: Lorenzo aime pas (.clangd)
+#include <stdint.h>
 #include <stdlib.h>
 
 const option valid_opt[] = {
@@ -21,12 +22,12 @@ const scan valid_scans[] = {
     {0,         ""    },
 };
 
-void args_error(void) {
+static void args_error(void) {
     fprintf(stderr, "See the output of nmap -h for a summary of options.\n");
     exit(EXIT_ARGS);
 }
 
-int atoi_check(char* s, int max, char* opt_name, bool zero_allowed) {
+static int atoi_check(char* s, int max, char* opt_name, bool zero_allowed) {
     // TODO: Axel check no negative
     // TODO: Axel check 0
     int n = 0;
@@ -62,29 +63,39 @@ int atoi_check(char* s, int max, char* opt_name, bool zero_allowed) {
 }
 
 // --ports 80,81,82-100\079
-void parse_ports(char* value, uint64_t* ports) {
+static void parse_ports(char* value, uint64_t* ports) {
     while (true) {
         char* comma = strchr(value, ',');
-        bool is_last = *comma == '\0';
-        *comma = '\0';
+        bool is_last = comma == NULL;
+        if (comma) *comma = '\0';
         char* hyphen = strchr(value, '-');
         if (hyphen) {
             *hyphen = '\0';
-            uint16_t left = atoi_check(value, UINT16_MAX, "port", true);
-            uint16_t right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
-            if (right < left) {
+            int left = atoi_check(value, UINT16_MAX, "port", true);
+            int right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
+            if (left > right) {
                 fprintf(stderr, "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
                 exit(EXIT_FAILURE);
             }
+            for (int i = left; i <= right; ++i) set_port(ports, i);
+
         } else {
             set_port(ports, atoi_check(value, UINT16_MAX, "port", true));
         }
-        if (is_last) return;
+        if (is_last) {
+            int total_ports = 0;
+            for (int port = 0; port <= UINT16_MAX; ++port) total_ports += get_port(ports, port);
+            if (total_ports > MAX_PORTS) {
+                fprintf(stderr, "Too many ports specified\n"); // TODO: better error message
+                exit(EXIT_FAILURE);
+            }
+            return;
+        }
         value = comma + 1;
     }
 }
 
-uint8_t parse_scan(char* value) {
+static uint8_t parse_scan(char* value) {
     uint8_t scan = 0;
     while (true) {
         char* comma = strchr(value, ',');
@@ -107,7 +118,7 @@ uint8_t parse_scan(char* value) {
     }
 }
 
-bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nmap* nmap) {
+static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nmap* nmap) {
     if (value == NULL) {
         if (long_opt) fprintf(stderr, "nmap: option '--%s' requires an argument\n", long_opt);
         else fprintf(stderr, "nmap: option requires an argument -- '%c'\n", short_opt);
@@ -130,7 +141,7 @@ bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nmap* nmap
     return true;
 }
 
-bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nmap) {
+static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nmap) {
     char* equal_sign = strchr(opt, '=');
     size_t len = equal_sign != NULL ? (size_t)(equal_sign - opt) : strlen(opt);
     bool ambiguous = false;
@@ -162,7 +173,7 @@ bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nmap) {
     return false;
 }
 
-bool is_valid_opt(char** arg, int* index, nmap* nmap) {
+static bool is_valid_opt(char** arg, int* index, nmap* nmap) {
     bool is_long_opt = *(*arg + 1) == '-';
     bool valid = true;
     bool found_long_opt = false;
@@ -187,7 +198,7 @@ bool is_valid_opt(char** arg, int* index, nmap* nmap) {
     return valid;
 }
 
-void handle_unrecognized_opt(char* arg) {
+static void handle_unrecognized_opt(char* arg) {
     if (*arg == '-') fprintf(stderr, "nmap: unrecognized option '%s'\n", arg);
     else fprintf(stderr, "nmap: invalid option -- '%c'\n", *(arg + 1));
     args_error();
@@ -210,6 +221,8 @@ void verify_arguments(int argc, char* argv[], nmap* nmap) {
         // else
         //	fprintf(stderr, "nmap: extra operand `%s'\n", argv[i]), args_error();
     }
-
-    if (!*nmap->hostname) fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n"), args_error();
+    if (!*nmap->hostname) {
+        fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
+        args_error();
+    }
 }
