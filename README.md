@@ -2,7 +2,7 @@
 
 ## mandatory
 
--   [ ] The executable must be named ft_nmap.
+-   [x] The executable must be named ft_nmap.
 -   [ ] A help menu must be available.
 -   [ ] You must only manage a simple IPv4 (address/hostname) as parameter for your scans.
 -   [ ] You must manage FQDN however you don’t have to make the DNS resolution.
