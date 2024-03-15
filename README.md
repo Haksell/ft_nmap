@@ -62,6 +62,31 @@
 -   use `-lpthread`
 -   use `clock_gettime` or just `clock`
 
+```
+pro: randomize source port for no detection -> sequentielle et on est detecté
+randomize type of scan -> de facon random on change de type de scan (multi-threading?)
+pseudocode qui est illogique
+    port = rand() % remaning_ports
+    type = rand() % remaning_types
+    if (!get_port(namp.ports, port, SCAN_FIN) set_port(nmap.ports, port, SCAN_FIN) -> on a
+    scanné ce port avec FIN, donc on va pas le refaire if (setport a set tout a 0)
+    remaning_ports-- (i know ca marche pas comme ça, mais le concept est de raccourcir la
+    liste de ports a scanner a chaque fois qu'on en a fully scanné un) if (type.count ==
+    total_ports) remaning_types-- (meme concept que pour les ports, mais pour les types de
+    scan) if (remaning_ports == 0) break; (si on a scanné tous les ports, on sort de la
+    boucle)
+
+    print results (que il faudra donc stocker dans une structure. a diffrence de ping, nmap
+    a besoin de stocker les resultats pour les afficher a la fin). justement parce-que il
+    randomize les ports et les types de scan, il pourra pas afficher les resultats dans
+    l'ordre.
+
+// TODO creer un header TCP (regarder ping.c pour exemple de header IP
+// TODO creer un pseudo header
+// TODO calculer le checksum
+// TODO envoyer le paquet
+```
+
 ## resources
 
 -   https://en.wikipedia.org/wiki/Transmission_Control_Protocol

@@ -13,6 +13,7 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -31,6 +32,11 @@
 #define VERSION "0.4.2"
 
 #define MAX_PORTS 1024
+
+#define TCP_HEADER_SIZE sizeof(struct tcphdr)
+#define IP_HEADER_SIZE sizeof(struct iphdr)
+#define PSEUDO_HEADER_SIZE sizeof(struct pseudohdr)
+#define NMAP_PACKET_SIZE (IP_HEADER_SIZE + TCP_HEADER_SIZE)
 
 typedef enum {
     OPT_FILE = 1 << 0,
@@ -98,6 +104,14 @@ static const scan valid_scans[] = {
     {0,         ""    },
 };
 
+struct pseudohdr {
+    uint32_t saddr;
+    uint32_t daddr;
+    uint8_t reserved;
+    uint8_t protocol;
+    uint16_t tcp_length;
+};
+
 // debug.c (TODO: remove)
 void print_ports(uint64_t* ports);
 void print_scans(uint8_t scans);
@@ -111,6 +125,9 @@ void verify_arguments(int argc, char* argv[], nmap* nmap);
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(uint64_t* ports, uint16_t port);
+
+// random.c
+uint32_t random_u32_range(uint32_t a, uint32_t b);
 
 // utils.c
 void error(char* message);
