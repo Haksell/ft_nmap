@@ -2,6 +2,7 @@
 
 ## todo
 
+-   [ ] install and learn libpcap
 -   [ ] parsing tester
 -   [ ] basic SYN scan [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network) [port-scanner (uses libpcap)](https://github.com/kacpal/port-scanner)
 -   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
@@ -67,3 +68,4 @@
 -   https://www.it-connect.fr/les-scans-de-port-via-tcp-syn-connect-et-fin/
 -   https://www.it-connect.fr/les-scans-de-port-via-tcp-xmas-null-et-ack/
 -   https://www.it-connect.fr/technique-de-scan-de-port-udp/
+-   http://yuba.stanford.edu/~casado/pcap/section1.html
