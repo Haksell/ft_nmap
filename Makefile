@@ -22,7 +22,7 @@ define remove_target
 fi
 endef
 
-all: $(NAME)
+all: $(NAME) clangd
 
 $(PATH_OBJS):
 	@mkdir -p $(sort $(dir $(OBJS)))
@@ -42,6 +42,7 @@ clean:
 
 fclean: clean
 	$(call remove_target,$(NAME))
+	$(call remove_target,.clangd)
 
 re: fclean
 	@$(MAKE) -s $(NAME)
@@ -49,9 +50,30 @@ re: fclean
 help: all
 	@./$(NAME) --version --help
 
-destroy:
+vagrant_destroy:
 	vagrant destroy -f
 	rm -rf .vagrant
 	rm -rf *VBox*.log
 
-.PHONY: all clean fclean re help destroy
+clangd:
+	@echo "CompileFlags:" >> .clangd
+	@echo "    Add:" >> .clangd
+	@echo "        - '-x'" >> .clangd
+	@echo "        - 'c-header'" >> .clangd
+	@echo "        - '-std=gnu17'" >> .clangd
+	@echo "        - '-Iinclude'" >> .clangd
+	@echo "        - '-I../include'" >> .clangd
+	@echo "        - '-I$$HOME/.local/include'" >> .clangd
+	@echo "        - '-L$$HOME/.local/lib'" >> .clangd
+	@echo "        - '-lpcap'" >> .clangd
+
+.clangd: clangd
+
+install_libpcap:
+	@mkdir -p $$HOME/.local/bin $$HOME/.local/include $$HOME/.local/lib $$HOME/.local/share
+	@echo $$HOME
+
+uninstall_libpcap:
+	@echo TODO
+
+.PHONY: all clean fclean re help vagrant_destroy install_libpcap uninstall_libpcap
