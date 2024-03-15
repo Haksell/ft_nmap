@@ -35,7 +35,7 @@
 -   [ ] DNS/Version management.
 -   [ ] OS detection.
 -   [ ] Flag to go over the IDS/Firewall.
--   [ ] Being able to hide the source address.
+-   [ ] Being able to hide the source address. (IP spoofing? ez)
 -   [ ] Additional flags...
 -   [ ] Additional scans... (TCO Connect, TCP Window, TCP Maimon, SCTP INIT)
 
