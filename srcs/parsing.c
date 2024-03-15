@@ -1,6 +1,6 @@
 #include "../include/ft_nmap.h"
 
-const option valid_opt[] = {
+static const option valid_opt[] = {
     {OPT_FILE,    'f', "file",    true },
     {OPT_HELP,    'h', "help",    false},
     {OPT_PORTS,   'p', "ports",   true },
@@ -10,7 +10,7 @@ const option valid_opt[] = {
     {0,           0,   NULL,      false}
 };
 
-const scan valid_scans[] = {
+static const scan valid_scans[] = {
     {SCAN_SYN,  "SYN" },
     {SCAN_NULL, "NULL"},
     {SCAN_ACK,  "ACK" },
