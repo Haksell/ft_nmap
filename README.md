@@ -6,7 +6,7 @@
 -   [ ] basic SYN scan
 -   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
 -   [ ] `--usage`
--   [ ] forbid non-root user (excet for info flags)
+-   [ ] forbid non-root user (except for info flags (and CONNECT scan?))
 
 ## mandatory
 
