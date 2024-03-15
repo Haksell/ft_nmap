@@ -1,3 +1,3 @@
-run1: # TODO: -Wall -Wextra -Werror
-	@cc -std=gnu17 -g3 -fsanitize=address,undefined -I$$HOME/.local/include ldev1.c -L$$HOME/.local/lib -lpcap
+run: # TODO: -Wall -Wextra -Werror
+	@cc -std=gnu17 -g3 -fsanitize=address,undefined -I$$HOME/.local/include $(src) -L$$HOME/.local/lib -lpcap
 	@LD_LIBRARY_PATH=$$HOME/.local/lib ./a.out
