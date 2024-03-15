@@ -9,6 +9,7 @@
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/tcp.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -24,6 +25,7 @@
 #include <unistd.h>
 
 #define EXIT_ARGS 0xff
+#define VERSION "0.1"
 
 #define MAX_PORTS 1024
 
@@ -69,14 +71,25 @@ typedef struct {
     uint64_t ports[1024];
     uint8_t scan; // TODO: maybe 16
     uint8_t threads;
+
+    struct timeval start_time;
 } nmap;
 
 // help.c
 void print_help();
 
+// main.c
+void verify_arguments(int argc, char* argv[], nmap* nmap);
+
+// nmap_utils.c
+void error(char* message);
+void g_error(int status);
+void hostname_to_ip(nmap* nmap);
+bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
+
+// nmap.c
+void create_socket(nmap* nmap);
+
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(uint64_t* ports, uint16_t port);
-
-// main.c
-void verify_arguments(int argc, char* argv[], nmap* nmap);

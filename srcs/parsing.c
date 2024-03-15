@@ -1,6 +1,4 @@
-#include "../ft_nmap.h" // TODO: Lorenzo aime pas (.clangd)
-#include <stdint.h>
-#include <stdlib.h>
+#include "ft_nmap.h"
 
 const option valid_opt[] = {
     {OPT_FILE,    'f', "file",    true },
@@ -62,13 +60,24 @@ static int atoi_check(char* s, int max, char* opt_name, bool zero_allowed) {
     return n;
 }
 
-// --ports 80,81,82-100\079
 static void parse_ports(char* value, uint64_t* ports) {
-    while (true) {
-        char* comma = strchr(value, ',');
-        bool is_last = comma == NULL;
+    char* end = strchr(value, '\0');
+    char* comma = end;
+
+    while (comma) {
+        comma = strchr(value, ',');
+        if (value == comma || comma == end - 1) {
+            fprintf(stderr, "nmap: invalid port value (`%s')\n", comma);
+            exit(EXIT_FAILURE);
+        }
         if (comma) *comma = '\0';
+
         char* hyphen = strchr(value, '-');
+        if (value == hyphen || hyphen == end - 1) {
+            fprintf(stderr, "nmap: invalid port value (`%s')\n", hyphen);
+            exit(EXIT_FAILURE);
+        }
+
         if (hyphen) {
             *hyphen = '\0';
             int left = atoi_check(value, UINT16_MAX, "port", true);
@@ -78,42 +87,38 @@ static void parse_ports(char* value, uint64_t* ports) {
                 exit(EXIT_FAILURE);
             }
             for (int i = left; i <= right; ++i) set_port(ports, i);
+        } else set_port(ports, atoi_check(value, UINT16_MAX, "port", true));
 
-        } else {
-            set_port(ports, atoi_check(value, UINT16_MAX, "port", true));
-        }
-        if (is_last) {
-            int total_ports = 0;
-            for (int port = 0; port <= UINT16_MAX; ++port) total_ports += get_port(ports, port);
-            if (total_ports > MAX_PORTS) {
-                fprintf(stderr, "Too many ports specified\n"); // TODO: better error message
-                exit(EXIT_FAILURE);
-            }
-            return;
-        }
         value = comma + 1;
     }
 }
 
-static uint8_t parse_scan(char* value) {
-    uint8_t scan = 0;
-    while (true) {
-        char* comma = strchr(value, ',');
-        bool is_last = *comma == '\0';
-        *comma = '\0';
+static void parse_scan(char* value, uint8_t* scan) {
+    char* end = strchr(value, '\0');
+    char* comma = end;
+
+    while (comma) {
+        comma = strchr(value, ',');
+        if (value == comma || comma == end - 1) {
+            fprintf(stderr, "nmap: invalid scan value (`%s')\n", comma);
+            exit(EXIT_FAILURE);
+        }
+        if (comma) *comma = '\0';
+
         bool valid_scan = false;
         for (size_t j = 0; valid_scans[j].type; ++j) {
-            if (strcmp(value, valid_scans[j].name)) {
-                scan |= valid_scans[j].type;
+            if (!strcmp(value, valid_scans[j].name)) {
+                *scan |= valid_scans[j].type;
                 valid_scan = true;
                 break;
             }
         }
+
         if (!valid_scan) {
             fprintf(stderr, "nmap: invalid scan value (`%s')\n", value);
             exit(EXIT_FAILURE);
         }
-        if (is_last) return scan;
+
         value = comma + 1;
     }
 }
@@ -125,17 +130,24 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
         args_error();
     }
     // TODO: Lorenzo error messages
-    if (nmap->opt & opt) {
-        if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
-        else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
-        args_error();
-    }
+    //if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443, de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le parsing avec la map uint64_t, donc en vrai balec
+    //    if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
+    //    else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
+    //    args_error();
+    //}
 
     nmap->opt |= opt;
     switch (opt) {
-        case OPT_FILE: break;                                   // TODO: file
-        case OPT_PORTS: parse_ports(value, nmap->ports); break; // TODO: parse_ports(value)
-        case OPT_SCAN: nmap->scan = parse_scan(value); break;
+        case OPT_FILE:
+            if (nmap->file) {
+                fprintf(stderr, "Only one input filename allowed\nQUITTING!\n");
+                exit(EXIT_FAILURE); // TODO: custom exit qui verifie deux choses:  if (nmap->file) fclose(nmap->file); et if (nmap->fd) close(nmap->fd);
+            }
+            nmap->file = fopen(value, "r");
+            if (!nmap->file) error("Failed to open input file for reading");
+            break;
+        case OPT_PORTS: parse_ports(value, nmap->ports); break;
+        case OPT_SCAN: parse_scan(value, &nmap->scan); break;
         case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads", true); break;
     }
     return true;
@@ -218,7 +230,7 @@ void verify_arguments(int argc, char* argv[], nmap* nmap) {
             strncpy(nmap->hostname, argv[i], HOST_NAME_MAX);
             nmap->hostname[HOST_NAME_MAX] = '\0';
         }
-        // else
+        // else TODO multiple targets // tableu de char* pour les targets?
         //	fprintf(stderr, "nmap: extra operand `%s'\n", argv[i]), args_error();
     }
     if (!*nmap->hostname) {
