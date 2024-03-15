@@ -75,9 +75,42 @@ int main(int argc, char* argv[]) {
 
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
 
-    // struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr =
-    // inet_addr(nmap.hostip)};
+    struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
 
+    struct iphdr iphdr = {
+        .version  = 4,
+        .ihl      = 5, // 5 * 32 bits = 160 bits = 20 bytes
+        .tos      = 0,
+        .tot_len  = sizeof(struct iphdr) + sizeof(struct tcphdr), // peut etre payload
+        .id       = htons(getpid()), // thread id?
+        .frag_off = 0,
+        .ttl      = 64,
+        .protocol = IPPROTO_TCP,
+        .check    = 0,
+        .saddr    = inet_addr("192.168.0.1"), // TODO! spoof
+        .daddr    = target.sin_addr.s_addr,
+    };
+    
+    struct tcphdr tcphdr = {
+        .source = htons(1234), // TODO! randomize
+        .dest   = htons(80), // TODO! randomize
+        .seq    = 0, // TODO! randomize peut etre
+        .ack_seq = 0,  // a voir apres pour ACK
+        .doff   = 5, // 5 * 32 bits = 160 bits = 20 bytes
+        .fin    = 0,
+        .syn    = 1,
+        .rst    = 0,
+        .psh    = 0,
+        .ack    = 0,
+        .urg    = 0,
+        .window = htons(5840),
+        .check  = 0,
+        .urg_ptr = 0,
+    };
+    int x = sizeof(tcphdr);
+
+
+    
     // struct tcphdr* tcph;
     // memset(&tcph, 0, sizeof(tcph));
     // set_tcp_flags(tcph, SCAN_SYN);
