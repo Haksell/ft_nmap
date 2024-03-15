@@ -58,6 +58,8 @@
 
 ## resources
 
--   https://en.wikipedia.org/wiki/Nmap
--   https://nmap.org/book/
+-   https://nmap.org/book/toc.html
 -   https://nmap.org/book/man.html
+-   https://www.it-connect.fr/les-scans-de-port-via-tcp-syn-connect-et-fin/
+-   https://www.it-connect.fr/les-scans-de-port-via-tcp-xmas-null-et-ack/
+-   https://www.it-connect.fr/technique-de-scan-de-port-udp/
