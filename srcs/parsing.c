@@ -114,22 +114,16 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
         else fprintf(stderr, "nmap: option requires an argument -- '%c'\n", short_opt);
         args_error();
     }
-    // TODO: Lorenzo error messages
-    // if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443,
-    // de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le
-    // parsing avec la map uint64_t, donc en vrai balec
-    //    if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
-    //    else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
-    //    args_error();
-    //}
 
     nmap->opt |= opt;
     switch (opt) {
         case OPT_FILE:
             if (nmap->file) {
                 fprintf(stderr, "Only one input filename allowed\nQUITTING!\n");
-                exit(EXIT_FAILURE); // TODO: custom exit qui verifie deux choses:  if (nmap->file)
-                                    // fclose(nmap->file); et if (nmap->fd) close(nmap->fd);
+                // TODO check directory /dev/* symlink
+                exit(EXIT_FAILURE);
+                // TODO: custom exit qui verifie deux choses:  if (nmap->file)
+                // fclose(nmap->file); et if (nmap->fd) close(nmap->fd);
             }
             nmap->file = fopen(value, "r");
             if (!nmap->file) error("Failed to open input file for reading");
@@ -145,6 +139,7 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nma
     char* equal_sign = strchr(opt, '=');
     size_t len = equal_sign != NULL ? (size_t)(equal_sign - opt) : strlen(opt);
     bool ambiguous = false;
+
     if (strncmp(opt, valid_opt[i].long_opt, len) == 0) {
         for (int j = i + 1; valid_opt[j].opt; ++j)
             if (strncmp(opt, valid_opt[j].long_opt, len) == 0) {

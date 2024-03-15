@@ -3,36 +3,10 @@
 
 volatile sig_atomic_t run = true;
 
-// http://www.tcpipguide.com/free/t_TCPChecksumCalculationandtheTCPPseudoHeader-2.htm
-// https://www.tenouk.com/Module43.html << top
-// struct pseudo_header { // pour calculer le checksum TODO
-//     uint32_t source_address;
-//     uint32_t dest_address;
-//     uint8_t placeholder; // doit rester a 0
-//     uint8_t protocol;
-//     uint16_t tcp_length;
-// };
-
 static void handle_sigint(int sig) {
     (void)sig;
     run = false;
 }
-
-// static void set_tcp_flags(struct tcphdr* tcph, int type) {
-//     tcph->urg = 0, tcph->ack = 0, tcph->psh = 0, tcph->rst = 0, tcph->syn = 0, tcph->fin = 0;
-
-//     switch (type) {
-//         case SCAN_SYN: tcph->syn = 1; break;
-//         case SCAN_NULL: break;
-//         case SCANdoff_ACK: tcph->ack = 1; break;
-//         case SCAN_FIN: tcph->fin = 1; break;
-//         case SCAN_XMAS:
-//             tcph->fin = 1;
-//             tcph->urg = 1;
-//             tcph->psh = 1;
-//             break;
-//     }
-// }
 
 static void create_socket(nmap* nmap) {
     if (geteuid() != 0) {
@@ -41,7 +15,7 @@ static void create_socket(nmap* nmap) {
     }
 
     nmap->fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
-    if (nmap->fd < 0) error("Socket creation failed");
+    if (nmap->fd < 0) error("TCP socket creation failed");
 
     if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
         error("setsockopt IP_HDRINCL failed");
@@ -58,98 +32,12 @@ static void create_socket(nmap* nmap) {
     char timestamp[21];
     strftime(timestamp, 21, "%Y-%m-%d %H:%M CET", tm);
     printf("Starting Nmap %s at %s\n", VERSION, timestamp);
-}
 
-uint16_t tcp_checksum(struct pseudohdr* pseudohdr, struct tcphdr* tcphdr) {
-    int packet_size = sizeof(struct pseudohdr) + sizeof(struct tcphdr);
-
-    uint8_t checksum_packet[packet_size];
-    memcpy(checksum_packet, pseudohdr, sizeof(struct pseudohdr));
-    memcpy(checksum_packet + sizeof(struct pseudohdr), tcphdr, sizeof(struct tcphdr));
-
-    uint16_t p_checksum_packet[packet_size / 2];
-
-    for (int i = 0; i < packet_size / 2; i++) {
-        p_checksum_packet[i] = (checksum_packet[i * 2] << 8) + checksum_packet[i * 2 + 1];
+    if (nmap->opt & OPT_VERBOSE) {
+        print_ports(nmap->ports);
+        print_scans(nmap->scans);
+        printf("Host: %s (%s)\n", nmap->hostname, nmap->hostip);
     }
-
-    uint32_t sum = 0;
-    for (int i = 0; i < packet_size / 2; i++) {
-        sum += p_checksum_packet[i];
-    }
-
-    while (sum >> 16) sum = (sum & 0xFFFF) + (sum >> 16);
-
-    return (uint16_t)~sum;
-}
-
-uint16_t ip_checksum(void* vdata, size_t length) {
-    char* data = vdata;
-    uint32_t acc = 0xffff;
-
-    for (size_t i = 0; i + 1 < length; i += 2) {
-        uint16_t word;
-        memcpy(&word, data + i, 2);
-        acc += ntohs(word);
-        if (acc > 0xffff) acc -= 0xffff;
-    }
-
-    if (length & 1) {
-        uint16_t word = 0;
-        memcpy(&word, data + length - 1, 1);
-        acc += ntohs(word);
-        if (acc > 0xffff) acc -= 0xffff;
-    }
-
-    return htons(~acc);
-}
-
-void fill_packet(uint8_t* packet, struct sockaddr_in target, short port) {
-    struct tcphdr tcphdr = {
-        .source = htons(37216), // TODO! randomize
-        .dest = htons(port),
-        .seq = 0, // TODO! randomize peut etre
-        .ack_seq = 0, // a voir apres pour ACK
-        .doff = 5, // 5 * 32 bits = 160 bits = 20 bytes || sur nmap Header Length: 24 bytes (6)
-        .fin = 0,
-        .syn = 1,
-        .rst = 0,
-        .psh = 0,
-        .ack = 0,
-        .urg = 0,
-        .window = htons(1024), // pas sur
-        .check = 0,
-        .urg_ptr = 0,
-    };
-
-    struct iphdr iphdr = {
-        .version = 4,
-        .ihl = 5,
-        .tos = 0,
-        .tot_len = htons(sizeof(iphdr) + sizeof(tcphdr)),
-        .id = htons(random_u32_range(0, UINT16_MAX)),
-        .frag_off = 0,
-        .ttl = random_u32_range(33, 63),
-        .protocol = IPPROTO_TCP,
-        .check = 0,
-        .saddr = get_source_address(), // spoof possible?
-        .daddr = target.sin_addr.s_addr,
-    };
-
-    iphdr.check = ip_checksum(&iphdr, sizeof(iphdr));
-
-    struct pseudohdr pseudohdr = {
-        .saddr = iphdr.saddr,
-        .daddr = iphdr.daddr,
-        .reserved = 0,
-        .protocol = iphdr.protocol,
-        .tcp_length = htons(sizeof(tcphdr)),
-    };
-
-    tcphdr.check = htons(tcp_checksum(&pseudohdr, &tcphdr));
-
-    memcpy(packet, &iphdr, sizeof(iphdr));
-    memcpy(packet + sizeof(iphdr), &tcphdr, sizeof(tcphdr));
 }
 
 enum PortState { OPEN, CLOSED, FILTERED, UNDETERMINED };
@@ -177,9 +65,7 @@ enum PortState get_port_state(const uint8_t* packet, ssize_t len) {
     return UNDETERMINED; // Unable to determine the state from the packet
 }
 
-void process_received_packet(const uint8_t* packet, ssize_t len) {
-    get_port_state(packet, len);
-}
+void process_received_packet(const uint8_t* packet, ssize_t len) { get_port_state(packet, len); }
 
 int main(int argc, char* argv[]) {
     nmap nmap = {0};
@@ -188,9 +74,6 @@ int main(int argc, char* argv[]) {
     hostname_to_ip(&nmap);
     create_socket(&nmap);
 
-    // print_ports(nmap.ports);
-    // print_scans(nmap.scans);
-    // printf("hostname: %s\n", nmap.hostname);
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
 
     struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};

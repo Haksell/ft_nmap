@@ -45,6 +45,7 @@ typedef enum {
     OPT_SCAN = 1 << 3,
     OPT_THREADS = 1 << 4,
     OPT_VERSION = 1 << 5,
+    OPT_VERBOSE = 1 << 6,
 } option_value;
 
 typedef struct {
@@ -91,6 +92,7 @@ static const option valid_opt[] = {
     {OPT_SCAN,    's', "scans",   true },
     {OPT_THREADS, 't', "threads", true },
     {OPT_VERSION, 'v', "version", false},
+    {OPT_VERBOSE, 'V', "verbose", false},
     {0,           0,   NULL,      false}
 };
 
@@ -104,14 +106,6 @@ static const scan valid_scans[] = {
     {0,         ""    },
 };
 
-struct pseudohdr {
-    uint32_t saddr;
-    uint32_t daddr;
-    uint8_t reserved;
-    uint8_t protocol;
-    uint16_t tcp_length;
-};
-
 // debug.c (TODO: remove)
 void print_ports(uint64_t* ports);
 void print_scans(uint8_t scans);
@@ -121,6 +115,9 @@ void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
 // main.c
 void verify_arguments(int argc, char* argv[], nmap* nmap);
+
+// packet.c
+void fill_packet(uint8_t* packet, struct sockaddr_in target, short port);
 
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
