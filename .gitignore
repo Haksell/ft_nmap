@@ -1,3 +1,4 @@
 .vagrant
 objs
 ft_nmap
+*VBox*.log
