@@ -2,34 +2,63 @@
 
 volatile sig_atomic_t run = true;
 
-void handle_sigint(int sig) {
+// http://www.tcpipguide.com/free/t_TCPChecksumCalculationandtheTCPPseudoHeader-2.htm
+// https://www.tenouk.com/Module43.html << top
+// struct pseudo_header { // pour calculer le checksum TODO
+//     uint32_t source_address;
+//     uint32_t dest_address;
+//     uint8_t placeholder; // doit rester a 0
+//     uint8_t protocol;
+//     uint16_t tcp_length;
+// };
+
+static void handle_sigint(int sig) {
     (void)sig;
     run = false;
 }
 
-struct pseudo_header { // pour calculer le checksum TODO
-    uint32_t source_address;
-    uint32_t dest_address;
-    uint8_t placeholder; // doit rester a 0
-    uint8_t protocol;
-    uint16_t tcp_length;
-}; // http://www.tcpipguide.com/free/t_TCPChecksumCalculationandtheTCPPseudoHeader-2.htm
-// https://www.tenouk.com/Module43.html << top
+// static void set_tcp_flags(struct tcphdr* tcph, int type) {
+//     tcph->urg = 0, tcph->ack = 0, tcph->psh = 0, tcph->rst = 0, tcph->syn = 0, tcph->fin = 0;
 
-void set_tcp_flags(struct tcphdr* tcph, int type) {
-    tcph->urg = 0, tcph->ack = 0, tcph->psh = 0, tcph->rst = 0, tcph->syn = 0, tcph->fin = 0;
+//     switch (type) {
+//         case SCAN_SYN: tcph->syn = 1; break;
+//         case SCAN_NULL: break;
+//         case SCAN_ACK: tcph->ack = 1; break;
+//         case SCAN_FIN: tcph->fin = 1; break;
+//         case SCAN_XMAS:
+//             tcph->fin = 1;
+//             tcph->urg = 1;
+//             tcph->psh = 1;
+//             break;
+//     }
+// }
 
-    switch (type) {
-        case SCAN_SYN: tcph->syn = 1; break;
-        case SCAN_NULL: break;
-        case SCAN_ACK: tcph->ack = 1; break;
-        case SCAN_FIN: tcph->fin = 1; break;
-        case SCAN_XMAS:
-            tcph->fin = 1;
-            tcph->urg = 1;
-            tcph->psh = 1;
-            break;
+static void create_socket(nmap* nmap) {
+    if (geteuid() != 0) {
+        fprintf(stderr, "This program requires root privileges for raw socket creation.\n");
+        exit(EXIT_FAILURE);
     }
+
+    nmap->fd = socket(
+        AF_INET, SOCK_RAW, IPPROTO_TCP
+    ); // faudra un deuxieme socket pour les paquets UDP //  a reflechir dans l'avenir si on cree un
+       // socket pour chaque type de scan. en multi-threading avec 255 threads, on peut faire 255
+       // scans en meme temps, mais donc faut-il 255 sockets en meme temps ? Ou poll va
+       // automatiquement gerer ca ? sur ping meme avec flood ça passe, donc bon
+    if (nmap->fd < 0) error("Socket creation failed");
+
+    if (!(nmap->opt & OPT_PORTS)) {
+        for (int i = 0; i < 16; ++i) nmap->ports[i] = ~0;
+        nmap->ports[0] ^= 1;
+        nmap->ports[16] = 1;
+    }
+    if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
+
+    gettimeofday(&nmap->start_time, NULL);
+    struct tm* tm = localtime(&nmap->start_time.tv_sec);
+    char timestamp[21];
+    strftime(timestamp, 21, "%Y-%m-%d %H:%M CET", tm);
+    printf("Starting Nmap %s at %s\n", VERSION, timestamp);
 }
 
 int main(int argc, char* argv[]) {

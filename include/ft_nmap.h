@@ -107,15 +107,12 @@ void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 // main.c
 void verify_arguments(int argc, char* argv[], nmap* nmap);
 
-// nmap_utils.c
+// ports.c
+bool get_port(uint64_t* ports, uint16_t port);
+void set_port(uint64_t* ports, uint16_t port);
+
+// utils.c
 void error(char* message);
 void g_error(int status);
 void hostname_to_ip(nmap* nmap);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
-
-// nmap.c
-void create_socket(nmap* nmap);
-
-// ports.c
-bool get_port(uint64_t* ports, uint16_t port);
-void set_port(uint64_t* ports, uint16_t port);
