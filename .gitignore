@@ -3,3 +3,4 @@ objs
 ft_nmap
 *VBox*.log
 garbage/a.out
+*.pcap*
