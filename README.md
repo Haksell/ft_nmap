@@ -1,5 +1,8 @@
 # ft_nmap
 
+## original sequence by nmap
+- 
+
 ## todo
 
 -   [ ] install and learn libpcap

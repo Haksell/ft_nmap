@@ -1,4 +1,6 @@
 #include "ft_nmap.h"
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 void error(char* message) {
     fprintf(
@@ -7,8 +9,8 @@ void error(char* message) {
     exit(EXIT_FAILURE);
 }
 
-void g_error(int status) {
-    if (status != EAI_NONAME) fprintf(stderr, "nmap: %s\n", gai_strerror(status));
+void g_error(char* message, int status) {
+    if (status != EAI_NONAME) fprintf(stderr, "nmap: %s: %s\n", message, gai_strerror(status));
     else fprintf(stderr, "nmap: %s\n", "unknown host");
     exit(EXIT_FAILURE);
 }
@@ -21,7 +23,7 @@ void hostname_to_ip(nmap* nmap) {
     struct addrinfo* res = NULL;
 
     int status = getaddrinfo(nmap->hostname, NULL, &hints, &res);
-    if (status != 0) g_error(status);
+    if (status != 0) g_error("getaddrinfo failed", status);
 
     nmap->hostaddr = *(struct sockaddr_in*)res->ai_addr;
     if (inet_ntop(AF_INET, &nmap->hostaddr.sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
@@ -41,7 +43,24 @@ bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {
         .sin_addr = ip_address,
     };
 
-    if (getnameinfo((struct sockaddr*)&sa, sizeof(sa), host, hostlen, NULL, 0, NI_NAMEREQD))
-        return false;
-    return true;
+    return getnameinfo((struct sockaddr*)&sa, sizeof(sa), host, hostlen, NULL, 0, NI_NAMEREQD) == 0;
+}
+
+in_addr_t get_source_address() {
+    struct ifaddrs *ifaddr, *ifa;
+    in_addr_t source_address = 0;
+
+    if (getifaddrs(&ifaddr) == -1) error("getifaddrs failed");
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET) {
+            if (strcmp(ifa->ifa_name, "lo") == 0) continue; /// c'est pas bon
+            struct sockaddr_in* ipv4 = (struct sockaddr_in*)ifa->ifa_addr;
+            source_address = ipv4->sin_addr.s_addr;
+            break;
+        }
+    }
+
+    freeifaddrs(ifaddr);
+    return source_address; // a verifier lorenzo
 }

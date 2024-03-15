@@ -75,73 +75,43 @@ int main(int argc, char* argv[]) {
 
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
 
-    struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
+    //struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
 
-    struct iphdr iphdr = {
-        .version  = 4,
-        .ihl      = 5, // 5 * 32 bits = 160 bits = 20 bytes
-        .tos      = 0,
-        .tot_len  = sizeof(struct iphdr) + sizeof(struct tcphdr), // peut etre payload
-        .id       = htons(getpid()), // thread id?
-        .frag_off = 0,
-        .ttl      = 64,
-        .protocol = IPPROTO_TCP,
-        .check    = 0,
-        .saddr    = inet_addr("192.168.0.1"), // TODO! spoof
-        .daddr    = target.sin_addr.s_addr,
-    };
+    // struct iphdr iphdr = {
+    //     .version  = 4,
+    //     .ihl      = 5,
+    //     .tos      = 0,
+    //     .tot_len  = sizeof(struct iphdr) + sizeof(struct tcphdr), // peut etre Options: (4 bytes), Maximum segment size
+    //     .id       = htons(getpid()), // thread id? Random pour l'instant 
+    //     .frag_off = 0,
+    //     .ttl      = 64, // randint(28, 63)
+    //     .protocol = IPPROTO_TCP,
+    //     .check    = 0,
+    //     .saddr    = inet_addr("192.168.0.1"), // TODO! spoof
+    //     .daddr    = target.sin_addr.s_addr,
+    // };
     
-    struct tcphdr tcphdr = {
-        .source = htons(1234), // TODO! randomize
-        .dest   = htons(80), // TODO! randomize
-        .seq    = 0, // TODO! randomize peut etre
-        .ack_seq = 0,  // a voir apres pour ACK
-        .doff   = 5, // 5 * 32 bits = 160 bits = 20 bytes
-        .fin    = 0,
-        .syn    = 1,
-        .rst    = 0,
-        .psh    = 0,
-        .ack    = 0,
-        .urg    = 0,
-        .window = htons(5840),
-        .check  = 0,
-        .urg_ptr = 0,
-    };
-    int x = sizeof(tcphdr);
-
-
+    // struct tcphdr tcphdr = {
+    //     .source = htons(1234), // TODO! randomize
+    //     .dest   = htons(80), // TODO! randomize
+    //     .seq    = 0, // TODO! randomize peut etre
+    //     .ack_seq = 0,  // a voir apres pour ACK
+    //     .doff   = 5, // 5 * 32 bits = 160 bits = 20 bytes
+    //     .fin    = 0,
+    //     .syn    = 1,
+    //     .rst    = 0,
+    //     .psh    = 0,
+    //     .ack    = 0,
+    //     .urg    = 0,
+    //     .window = htons(5840),
+    //     .check  = 0,
+    //     .urg_ptr = 0,
+    // };
     
-    // struct tcphdr* tcph;
-    // memset(&tcph, 0, sizeof(tcph));
-    // set_tcp_flags(tcph, SCAN_SYN);
 
     for (int port = 0; port < UINT16_MAX && run; port++) {
         if (!get_port(nmap.ports, port)) continue;
 
-        // pro: randomize source port for no detection -> sequentielle et on est detecté
-        // randomize type of scan -> de facon random on change de type de scan (multi-threading?)
-        /* pseudocode qui est illogique
-            port = rand() % remaning_ports
-            type = rand() % remaning_types
-            if (!get_port(namp.ports, port, SCAN_FIN) set_port(nmap.ports, port, SCAN_FIN) -> on a
-           scanné ce port avec FIN, donc on va pas le refaire if (setport a set tout a 0)
-           remaning_ports-- (i know ca marche pas comme ça, mais le concept est de raccourcir la
-           liste de ports a scanner a chaque fois qu'on en a fully scanné un) if (type.count ==
-           total_ports) remaning_types-- (meme concept que pour les ports, mais pour les types de
-           scan) if (remaning_ports == 0) break; (si on a scanné tous les ports, on sort de la
-           boucle)
-
-            print results (que il faudra donc stocker dans une structure. a diffrence de ping, nmap
-           a besoin de stocker les resultats pour les afficher a la fin). justement parce-que il
-           randomize les ports et les types de scan, il pourra pas afficher les resultats dans
-           l'ordre.
-
-        */
-
-        // TODO creer un header TCP (regarder ping.c pour exemple de header IP
-        // TODO creer un pseudo header
-        // TODO calculer le checksum
-        // TODO envoyer le paquet
     }
 
     close(nmap.fd);

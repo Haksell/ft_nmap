@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
+#include <ifaddrs.h>
 #include <limits.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -113,6 +114,7 @@ void set_port(uint64_t* ports, uint16_t port);
 
 // utils.c
 void error(char* message);
-void g_error(int status);
+void g_error(char* message, int status);
 void hostname_to_ip(nmap* nmap);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
+in_addr_t get_source_address();
