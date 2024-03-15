@@ -3,7 +3,7 @@
 ## todo
 
 -   [ ] parsing tester
--   [ ] basic SYN scan (https://github.com/williamchanrico/c-syn-scan-network)
+-   [ ] basic SYN scan [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network) [port-scanner (uses libpcap)](https://github.com/kacpal/port-scanner)
 -   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
 -   [ ] `--usage`
 -   [ ] forbid non-root user (except for info flags (and CONNECT scan?))
