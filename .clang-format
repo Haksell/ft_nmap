@@ -26,3 +26,4 @@ IndentCaseLabels: true
 AllowShortCaseLabelsOnASingleLine: true
 AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: Left
+AlwaysBreakBeforeMultilineStrings: true
