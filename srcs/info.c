@@ -6,7 +6,7 @@ static void print_help() {
     printf("ft_nmap <ip/hostname/file> [options]\n"
            "--help      Print this help screen\n"
            "--ports     Ports to scan (e.g. 1-10 or 1,2,3 or 1,5-15)\n"
-           "--scans     SYN/NULL/FIN/XMAS/ACK/UDP\n"
+           "--scans     ACK/FIN/NULL/SYN/UDP/XMAS\n"
            "--threads   Number of parallel threads to use (0-255)\n"
            "--version   Print version number\n");
 }

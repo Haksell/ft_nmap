@@ -48,12 +48,12 @@ typedef struct {
 } option;
 
 typedef enum {
-    SCAN_SYN = 1 << 0,
-    SCAN_NULL = 1 << 1,
-    SCAN_ACK = 1 << 2,
-    SCAN_FIN = 1 << 3,
-    SCAN_XMAS = 1 << 4,
-    SCAN_UDP = 1 << 5,
+    SCAN_ACK = 1 << 0,
+    SCAN_FIN = 1 << 1,
+    SCAN_NULL = 1 << 2,
+    SCAN_SYN = 1 << 3,
+    SCAN_UDP = 1 << 4,
+    SCAN_XMAS = 1 << 5,
 } scan_type;
 
 typedef struct {
@@ -88,12 +88,12 @@ static const option valid_opt[] = {
 };
 
 static const scan valid_scans[] = {
-    {SCAN_SYN,  "SYN" },
-    {SCAN_NULL, "NULL"},
     {SCAN_ACK,  "ACK" },
     {SCAN_FIN,  "FIN" },
-    {SCAN_XMAS, "XMAS"},
+    {SCAN_NULL, "NULL"},
+    {SCAN_SYN,  "SYN" },
     {SCAN_UDP,  "UDP" },
+    {SCAN_XMAS, "XMAS"},
     {0,         ""    },
 };
 
@@ -101,7 +101,7 @@ static const scan valid_scans[] = {
 void print_ports(uint64_t* ports);
 void print_scans(uint8_t scans);
 
-// help.c
+// info.c
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
 // main.c
