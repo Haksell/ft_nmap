@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../include/ft_nmap.h"
 
 bool get_port(uint64_t* ports, uint16_t port) {
     uint16_t page = port >> 6;

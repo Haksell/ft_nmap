@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../include/ft_nmap.h"
 
 const option valid_opt[] = {
     {OPT_FILE,    'f', "file",    true },
@@ -130,7 +130,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
         args_error();
     }
     // TODO: Lorenzo error messages
-    //if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443, de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le parsing avec la map uint64_t, donc en vrai balec
+    // if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443, de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le parsing avec la map uint64_t, donc en vrai balec
     //    if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
     //    else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
     //    args_error();

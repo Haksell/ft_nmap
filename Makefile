@@ -1,5 +1,6 @@
 NAME := ft_nmap
-HEADER := include/ft_nmap.h
+INCLUDE_DIR := include
+HEADER := $(INCLUDE_DIR)/ft_nmap.h
 
 PATH_SRCS := srcs
 PATH_OBJS := objs
@@ -7,7 +8,7 @@ PATH_OBJS := objs
 SRCS := $(wildcard $(PATH_SRCS)/*.c)
 OBJS := $(SRCS:$(PATH_SRCS)/%.c=$(PATH_OBJS)/%.o)
 
-CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=address,undefined -Iinclude
+CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=address,undefined -I$(INCLUDE_DIR)
 
 RESET := \033[0m
 RED := \033[1m\033[31m
@@ -50,5 +51,10 @@ run: all
 	@./$(NAME) --help
 
 rerun: fclean run
+
+destroy:
+	vagrant destroy -f
+	rm -rf .vagrant
+	rm -rf *VBox*.log
 
 .PHONY: all clean fclean re run rerun

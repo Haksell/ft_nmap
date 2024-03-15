@@ -1,4 +1,4 @@
-#include "ft_nmap.h"
+#include "../include/ft_nmap.h"
 
 volatile sig_atomic_t run = true;
 
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
 
-    //struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
+    // struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
 
     // struct tcphdr* tcph;
     // memset(&tcph, 0, sizeof(tcph));
@@ -54,28 +54,27 @@ int main(int argc, char* argv[]) {
 
         // pro: randomize source port for no detection -> sequentielle et on est detecté
         // randomize type of scan -> de facon random on change de type de scan (multi-threading?)
-		/* pseudocode qui est illogique 
-			port = rand() % remaning_ports
-			type = rand() % remaning_types
-			if (!get_port(namp.ports, port, SCAN_FIN) set_port(nmap.ports, port, SCAN_FIN) -> on a scanné ce port avec FIN, donc on va pas le refaire
-			if (setport a set tout a 0) remaning_ports-- (i know ca marche pas comme ça, mais le concept est de raccourcir la liste de ports a scanner a chaque fois qu'on en a fully scanné un)
-			if (type.count == total_ports) remaning_types-- (meme concept que pour les ports, mais pour les types de scan)
-			if (remaning_ports == 0) break; (si on a scanné tous les ports, on sort de la boucle)
+        /* pseudocode qui est illogique
+            port = rand() % remaning_ports
+            type = rand() % remaning_types
+            if (!get_port(namp.ports, port, SCAN_FIN) set_port(nmap.ports, port, SCAN_FIN) -> on a scanné ce port avec FIN, donc on va pas le refaire
+            if (setport a set tout a 0) remaning_ports-- (i know ca marche pas comme ça, mais le concept est de raccourcir la liste de ports a scanner a chaque fois qu'on en a fully scanné un)
+            if (type.count == total_ports) remaning_types-- (meme concept que pour les ports, mais pour les types de scan)
+            if (remaning_ports == 0) break; (si on a scanné tous les ports, on sort de la boucle)
 
-			print results (que il faudra donc stocker dans une structure. a diffrence de ping, nmap a besoin de stocker les resultats pour les afficher a la fin).
-			justement parce-que il randomize les ports et les types de scan, il pourra pas afficher les resultats dans l'ordre.
+            print results (que il faudra donc stocker dans une structure. a diffrence de ping, nmap a besoin de stocker les resultats pour les afficher a la fin).
+            justement parce-que il randomize les ports et les types de scan, il pourra pas afficher les resultats dans l'ordre.
 
-		*/
+        */
 
-		// TODO creer un header TCP (regarder ping.c pour exemple de header IP
-		// TODO creer un pseudo header
-		// TODO calculer le checksum
-		// TODO envoyer le paquet
-
+        // TODO creer un header TCP (regarder ping.c pour exemple de header IP
+        // TODO creer un pseudo header
+        // TODO calculer le checksum
+        // TODO envoyer le paquet
 
         printf("port: %d\n", port);
     }
 
-	close(nmap.fd);
+    close(nmap.fd);
     return EXIT_SUCCESS;
 }
