@@ -37,6 +37,7 @@
 -   [ ] Flag to go over the IDS/Firewall.
 -   [ ] Being able to hide the source address.
 -   [ ] Additional flags...
+-   [ ] Additional scans... (TCO Connect, TCP Window, TCP Maimon, SCTP INIT)
 
 ## push check
 
@@ -58,6 +59,8 @@
 
 ## resources
 
+-   https://en.wikipedia.org/wiki/Transmission_Control_Protocol
+-   https://en.wikipedia.org/wiki/User_Datagram_Protocol
 -   https://nmap.org/book/toc.html
 -   https://nmap.org/book/man.html
 -   https://www.it-connect.fr/les-scans-de-port-via-tcp-syn-connect-et-fin/
