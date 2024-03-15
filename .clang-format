@@ -28,3 +28,4 @@ AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: Left
 AlwaysBreakBeforeMultilineStrings: true
 AlignTrailingComments: false
+InsertNewlineAtEOF: true

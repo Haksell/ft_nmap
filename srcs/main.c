@@ -75,22 +75,21 @@ int main(int argc, char* argv[]) {
 
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
 
-    //struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
+    // struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr =
+    // inet_addr(nmap.hostip)};
 
     // struct iphdr iphdr = {
     //     .version  = 4,
     //     .ihl      = 5,
     //     .tos      = 0,
-    //     .tot_len  = sizeof(struct iphdr) + sizeof(struct tcphdr), // peut etre Options: (4 bytes), Maximum segment size
-    //     .id       = htons(getpid()), // thread id? Random pour l'instant 
-    //     .frag_off = 0,
-    //     .ttl      = 64, // randint(28, 63)
-    //     .protocol = IPPROTO_TCP,
+    //     .tot_len  = sizeof(struct iphdr) + sizeof(struct tcphdr), // peut etre Options: (4
+    //     bytes), Maximum segment size .id       = htons(getpid()), // thread id? Random pour
+    //     l'instant .frag_off = 0, .ttl      = 64, // randint(28, 63) .protocol = IPPROTO_TCP,
     //     .check    = 0,
     //     .saddr    = inet_addr("192.168.0.1"), // TODO! spoof
     //     .daddr    = target.sin_addr.s_addr,
     // };
-    
+
     // struct tcphdr tcphdr = {
     //     .source = htons(1234), // TODO! randomize
     //     .dest   = htons(80), // TODO! randomize
@@ -107,11 +106,9 @@ int main(int argc, char* argv[]) {
     //     .check  = 0,
     //     .urg_ptr = 0,
     // };
-    
 
     for (int port = 0; port < UINT16_MAX && run; port++) {
         if (!get_port(nmap.ports, port)) continue;
-
     }
 
     close(nmap.fd);
