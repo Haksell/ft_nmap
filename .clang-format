@@ -27,3 +27,4 @@ AllowShortCaseLabelsOnASingleLine: true
 AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: Left
 AlwaysBreakBeforeMultilineStrings: true
+AlignTrailingComments: false
