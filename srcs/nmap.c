@@ -14,7 +14,7 @@ void create_socket(nmap* nmap) {
         nmap->ports[0] ^= 1;
         nmap->ports[16] = 1;
     }
-    if (!(nmap->opt & OPT_SCAN)) nmap->scan |= 0b111111;
+    if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
 
     gettimeofday(&nmap->start_time, NULL);
     struct tm* tm = localtime(&nmap->start_time.tv_sec);

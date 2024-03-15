@@ -1,5 +1,11 @@
 # ft_nmap
 
+## todo
+
+-   [ ] parsing tester
+-   [ ] basic SYN scan
+-   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [OPTIONS]`)
+
 ## mandatory
 
 -   [x] The executable must be named ft_nmap.
@@ -39,8 +45,8 @@
 ## tests
 
 -   [ ] `./ft_nmap --help`
--   [ ] `./ft_nmap --ip 8.8.8.8 --speedup 70 --port 70-90 --scan SYN`
--   [ ] `./ft_nmap --ip x.x.x.x --speedup 200 --port 75-85`
+-   [ ] `./ft_nmap 8.8.8.8 --threads 70 --ports 70-90 --scans SYN`
+-   [ ] `./ft_nmap 8.8.8.8 --threads 200 --ports 75-85`
 
 ## misc
 

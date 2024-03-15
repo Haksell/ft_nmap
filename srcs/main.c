@@ -39,6 +39,9 @@ int main(int argc, char* argv[]) {
     hostname_to_ip(&nmap);
     create_socket(&nmap);
 
+    print_ports(nmap.ports);
+    print_scans(nmap.scans);
+
     printf("hostname: %s\n", nmap.hostname);
 
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
@@ -71,8 +74,6 @@ int main(int argc, char* argv[]) {
         // TODO creer un pseudo header
         // TODO calculer le checksum
         // TODO envoyer le paquet
-
-        printf("port: %d\n", port);
     }
 
     close(nmap.fd);

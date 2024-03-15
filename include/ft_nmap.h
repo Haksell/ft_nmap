@@ -71,11 +71,35 @@ typedef struct {
     uint32_t opt;
     FILE* file; // TODO: close
     uint64_t ports[1024];
-    uint8_t scan; // TODO: maybe 16
+    uint8_t scans; // TODO: maybe 16
     uint8_t threads;
 
     struct timeval start_time;
 } nmap;
+
+static const option valid_opt[] = {
+    {OPT_FILE,    'f', "file",    true },
+    {OPT_HELP,    'h', "help",    false},
+    {OPT_PORTS,   'p', "ports",   true },
+    {OPT_SCAN,    's', "scans",   true },
+    {OPT_THREADS, 't', "threads", true },
+    {OPT_VERSION, 'V', "version", false},
+    {0,           0,   NULL,      false}
+};
+
+static const scan valid_scans[] = {
+    {SCAN_SYN,  "SYN" },
+    {SCAN_NULL, "NULL"},
+    {SCAN_ACK,  "ACK" },
+    {SCAN_FIN,  "FIN" },
+    {SCAN_XMAS, "XMAS"},
+    {SCAN_UDP,  "UDP" },
+    {0,         ""    },
+};
+
+// debug.c (TODO: remove)
+void print_ports(uint64_t* ports);
+void print_scans(uint8_t scans);
 
 // help.c
 void print_help();

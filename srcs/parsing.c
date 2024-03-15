@@ -1,25 +1,5 @@
 #include "ft_nmap.h"
 
-static const option valid_opt[] = {
-    {OPT_FILE,    'f', "file",    true },
-    {OPT_HELP,    'h', "help",    false},
-    {OPT_PORTS,   'p', "ports",   true },
-    {OPT_SCAN,    's', "scan",    true },
-    {OPT_THREADS, 't', "threads", true },
-    {OPT_VERSION, 'V', "version", false},
-    {0,           0,   NULL,      false}
-};
-
-static const scan valid_scans[] = {
-    {SCAN_SYN,  "SYN" },
-    {SCAN_NULL, "NULL"},
-    {SCAN_ACK,  "ACK" },
-    {SCAN_FIN,  "FIN" },
-    {SCAN_XMAS, "XMAS"},
-    {SCAN_UDP,  "UDP" },
-    {0,         ""    },
-};
-
 static void args_error(void) {
     fprintf(stderr, "See the output of nmap -h for a summary of options.\n");
     exit(EXIT_ARGS);
@@ -93,7 +73,7 @@ static void parse_ports(char* value, uint64_t* ports) {
     }
 }
 
-static void parse_scan(char* value, uint8_t* scan) {
+static void parse_scan(char* value, uint8_t* scans) {
     char* end = strchr(value, '\0');
     char* comma = end;
 
@@ -110,7 +90,7 @@ static void parse_scan(char* value, uint8_t* scan) {
             if (!strcmp(value, valid_scans[j].name)) {
                 // TODO: check duplicate?
                 // if (*scan & valid_scans[j].type)
-                *scan |= valid_scans[j].type;
+                *scans |= valid_scans[j].type;
                 valid_scan = true;
                 break;
             }
@@ -149,7 +129,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
             if (!nmap->file) error("Failed to open input file for reading");
             break;
         case OPT_PORTS: parse_ports(value, nmap->ports); break;
-        case OPT_SCAN: parse_scan(value, &nmap->scan); break;
+        case OPT_SCAN: parse_scan(value, &nmap->scans); break;
         case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads", true); break;
     }
     return true;
