@@ -22,7 +22,7 @@ define remove_target
 fi
 endef
 
-all: $(NAME)
+all: $(NAME) clangd
 
 $(PATH_OBJS):
 	@mkdir -p $(sort $(dir $(OBJS)))
@@ -37,11 +37,13 @@ $(NAME): $(OBJS)
 	@echo "$(PURPLE)$@ is compiled.$(RESET)"
 
 clean:
-	@rm -rf .vscode
+	$(call remove_target,.vscode)
+	$(call remove_target,garbage/a.out)
 	$(call remove_target,$(PATH_OBJS))
 
 fclean: clean
 	$(call remove_target,$(NAME))
+	$(call remove_target,.clangd)
 
 re: fclean
 	@$(MAKE) -s $(NAME)
@@ -49,9 +51,46 @@ re: fclean
 help: all
 	@./$(NAME) --version --help
 
-destroy:
+vagrant_destroy:
 	vagrant destroy -f
 	rm -rf .vagrant
 	rm -rf *VBox*.log
 
-.PHONY: all clean fclean re help destroy
+clangd:
+	@echo "CompileFlags:" >> .clangd
+	@echo "    Add:" >> .clangd
+	@echo "        - '-x'" >> .clangd
+	@echo "        - 'c-header'" >> .clangd
+	@echo "        - '-std=gnu17'" >> .clangd
+	@echo "        - '-Iinclude'" >> .clangd
+	@echo "        - '-I../include'" >> .clangd
+	@echo "        - '-I$$HOME/.local/include'" >> .clangd
+	@echo "        - '-L$$HOME/.local/lib'" >> .clangd
+	@echo "        - '-lpcap'" >> .clangd
+
+.clangd: clangd
+
+define compile_from_source
+    @wget -O source.tar.gz $(1)
+    @mkdir source_dir && tar xvf source.tar.gz -C source_dir --strip-components=1
+    @cd source_dir && ./configure --prefix=$$HOME/.local && make && make install
+    @rm -rf source_dir source.tar.gz
+endef
+
+install_libpcap: clangd
+	@mkdir -p $$HOME/.local/bin $$HOME/.local/include $$HOME/.local/lib $$HOME/.local/share
+	$(call compile_from_source,https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz)
+	$(call compile_from_source,https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz)
+	$(call compile_from_source,https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.xz)
+	$(call compile_from_source,https://www.tcpdump.org/release/libpcap-1.10.4.tar.gz)
+
+uninstall_libpcap:
+	@rm -rf $$HOME/.local/bin/m4
+	@rm -rf $$HOME/.local/bin/flex
+	@rm -rf $$HOME/.local/bin/flex++
+	@rm -rf $$HOME/.local/include/FlexLexer.h
+	@rm -rf $$HOME/.local/bin/bison
+	@rm -rf $$HOME/.local/share/bison
+	@rm -rf $$HOME/.local/*/*pcap*
+
+.PHONY: all clean fclean re help vagrant_destroy install_libpcap uninstall_libpcap
