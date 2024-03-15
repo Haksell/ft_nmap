@@ -1,5 +1,4 @@
 #include "ft_nmap.h"
-#include <sys/types.h>
 
 volatile sig_atomic_t run = true;
 
