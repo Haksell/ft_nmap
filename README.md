@@ -55,7 +55,7 @@
 
 -   use `-lpcap`
 -   use `-lpthread`
--   use `clock_gettime`
+-   use `clock_gettime` or just `clock`
 
 ## resources
 
