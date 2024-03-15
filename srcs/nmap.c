@@ -6,7 +6,12 @@ void create_socket(nmap* nmap) {
         exit(EXIT_FAILURE);
     }
 
-    nmap->fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP); // faudra un deuxieme socket pour les paquets UDP //  a reflechir dans l'avenir si on cree un socket pour chaque type de scan. en multi-threading avec 255 threads, on peut faire 255 scans en meme temps, mais donc faut-il 255 sockets en meme temps ? Ou poll va automatiquement gerer ca ? sur ping meme avec flood ça passe, donc bon
+    nmap->fd = socket(
+        AF_INET, SOCK_RAW, IPPROTO_TCP
+    ); // faudra un deuxieme socket pour les paquets UDP //  a reflechir dans l'avenir si on cree un
+       // socket pour chaque type de scan. en multi-threading avec 255 threads, on peut faire 255
+       // scans en meme temps, mais donc faut-il 255 sockets en meme temps ? Ou poll va
+       // automatiquement gerer ca ? sur ping meme avec flood ça passe, donc bon
     if (nmap->fd < 0) error("Socket creation failed");
 
     if (!(nmap->opt & OPT_PORTS)) {

@@ -63,7 +63,10 @@ static void parse_ports(char* value, uint64_t* ports) {
             int left = atoi_check(value, UINT16_MAX, "port", true);
             int right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
             if (left > right) {
-                fprintf(stderr, "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
+                fprintf(
+                    stderr, "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n",
+                    left, right, right, left
+                );
                 exit(EXIT_FAILURE);
             }
             for (int i = left; i <= right; ++i) set_port(ports, i);
@@ -112,7 +115,9 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
         args_error();
     }
     // TODO: Lorenzo error messages
-    // if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443, de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le parsing avec la map uint64_t, donc en vrai balec
+    // if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443,
+    // de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le
+    // parsing avec la map uint64_t, donc en vrai balec
     //    if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
     //    else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
     //    args_error();
@@ -123,7 +128,8 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
         case OPT_FILE:
             if (nmap->file) {
                 fprintf(stderr, "Only one input filename allowed\nQUITTING!\n");
-                exit(EXIT_FAILURE); // TODO: custom exit qui verifie deux choses:  if (nmap->file) fclose(nmap->file); et if (nmap->fd) close(nmap->fd);
+                exit(EXIT_FAILURE); // TODO: custom exit qui verifie deux choses:  if (nmap->file)
+                                    // fclose(nmap->file); et if (nmap->fd) close(nmap->fd);
             }
             nmap->file = fopen(value, "r");
             if (!nmap->file) error("Failed to open input file for reading");
@@ -143,7 +149,10 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nma
         for (int j = i + 1; valid_opt[j].opt; ++j)
             if (strncmp(opt, valid_opt[j].long_opt, len) == 0) {
                 if (!ambiguous) {
-                    fprintf(stderr, "nmap: option '--%s' is ambiguous; possibilities: '--%s'", opt, valid_opt[i].long_opt);
+                    fprintf(
+                        stderr, "nmap: option '--%s' is ambiguous; possibilities: '--%s'", opt,
+                        valid_opt[i].long_opt
+                    );
                     ambiguous = true;
                 }
                 fprintf(stderr, " '--%s'", valid_opt[j].long_opt);
@@ -152,14 +161,19 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nma
 
         if (valid_opt[i].has_arg == false) {
             if (equal_sign) {
-                fprintf(stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt);
+                fprintf(
+                    stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt
+                );
                 args_error();
             }
             handle_info_args(valid_opt[i].opt, nmap->opt);
             nmap->opt |= valid_opt[i].opt;
         } else {
             if (equal_sign == NULL) (*index)++;
-            handle_arg(valid_opt[i].opt, equal_sign ? equal_sign + 1 : *(++argv), 0, valid_opt[i].long_opt, nmap);
+            handle_arg(
+                valid_opt[i].opt, equal_sign ? equal_sign + 1 : *(++argv), 0, valid_opt[i].long_opt,
+                nmap
+            );
         }
         return true;
     }
@@ -174,14 +188,18 @@ static bool is_valid_opt(char** arg, int* index, nmap* nmap) {
     do
         for (int i = 0; valid_opt[i].opt; i++) {
             if (is_long_opt)
-                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true) return true;
+                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true)
+                    return true;
             if (!is_long_opt && *(*arg + 1) == valid_opt[i].short_opt) {
                 if (valid_opt[i].has_arg == false) {
                     handle_info_args(valid_opt[i].opt, nmap->opt);
                     nmap->opt |= valid_opt[i].opt;
                 } else {
                     if (*(*arg + 2) == '\0') (*index)++;
-                    return handle_arg(valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt, NULL, nmap);
+                    return handle_arg(
+                        valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt,
+                        NULL, nmap
+                    );
                 }
                 break;
             }
