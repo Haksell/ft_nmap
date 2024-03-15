@@ -50,11 +50,9 @@ re: fclean
 run: all
 	@./$(NAME) --help
 
-rerun: fclean run
-
 destroy:
 	vagrant destroy -f
 	rm -rf .vagrant
 	rm -rf *VBox*.log
 
-.PHONY: all clean fclean re run rerun
+.PHONY: all clean fclean re run destroy
