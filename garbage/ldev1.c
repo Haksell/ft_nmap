@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 
-int main() {
+int main(int argc, char** argv) {
     char* dev; /* name of the device to use */
     char* net; /* dot notation of the network address */
     char* mask; /* dot notation of the network mask    */
