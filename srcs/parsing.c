@@ -1,4 +1,4 @@
-#include "../include/ft_nmap.h"
+#include "ft_nmap.h"
 
 static const option valid_opt[] = {
     {OPT_FILE,    'f', "file",    true },

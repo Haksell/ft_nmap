@@ -1,4 +1,4 @@
-#include "../include/ft_nmap.h"
+#include "ft_nmap.h"
 
 void create_socket(nmap* nmap) {
     if (geteuid() != 0) {

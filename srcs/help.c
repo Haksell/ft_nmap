@@ -1,4 +1,4 @@
-#include "../include/ft_nmap.h"
+#include "ft_nmap.h"
 
 void print_help() {
     fprintf(
