@@ -1,12 +1,3 @@
-/* ldev.c
-   Martin Casado
-
-   To compile:
-   >gcc ldev.c -lpcap
-
-   Looks for an interface, and lists the network ip
-   and mask associated with that interface.
-*/
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -15,7 +6,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 
-int main(int argc, char** argv) {
+int main() {
     char* dev; /* name of the device to use */
     char* net; /* dot notation of the network address */
     char* mask; /* dot notation of the network mask    */

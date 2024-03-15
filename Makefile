@@ -71,9 +71,30 @@ clangd:
 
 install_libpcap:
 	@mkdir -p $$HOME/.local/bin $$HOME/.local/include $$HOME/.local/lib $$HOME/.local/share
-	@echo $$HOME
+	@wget https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
+	@wget https://github.com/westes/flex/releases/download/v2.6.4/flex-2.6.4.tar.gz
+	@wget https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.xz
+	@wget https://www.tcpdump.org/release/libpcap-1.10.4.tar.gz
+	@tar xvf m4-1.4.19.tar.xz
+	@tar xvf flex-2.6.4.tar.gz
+	@tar xvf bison-3.8.2.tar.xz
+	@tar xvf libpcap-1.10.4.tar.gz
+	@cd m4-1.4.19 && ./configure --prefix=$$HOME/.local && make && make install
+	@cd flex-2.6.4 && ./configure --prefix=$$HOME/.local && make && make install
+	@cd bison-3.8.2 && ./configure --prefix=$$HOME/.local && make && make install
+	@cd libpcap-1.10.4 && ./configure --prefix=$$HOME/.local && make && make install
+	@rm -rf m4-1.4.19 m4-1.4.19.tar.xz 
+	@rm -rf flex-2.6.4 flex-2.6.4.tar.gz
+	@rm -rf bison-3.8.2 bison-3.8.2.tar.xz
+	@rm -rf libpcap-1.10.4 libpcap-1.10.4.tar.gz
 
 uninstall_libpcap:
-	@echo TODO
+	@rm -rf $$HOME/.local/bin/m4
+	@rm -rf $$HOME/.local/bin/flex
+	@rm -rf $$HOME/.local/bin/flex++
+	@rm -rf $$HOME/.local/include/FlexLexer.h
+	@rm -rf $$HOME/.local/bin/bison
+	@rm -rf $$HOME/.local/share/bison
+	@rm -rf $$HOME/.local/*/*pcap*
 
 .PHONY: all clean fclean re help vagrant_destroy install_libpcap uninstall_libpcap
