@@ -130,15 +130,19 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
         args_error();
     }
     // TODO: Lorenzo error messages
-    if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443, de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le parsing avec la map uint64_t, donc en vrai balec
-        if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
-        else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
-        args_error();
-    }
+    //if (nmap->opt & opt) { // en fait pour moi t'as le droit de faire -p 80 --threads=20 -p 443, de facto nmap fait comme ça pour certaines options. pour les portes on a un check dans le parsing avec la map uint64_t, donc en vrai balec
+    //    if (long_opt) fprintf(stderr, "nmap: duplicate option: '--%s'\n", long_opt);
+    //    else fprintf(stderr, "nmap: duplicate option: '-%c'\n", short_opt);
+    //    args_error();
+    //}
 
     nmap->opt |= opt;
     switch (opt) {
         case OPT_FILE:
+            if (nmap->file) {
+                fprintf(stderr, "Only one input filename allowed\nQUITTING!\n");
+                exit(EXIT_FAILURE); // TODO: custom exit qui verifie deux choses:  if (nmap->file) fclose(nmap->file); et if (nmap->fd) close(nmap->fd);
+            }
             nmap->file = fopen(value, "r");
             if (!nmap->file) error("Failed to open input file for reading");
             break;
@@ -226,7 +230,7 @@ void verify_arguments(int argc, char* argv[], nmap* nmap) {
             strncpy(nmap->hostname, argv[i], HOST_NAME_MAX);
             nmap->hostname[HOST_NAME_MAX] = '\0';
         }
-        // else
+        // else TODO multiple targets // tableu de char* pour les targets?
         //	fprintf(stderr, "nmap: extra operand `%s'\n", argv[i]), args_error();
     }
     if (!*nmap->hostname) {
