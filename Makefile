@@ -13,8 +13,7 @@ CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=address,undefined -I$(I
 RESET := \033[0m
 RED := \033[1m\033[31m
 GREEN := \033[1m\033[32m
-BLUE := \033[1m\033[34m
-PINK := \033[1m\033[35m
+PURPLE := \033[1m\033[35m
 
 define remove_target
 @if [ -e "$(1)" ]; then \
@@ -31,11 +30,11 @@ $(PATH_OBJS):
 $(OBJS): $(PATH_OBJS)/%.o: $(PATH_SRCS)/%.c $(HEADER)
 	@mkdir -p $(PATH_OBJS)
 	@$(CC) -c $< -o $@
-	@echo "$(BLUE)+++ $@$(RESET)"
+	@echo "$(GREEN)+++ $@$(RESET)"
 
 $(NAME): $(OBJS)
 	@$(CC) $(OBJS) -o $@
-	@echo "$(PINK)$@ is compiled.$(RESET)"
+	@echo "$(PURPLE)$@ is compiled.$(RESET)"
 
 clean:
 	@rm -rf .vscode
@@ -47,12 +46,12 @@ fclean: clean
 re: fclean
 	@$(MAKE) -s $(NAME)
 
-run: all
-	@./$(NAME) --help
+help: all
+	@./$(NAME) --version --help
 
 destroy:
 	vagrant destroy -f
 	rm -rf .vagrant
 	rm -rf *VBox*.log
 
-.PHONY: all clean fclean re run destroy
+.PHONY: all clean fclean re help destroy

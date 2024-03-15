@@ -155,9 +155,8 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nma
                 fprintf(stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt);
                 args_error();
             }
+            handle_info_args(valid_opt[i].opt, nmap->opt);
             nmap->opt |= valid_opt[i].opt;
-            if (nmap->opt & OPT_HELP) print_help();
-            // TODO: version/usage
         } else {
             if (equal_sign == NULL) (*index)++;
             handle_arg(valid_opt[i].opt, equal_sign ? equal_sign + 1 : *(++argv), 0, valid_opt[i].long_opt, nmap);
@@ -177,12 +176,13 @@ static bool is_valid_opt(char** arg, int* index, nmap* nmap) {
             if (is_long_opt)
                 if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true) return true;
             if (!is_long_opt && *(*arg + 1) == valid_opt[i].short_opt) {
-                if (valid_opt[i].has_arg == false) nmap->opt |= valid_opt[i].opt;
-                else {
+                if (valid_opt[i].has_arg == false) {
+                    handle_info_args(valid_opt[i].opt, nmap->opt);
+                    nmap->opt |= valid_opt[i].opt;
+                } else {
                     if (*(*arg + 2) == '\0') (*index)++;
                     return handle_arg(valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt, NULL, nmap);
                 }
-                if (nmap->opt & OPT_HELP) print_help();
                 break;
             }
             if (valid_opt[i + 1].opt == 0) valid = false;
@@ -215,6 +215,7 @@ void verify_arguments(int argc, char* argv[], nmap* nmap) {
         // else TODO multiple targets // tableu de char* pour les targets?
         //	fprintf(stderr, "nmap: extra operand `%s'\n", argv[i]), args_error();
     }
+    if (nmap->opt & (OPT_HELP | OPT_VERSION)) exit(EXIT_SUCCESS);
     if (!*nmap->hostname) {
         fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
         args_error();

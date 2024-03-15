@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #define EXIT_ARGS 0xff
-#define VERSION "0.1"
+#define VERSION "0.4.2"
 
 #define MAX_PORTS 1024
 
@@ -83,7 +83,7 @@ static const option valid_opt[] = {
     {OPT_PORTS,   'p', "ports",   true },
     {OPT_SCAN,    's', "scans",   true },
     {OPT_THREADS, 't', "threads", true },
-    {OPT_VERSION, 'V', "version", false},
+    {OPT_VERSION, 'v', "version", false},
     {0,           0,   NULL,      false}
 };
 
@@ -102,7 +102,7 @@ void print_ports(uint64_t* ports);
 void print_scans(uint8_t scans);
 
 // help.c
-void print_help();
+void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
 // main.c
 void verify_arguments(int argc, char* argv[], nmap* nmap);

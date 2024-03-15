@@ -5,6 +5,7 @@
 -   [ ] parsing tester
 -   [ ] basic SYN scan
 -   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
+-   [ ] `--usage`
 
 ## mandatory
 
