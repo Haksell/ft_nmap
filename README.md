@@ -39,7 +39,7 @@
 -   [ ] Being able to hide the source address. (IP spoofing? ez)
 -   [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
 -   [ ] Additional flags...
--   [ ] Additional scans... (TCO Connect, TCP Window, TCP Maimon, SCTP INIT)
+-   [ ] Additional scans... (TCP Connect, TCP Window, TCP Maimon, SCTP INIT)
 
 ## push check
 

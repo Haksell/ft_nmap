@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <pcap.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -71,6 +72,13 @@ struct sniff_tcp {
     u_short th_sum;
     u_short th_urp;
 };
+
+typedef struct {
+    int argc;
+    char** argv;
+    pcap_if_t* devs;
+    pcap_t* handle;
+} capture_args_t;
 
 static void panic(const char* format, ...) {
     // TODO: free everything
@@ -155,16 +163,16 @@ static void got_packet(
         print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
-static void init_pcap(int argc, char** argv, pcap_if_t** devs, pcap_t** handle) {
+static void init_pcap(capture_args_t* capture_args) {
     char errbuf[PCAP_ERRBUF_SIZE];
     char* dev;
 
-    if (argc == 1) {
-        if (pcap_findalldevs(devs, errbuf) == PCAP_ERROR)
+    if (capture_args->argc == 1) {
+        if (pcap_findalldevs(&capture_args->devs, errbuf) == PCAP_ERROR)
             panic("Couldn't find all devices: %s\n", errbuf);
-        dev = (*devs)->name;
-    } else if (argc == 2) {
-        dev = argv[1];
+        dev = capture_args->devs->name;
+    } else if (capture_args->argc == 2) {
+        dev = capture_args->argv[1];
     } else panic("Usage: " APP_NAME " [interface]\n");
 
     printf("Device: %s\n", dev);
@@ -173,27 +181,48 @@ static void init_pcap(int argc, char** argv, pcap_if_t** devs, pcap_t** handle) 
 
     bpf_u_int32 _, net;
     if (pcap_lookupnet(dev, &net, &_, errbuf) == PCAP_ERROR)
-        panic(stderr, "Couldn't get netmask for device %s: %s\n", dev, errbuf);
+        panic("Couldn't get netmask for device %s: %s\n", dev, errbuf);
 
-    *handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
-    if (*handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
-    if (pcap_datalink(*handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
+    capture_args->handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
+    if (capture_args->handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
+    if (pcap_datalink(capture_args->handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
     struct bpf_program fp;
-    if (pcap_compile(*handle, &fp, FILTER_EXP, 0, net) == PCAP_ERROR)
-        panic("Couldn't parse filter %s: %s\n", FILTER_EXP, pcap_geterr(*handle));
-    if (pcap_setfilter(*handle, &fp) == PCAP_ERROR)
-        panic("Couldn't install filter %s: %s\n", FILTER_EXP, pcap_geterr(*handle));
+    if (pcap_compile(capture_args->handle, &fp, FILTER_EXP, 0, net) == PCAP_ERROR)
+        panic("Couldn't parse filter %s: %s\n", FILTER_EXP, pcap_geterr(capture_args->handle));
+    if (pcap_setfilter(capture_args->handle, &fp) == PCAP_ERROR)
+        panic("Couldn't install filter %s: %s\n", FILTER_EXP, pcap_geterr(capture_args->handle));
     pcap_freecode(&fp);
+}
+
+void* capture_packets(__attribute__((unused)) void* arg) {
+    pcap_loop(((capture_args_t*)arg)->handle, NUM_PACKETS, got_packet, NULL);
+    return NULL;
+}
+
+void* send_packets(__attribute__((unused)) void* arg) {
+    while (true) {
+        printf("OK\n");
+        usleep(1000000);
+    }
+    return NULL;
 }
 
 int main(int argc, char** argv) {
     printf(APP_NAME " - " APP_DESC "\n");
-    pcap_if_t* devs = NULL;
-    pcap_t* handle = NULL;
-    init_pcap(argc, argv, &devs, &handle);
-    pcap_loop(handle, NUM_PACKETS, got_packet, NULL);
-    if (devs) pcap_freealldevs(devs);
-    if (handle) pcap_close(handle);
-    printf("\nCapture complete.\n");
+
+    capture_args_t capture_args = {.argc = argc, .argv = argv, .devs = NULL, .handle = NULL};
+    init_pcap(&capture_args);
+
+    pthread_t capture_thread, sender_thread;
+    if (pthread_create(&capture_thread, NULL, capture_packets, (void*)&capture_args) != 0)
+        panic("Failed to create the capture thread");
+    if (pthread_create(&sender_thread, NULL, send_packets, NULL) != 0)
+        panic("Failed to create the sender thread");
+    pthread_join(capture_thread, NULL);
+    pthread_join(sender_thread, NULL);
+
+    if (capture_args.devs) pcap_freealldevs(capture_args.devs);
+    if (capture_args.handle) pcap_close(capture_args.handle);
+    printf("\nCapture and scanning complete.\n");
     return EXIT_SUCCESS;
 }
