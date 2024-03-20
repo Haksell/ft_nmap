@@ -199,13 +199,7 @@ void* capture_packets(__attribute__((unused)) void* arg) {
     return NULL;
 }
 
-void* send_packets(__attribute__((unused)) void* arg) {
-    while (true) {
-        printf("OK\n");
-        usleep(1000000);
-    }
-    return NULL;
-}
+
 
 int main(int argc, char** argv) {
     printf(APP_NAME " - " APP_DESC "\n");
