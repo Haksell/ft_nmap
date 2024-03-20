@@ -4,15 +4,20 @@
 #include <netinet/in.h>
 #include <pcap.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #define APP_NAME "sniffex"
 #define APP_DESC "Sniffer example using libpcap"
-#define FILTER_EXP "ip and src host 45.33.32.156"
+#define FILTER_EXP                                                                                 \
+    "ip and src host 45.33.32.156 and tcp[tcpflags] & (tcp-syn|tcp-ack) = (tcp-syn|tcp-ack)"
 #define SNAP_LEN 1518
 #define SIZE_ETHERNET 14
 #define ETHER_ADDR_LEN 6
@@ -99,6 +104,14 @@ static void print_hex_ascii_line(const u_char* payload, int len, int offset) {
     printf("\n");
 }
 
+static void print_payload(const u_char* payload, int size_payload) {
+    printf("   Payload (%d bytes):\n", size_payload);
+    for (int offset = 0; size_payload > 0; size_payload -= LINE_WIDTH) {
+        print_hex_ascii_line(payload + offset, MIN(size_payload, LINE_WIDTH), offset);
+        offset += LINE_WIDTH;
+    }
+}
+
 static void got_packet(
     __attribute__((unused)) u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header,
     const u_char* packet
@@ -137,17 +150,8 @@ static void got_packet(
     printf("   Dst port: %d\n", ntohs(tcp->th_dport));
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-    if (size_payload > 0) {
-        printf("   Payload (%d bytes):\n", size_payload);
-        const u_char* payload = (u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp);
-        int offset = 0;
-        for (; size_payload > 0; size_payload -= LINE_WIDTH) {
-            print_hex_ascii_line(
-                payload + offset, size_payload < LINE_WIDTH ? size_payload : LINE_WIDTH, offset
-            );
-            offset += LINE_WIDTH;
-        }
-    }
+    if (size_payload > 0)
+        print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
 int main(int argc, char** argv) {
@@ -165,15 +169,15 @@ int main(int argc, char** argv) {
         dev = argv[1];
     } else panic("Usage: " APP_NAME " [interface]\n");
 
-    bpf_u_int32 mask, net;
-    if (pcap_lookupnet(dev, &net, &mask, errbuf) == PCAP_ERROR) {
-        fprintf(stderr, "Couldn't get netmask for device %s: %s\n", dev, errbuf);
-        net = mask = 0;
-    }
-
     printf("Device: %s\n", dev);
     printf("Number of packets: %d\n", NUM_PACKETS);
     printf("Filter expression: %s\n", FILTER_EXP);
+
+    bpf_u_int32 _, net;
+    if (pcap_lookupnet(dev, &net, &_, errbuf) == PCAP_ERROR) {
+        fprintf(stderr, "Couldn't get netmask for device %s: %s\n", dev, errbuf);
+        net = 0;
+    }
 
     pcap_t* handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
     if (handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
