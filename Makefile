@@ -57,7 +57,7 @@ vagrant_destroy:
 	rm -rf *VBox*.log
 
 clangd:
-	@echo "CompileFlags:" >> .clangd
+	@echo "CompileFlags:" > .clangd
 	@echo "    Add:" >> .clangd
 	@echo "        - '-x'" >> .clangd
 	@echo "        - 'c-header'" >> .clangd
