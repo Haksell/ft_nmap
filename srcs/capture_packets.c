@@ -34,7 +34,7 @@ static void print_payload(const u_char* payload, int size_payload) {
     }
 }
 
-void got_packet(
+static void got_packet(
     __attribute__((unused)) u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet
 ) {
     static int count = 0;
@@ -75,34 +75,7 @@ void got_packet(
     if (size_payload > 0) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
-void init_pcap(capture_args_t* capture_args) {
-    char errbuf[PCAP_ERRBUF_SIZE];
-    char* dev;
-
-    if (pcap_findalldevs(&capture_args->devs, errbuf) == PCAP_ERROR) panic("Couldn't find all devices: %s\n", errbuf);
-    dev = capture_args->devs->name;
-
-    printf("Device: %s\n", dev);
-    printf("Number of packets: %d\n", NUM_PACKETS);
-    printf("Filter expression: %s\n", FILTER_EXP);
-
-    bpf_u_int32 _, net;
-    if (pcap_lookupnet(dev, &net, &_, errbuf) == PCAP_ERROR)
-        panic("Couldn't get netmask for device %s: %s\n", dev, errbuf);
-
-    capture_args->handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
-    if (capture_args->handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
-    handle = capture_args->handle; // TODO: clean this garbage
-    if (pcap_datalink(capture_args->handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
-    struct bpf_program fp;
-    if (pcap_compile(capture_args->handle, &fp, FILTER_EXP, 0, net) == PCAP_ERROR)
-        panic("Couldn't parse filter %s: %s\n", FILTER_EXP, pcap_geterr(capture_args->handle));
-    if (pcap_setfilter(capture_args->handle, &fp) == PCAP_ERROR)
-        panic("Couldn't install filter %s: %s\n", FILTER_EXP, pcap_geterr(capture_args->handle));
-    pcap_freecode(&fp);
-}
-
 void* capture_packets(__attribute__((unused)) void* arg) {
-    pcap_loop(((capture_args_t*)arg)->handle, NUM_PACKETS, got_packet, NULL);
+    pcap_loop(handle, -1, got_packet, NULL);
     return NULL;
 }

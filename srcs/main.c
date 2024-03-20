@@ -63,18 +63,16 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
     nmap.hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
 
-    capture_args_t capture_args = {.devs = NULL, .handle = NULL};
-    init_pcap(&capture_args);
+    init_pcap(&nmap.devs);
 
     pthread_t capture_thread, sender_thread;
-    if (pthread_create(&capture_thread, NULL, capture_packets, (void*)&capture_args) != 0)
-        panic("Failed to create the capture thread");
+    if (pthread_create(&capture_thread, NULL, capture_packets, NULL) != 0) panic("Failed to create the capture thread");
     if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0) panic("Failed to create the sender thread");
     pthread_join(capture_thread, NULL);
     pthread_join(sender_thread, NULL);
 
-    if (capture_args.devs) pcap_freealldevs(capture_args.devs);
-    if (capture_args.handle) pcap_close(capture_args.handle);
+    if (nmap.devs) pcap_freealldevs(nmap.devs);
+    if (handle) pcap_close(handle);
 
     close(nmap.fd);
     return EXIT_SUCCESS;

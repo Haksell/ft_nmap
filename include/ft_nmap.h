@@ -88,6 +88,8 @@ typedef struct {
     uint8_t threads;
 
     struct timeval start_time;
+
+    pcap_if_t* devs;
 } t_nmap;
 
 static const option valid_opt[] = {
@@ -111,6 +113,9 @@ static const scan valid_scans[] = {
     {0,         ""    },
 };
 
+// capture_packets.c
+void* capture_packets(__attribute__((unused)) void* arg);
+
 // debug.c (TODO: remove)
 void print_ports(uint64_t* ports);
 void print_scans(uint8_t scans);
@@ -118,16 +123,14 @@ void print_scans(uint8_t scans);
 // info.c
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
+// init_pcap.c
+void init_pcap(pcap_if_t** devs);
+
 // main.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
 // packet.c
 void fill_packet(uint8_t* packet, struct sockaddr_in target, uint16_t port);
-
-// pcap.c
-void* capture_packets(__attribute__((unused)) void* arg);
-void got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* packet);
-void init_pcap(capture_args_t* capture_args);
 
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
