@@ -2,36 +2,10 @@
 
 volatile sig_atomic_t run = true;
 
-// http://www.tcpipguide.com/free/t_TCPChecksumCalculationandtheTCPPseudoHeader-2.htm
-// https://www.tenouk.com/Module43.html << top
-// struct pseudo_header { // pour calculer le checksum TODO
-//     uint32_t source_address;
-//     uint32_t dest_address;
-//     uint8_t placeholder; // doit rester a 0
-//     uint8_t protocol;
-//     uint16_t tcp_length;
-// };
-
 static void handle_sigint(int sig) {
     (void)sig;
     run = false;
 }
-
-// static void set_tcp_flags(struct tcphdr* tcph, int type) {
-//     tcph->urg = 0, tcph->ack = 0, tcph->psh = 0, tcph->rst = 0, tcph->syn = 0, tcph->fin = 0;
-
-//     switch (type) {
-//         case SCAN_SYN: tcph->syn = 1; break;
-//         case SCAN_NULL: break;
-//         case SCAN_ACK: tcph->ack = 1; break;
-//         case SCAN_FIN: tcph->fin = 1; break;
-//         case SCAN_XMAS:
-//             tcph->fin = 1;
-//             tcph->urg = 1;
-//             tcph->psh = 1;
-//             break;
-//     }
-// }
 
 static void create_socket(nmap* nmap) {
     if (geteuid() != 0) {
@@ -39,13 +13,11 @@ static void create_socket(nmap* nmap) {
         exit(EXIT_FAILURE);
     }
 
-    nmap->fd = socket(
-        AF_INET, SOCK_RAW, IPPROTO_TCP
-    ); // faudra un deuxieme socket pour les paquets UDP //  a reflechir dans l'avenir si on cree un
-       // socket pour chaque type de scan. en multi-threading avec 255 threads, on peut faire 255
-       // scans en meme temps, mais donc faut-il 255 sockets en meme temps ? Ou poll va
-       // automatiquement gerer ca ? sur ping meme avec flood ça passe, donc bon
-    if (nmap->fd < 0) error("Socket creation failed");
+    nmap->fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+    if (nmap->fd < 0) error("TCP socket creation failed");
+
+    if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
+        error("setsockopt IP_HDRINCL failed");
 
     if (!(nmap->opt & OPT_PORTS)) {
         for (int i = 0; i < 16; ++i) nmap->ports[i] = ~0;
@@ -59,7 +31,40 @@ static void create_socket(nmap* nmap) {
     char timestamp[21];
     strftime(timestamp, 21, "%Y-%m-%d %H:%M CET", tm);
     printf("Starting Nmap %s at %s\n", VERSION, timestamp);
+
+    if (nmap->opt & OPT_VERBOSE) {
+        print_ports(nmap->ports);
+        print_scans(nmap->scans);
+        printf("Host: %s (%s)\n", nmap->hostname, nmap->hostip);
+    }
 }
+
+enum PortState { OPEN, CLOSED, FILTERED, UNDETERMINED };
+
+enum PortState get_port_state(const uint8_t* packet, ssize_t len) {
+    struct iphdr* ip_header = (struct iphdr*)packet;
+    int ip_header_len = ip_header->ihl * 4;
+
+    if (ip_header->protocol == IPPROTO_TCP) {
+        if (len < (ssize_t)(ip_header_len + sizeof(struct tcphdr))) {
+            return UNDETERMINED; // Packet is too short to contain a complete TCP header ??
+        }
+
+        struct tcphdr* tcp_header = (struct tcphdr*)(packet + ip_header_len);
+
+        if (tcp_header->syn && tcp_header->ack) {
+            printf("%d open\n", ntohs(tcp_header->source));
+        } else if (tcp_header->rst) {
+            return CLOSED;
+        }
+    } else if (ip_header->protocol == IPPROTO_ICMP) {
+        printf("ICMP\n");
+    }
+
+    return UNDETERMINED; // Unable to determine the state from the packet
+}
+
+void process_received_packet(const uint8_t* packet, ssize_t len) { get_port_state(packet, len); }
 
 int main(int argc, char* argv[]) {
     nmap nmap = {0};
@@ -68,47 +73,45 @@ int main(int argc, char* argv[]) {
     hostname_to_ip(&nmap);
     create_socket(&nmap);
 
-    print_ports(nmap.ports);
-    print_scans(nmap.scans);
-
-    printf("hostname: %s\n", nmap.hostname);
-
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
 
-    // struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr =
-    // inet_addr(nmap.hostip)};
-
-    // struct iphdr iphdr = {
-    //     .version  = 4,
-    //     .ihl      = 5,
-    //     .tos      = 0,
-    //     .tot_len  = sizeof(struct iphdr) + sizeof(struct tcphdr), // peut etre Options: (4
-    //     bytes), Maximum segment size .id       = htons(getpid()), // thread id? Random pour
-    //     l'instant .frag_off = 0, .ttl      = 64, // randint(28, 63) .protocol = IPPROTO_TCP,
-    //     .check    = 0,
-    //     .saddr    = inet_addr("192.168.0.1"), // TODO! spoof
-    //     .daddr    = target.sin_addr.s_addr,
-    // };
-
-    // struct tcphdr tcphdr = {
-    //     .source = htons(1234), // TODO! randomize
-    //     .dest   = htons(80), // TODO! randomize
-    //     .seq    = 0, // TODO! randomize peut etre
-    //     .ack_seq = 0,  // a voir apres pour ACK
-    //     .doff   = 5, // 5 * 32 bits = 160 bits = 20 bytes
-    //     .fin    = 0,
-    //     .syn    = 1,
-    //     .rst    = 0,
-    //     .psh    = 0,
-    //     .ack    = 0,
-    //     .urg    = 0,
-    //     .window = htons(5840),
-    //     .check  = 0,
-    //     .urg_ptr = 0,
-    // };
+    struct sockaddr_in target = {.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
+    struct pollfd fds[1] = {
+        {.fd = nmap.fd, .events = POLLIN}
+    };
 
     for (int port = 0; port < UINT16_MAX && run; port++) {
         if (!get_port(nmap.ports, port)) continue;
+
+        uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
+        fill_packet(packet, target, port);
+        sendto(nmap.fd, packet, NMAP_PACKET_SIZE, 0, (struct sockaddr*)&target, sizeof(target));
+
+        int ret = poll(fds, 1, 1000); // 1 second, a voir
+        if (ret > 0) {
+            if (fds[0].revents & POLLIN) {
+                struct sockaddr_in source;
+                socklen_t source_len = sizeof(source);
+                uint8_t reply[1024]; // macro
+
+                ssize_t bytes_recv = recvfrom(
+                    nmap.fd, reply, sizeof(reply), 0, (struct sockaddr*)&source, &source_len
+                );
+                // if (source.sin_addr.s_addr != target.sin_addr.s_addr) continue; TOOD: more checks
+                if (bytes_recv < 0) {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        printf("Request timed out.\n"); // changer ca TODO je dois lire la doc
+                    }
+                    if (errno == EINTR && !run) continue; /// ????
+                } else if (bytes_recv > 0) {
+                    process_received_packet(reply, bytes_recv);
+                }
+            }
+        } else if (ret == 0) {
+            printf("Timeout\n");
+        } else {
+            error("poll failed");
+        }
     }
 
     close(nmap.fd);

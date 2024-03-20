@@ -13,6 +13,7 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -32,6 +33,11 @@
 
 #define MAX_PORTS 1024
 
+#define TCP_HEADER_SIZE sizeof(struct tcphdr)
+#define IP_HEADER_SIZE sizeof(struct iphdr)
+#define PSEUDO_HEADER_SIZE sizeof(struct pseudohdr)
+#define NMAP_PACKET_SIZE (IP_HEADER_SIZE + TCP_HEADER_SIZE)
+
 typedef enum {
     OPT_FILE = 1 << 0,
     OPT_HELP = 1 << 1,
@@ -39,6 +45,7 @@ typedef enum {
     OPT_SCAN = 1 << 3,
     OPT_THREADS = 1 << 4,
     OPT_VERSION = 1 << 5,
+    OPT_VERBOSE = 1 << 6,
 } option_value;
 
 typedef struct {
@@ -85,6 +92,7 @@ static const option valid_opt[] = {
     {OPT_SCAN,    's', "scans",   true },
     {OPT_THREADS, 't', "threads", true },
     {OPT_VERSION, 'v', "version", false},
+    {OPT_VERBOSE, 'V', "verbose", false},
     {0,           0,   NULL,      false}
 };
 
@@ -108,9 +116,15 @@ void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 // main.c
 void verify_arguments(int argc, char* argv[], nmap* nmap);
 
+// packet.c
+void fill_packet(uint8_t* packet, struct sockaddr_in target, short port);
+
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(uint64_t* ports, uint16_t port);
+
+// random.c
+uint32_t random_u32_range(uint32_t a, uint32_t b);
 
 // utils.c
 void error(char* message);

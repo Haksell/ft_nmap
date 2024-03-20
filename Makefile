@@ -22,7 +22,7 @@ define remove_target
 fi
 endef
 
-all: $(NAME) clangd
+all: $(NAME)
 
 $(PATH_OBJS):
 	@mkdir -p $(sort $(dir $(OBJS)))

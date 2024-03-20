@@ -1,6 +1,4 @@
 #include "ft_nmap.h"
-#include <arpa/inet.h>
-#include <netinet/in.h>
 
 void error(char* message) {
     fprintf(
