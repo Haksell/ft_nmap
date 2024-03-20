@@ -1,22 +1,22 @@
-#define APP_NAME "sniffex"
-#define APP_DESC "Sniffer example using libpcap"
-
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <pcap.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#define FILTER_EXP "ip"
+#define APP_NAME "sniffex"
+#define APP_DESC "Sniffer example using libpcap"
+#define FILTER_EXP "ip and src host 45.33.32.156"
 #define SNAP_LEN 1518
 #define SIZE_ETHERNET 14
 #define ETHER_ADDR_LEN 6
-#define NUM_PACKETS 10
+#define NUM_PACKETS 1000
 #define LINE_WIDTH 16
 
 struct sniff_ethernet {
@@ -66,6 +66,14 @@ struct sniff_tcp {
     u_short th_sum;
     u_short th_urp;
 };
+
+static void panic(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    exit(EXIT_FAILURE);
+}
 
 static void print_hex_line(const u_char* payload, int len) {
     for (int i = 0; i < LINE_WIDTH; ++i) {
@@ -118,6 +126,7 @@ static void got_packet(
     if (ip->ip_p != IPPROTO_TCP) return;
 
     const struct sniff_tcp* tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
+
     int size_tcp = TH_OFF(tcp) * 4;
     if (size_tcp < 20) {
         printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
@@ -149,17 +158,12 @@ int main(int argc, char** argv) {
 
     char* dev;
     if (argc == 1) {
-        if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR) {
-            fprintf(stderr, "Couldn't find all devices: %s\n", errbuf);
-            exit(EXIT_FAILURE);
-        }
+        if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR)
+            panic("Couldn't find all devices: %s\n", errbuf);
         dev = devs->name;
     } else if (argc == 2) {
         dev = argv[1];
-    } else {
-        fprintf(stderr, "Usage: " APP_NAME " [interface]\n");
-        exit(EXIT_FAILURE);
-    }
+    } else panic("Usage: " APP_NAME " [interface]\n");
 
     bpf_u_int32 mask, net;
     if (pcap_lookupnet(dev, &net, &mask, errbuf) == PCAP_ERROR) {
@@ -172,23 +176,13 @@ int main(int argc, char** argv) {
     printf("Filter expression: %s\n", FILTER_EXP);
 
     pcap_t* handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
-    if (handle == NULL) {
-        fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
-        exit(EXIT_FAILURE);
-    }
-    if (pcap_datalink(handle) != DLT_EN10MB) {
-        fprintf(stderr, "%s is not an Ethernet\n", dev);
-        exit(EXIT_FAILURE);
-    }
+    if (handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
+    if (pcap_datalink(handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
     struct bpf_program fp;
-    if (pcap_compile(handle, &fp, FILTER_EXP, 0, net) == PCAP_ERROR) {
-        fprintf(stderr, "Couldn't parse filter %s: %s\n", FILTER_EXP, pcap_geterr(handle));
-        exit(EXIT_FAILURE);
-    }
-    if (pcap_setfilter(handle, &fp) == PCAP_ERROR) {
-        fprintf(stderr, "Couldn't install filter %s: %s\n", FILTER_EXP, pcap_geterr(handle));
-        exit(EXIT_FAILURE);
-    }
+    if (pcap_compile(handle, &fp, FILTER_EXP, 0, net) == PCAP_ERROR)
+        panic("Couldn't parse filter %s: %s\n", FILTER_EXP, pcap_geterr(handle));
+    if (pcap_setfilter(handle, &fp) == PCAP_ERROR)
+        panic("Couldn't install filter %s: %s\n", FILTER_EXP, pcap_geterr(handle));
 
     pcap_loop(handle, NUM_PACKETS, got_packet, NULL);
     if (devs) pcap_freealldevs(devs);
