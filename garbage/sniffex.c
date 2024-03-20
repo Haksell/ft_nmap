@@ -17,6 +17,7 @@
 #define SIZE_ETHERNET 14
 #define ETHER_ADDR_LEN 6
 #define NUM_PACKETS 10
+#define LINE_WIDTH 16
 
 struct sniff_ethernet {
     u_char ether_dhost[ETHER_ADDR_LEN];
@@ -66,73 +67,37 @@ struct sniff_tcp {
     u_short th_urp;
 };
 
-void print_app_usage() {
-    printf("Usage: " APP_NAME " [interface]\n");
-    printf("Options:\n");
-    printf("    interface    Listen on <interface> for packets.\n");
-}
-
-void print_hex_ascii_line(const u_char* payload, int len, int offset) {
-    int i;
-    int gap;
-    const u_char* ch;
-
-    printf("%05d   ", offset);
-
-    ch = payload;
-    for (i = 0; i < 16; i++) {
-        if (i < len) {
-            printf("%02x ", *ch);
-            ch++;
-        } else printf("   ");
+static void print_hex_line(const u_char* payload, int len) {
+    for (int i = 0; i < LINE_WIDTH; ++i) {
+        if (i < len) printf("%02x ", *payload);
+        else printf("   ");
+        ++payload;
         if (i == 7) printf(" ");
     }
+}
 
-    printf("   ");
-
-    ch = payload;
-    for (i = 0; i < len; i++) {
-        printf("%c", isprint(*ch) ? *ch : '.');
-        ch++;
+static void print_ascii_line(const u_char* payload, int len) {
+    for (int i = 0; i < len; ++i) {
+        printf("%c", isprint(*payload) ? *payload : '.');
+        ++payload;
     }
+}
+
+static void print_hex_ascii_line(const u_char* payload, int len, int offset) {
+    printf("%05x   ", offset);
+    print_hex_line(payload, len);
+    printf("   ");
+    print_ascii_line(payload, len);
     printf("\n");
 }
 
-void print_payload(const u_char* payload, int len) {
-    // TODO: code this shit properly
-    int len_rem = len;
-    int line_width = 16;
-    int line_len;
-    int offset = 0;
-    const u_char* ch = payload;
-
-    if (len <= 0) return;
-
-    if (len <= line_width) {
-        print_hex_ascii_line(ch, len, offset);
-        return;
-    }
-
-    for (;;) {
-        line_len = line_width % len_rem;
-        print_hex_ascii_line(ch, line_len, offset);
-        len_rem -= line_len;
-        ch += line_len;
-        offset += line_width;
-        if (len_rem <= line_width) {
-            print_hex_ascii_line(ch, len_rem, offset);
-            break;
-        }
-    }
-}
-
-void got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* packet) {
-    static int count = 1;
-
+static void got_packet(
+    __attribute__((unused)) u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header,
+    const u_char* packet
+) {
+    static int count = 0;
+    ++count;
     printf("\nPacket number %d:\n", count);
-    count++;
-
-    const struct sniff_ethernet* ethernet = (struct sniff_ethernet*)(packet);
 
     const struct sniff_ip* ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
     int size_ip = IP_HL(ip) * 4;
@@ -162,38 +127,41 @@ void got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* pa
     printf("   Src port: %d\n", ntohs(tcp->th_sport));
     printf("   Dst port: %d\n", ntohs(tcp->th_dport));
 
-    const u_char* payload = (u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp);
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
     if (size_payload > 0) {
         printf("   Payload (%d bytes):\n", size_payload);
-        print_payload(payload, size_payload);
+        const u_char* payload = (u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp);
+        int offset = 0;
+        for (; size_payload > 0; size_payload -= LINE_WIDTH) {
+            print_hex_ascii_line(
+                payload + offset, size_payload < LINE_WIDTH ? size_payload : LINE_WIDTH, offset
+            );
+            offset += LINE_WIDTH;
+        }
     }
 }
 
 int main(int argc, char** argv) {
-    char* dev = NULL;
     char errbuf[PCAP_ERRBUF_SIZE];
-
-    struct bpf_program fp;
-    bpf_u_int32 mask, net;
     pcap_if_t* devs = NULL;
 
     printf(APP_NAME " - " APP_DESC "\n");
 
-    if (argc == 2) {
-        dev = argv[1];
-    } else if (argc == 2) {
+    char* dev;
+    if (argc == 1) {
         if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR) {
             fprintf(stderr, "Couldn't find all devices: %s\n", errbuf);
             exit(EXIT_FAILURE);
         }
         dev = devs->name;
+    } else if (argc == 2) {
+        dev = argv[1];
     } else {
-        fprintf(stderr, "error: unrecognized command-line options\n");
-        print_app_usage();
+        fprintf(stderr, "Usage: " APP_NAME " [interface]\n");
         exit(EXIT_FAILURE);
     }
 
+    bpf_u_int32 mask, net;
     if (pcap_lookupnet(dev, &net, &mask, errbuf) == PCAP_ERROR) {
         fprintf(stderr, "Couldn't get netmask for device %s: %s\n", dev, errbuf);
         net = mask = 0;
@@ -212,6 +180,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "%s is not an Ethernet\n", dev);
         exit(EXIT_FAILURE);
     }
+    struct bpf_program fp;
     if (pcap_compile(handle, &fp, FILTER_EXP, 0, net) == PCAP_ERROR) {
         fprintf(stderr, "Couldn't parse filter %s: %s\n", FILTER_EXP, pcap_geterr(handle));
         exit(EXIT_FAILURE);
