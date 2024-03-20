@@ -13,8 +13,11 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
+#include <pcap.h>
 #include <poll.h>
+#include <pthread.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,6 +30,8 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "ft_pcap.h"
 
 #define EXIT_ARGS 0xff
 #define VERSION "0.4.2"
@@ -83,7 +88,7 @@ typedef struct {
     uint8_t threads;
 
     struct timeval start_time;
-} nmap;
+} t_nmap;
 
 static const option valid_opt[] = {
     {OPT_FILE,    'f', "file",    true },
@@ -114,10 +119,15 @@ void print_scans(uint8_t scans);
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
 // main.c
-void verify_arguments(int argc, char* argv[], nmap* nmap);
+void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
 // packet.c
-void fill_packet(uint8_t* packet, struct sockaddr_in target, short port);
+void fill_packet(uint8_t* packet, struct sockaddr_in target, uint16_t port);
+
+// pcap.c
+void* capture_packets(__attribute__((unused)) void* arg);
+void got_packet(u_char* args, const struct pcap_pkthdr* header, const u_char* packet);
+void init_pcap(capture_args_t* capture_args);
 
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
@@ -129,6 +139,7 @@ uint32_t random_u32_range(uint32_t a, uint32_t b);
 // utils.c
 void error(char* message);
 void g_error(char* message, int status);
-void hostname_to_ip(nmap* nmap);
+void hostname_to_ip(t_nmap* nmap);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
+void panic(const char* format, ...);

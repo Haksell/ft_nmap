@@ -1,9 +1,7 @@
 #include "ft_nmap.h"
 
 void error(char* message) {
-    fprintf(
-        stderr, "nmap: %s: %s\n", message, strerror(errno)
-    ); // ajouter if socket->fd > 0 close fd
+    fprintf(stderr, "nmap: %s: %s\n", message, strerror(errno)); // ajouter if socket->fd > 0 close fd
     exit(EXIT_FAILURE);
 }
 
@@ -13,7 +11,7 @@ void g_error(char* message, int status) {
     exit(EXIT_FAILURE);
 }
 
-void hostname_to_ip(nmap* nmap) {
+void hostname_to_ip(t_nmap* nmap) {
     struct addrinfo hints = {
         .ai_family = AF_INET,
         .ai_flags = AI_CANONNAME,
@@ -23,8 +21,7 @@ void hostname_to_ip(nmap* nmap) {
     int status = getaddrinfo(nmap->hostname, NULL, &hints, &res);
     if (status != 0) g_error("getaddrinfo failed", status);
 
-    nmap->hostaddr = *(struct sockaddr_in*)res->ai_addr;
-    if (inet_ntop(AF_INET, &nmap->hostaddr.sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
+    if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
         error("inet_ntop failed");
 
     if (res->ai_canonname) {
@@ -61,4 +58,14 @@ in_addr_t get_source_address() {
 
     freeifaddrs(ifaddr);
     return source_address; // a verifier lorenzo
+}
+
+void panic(const char* format, ...) {
+    // TODO: use error
+    // TODO: free everything
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    exit(EXIT_FAILURE);
 }

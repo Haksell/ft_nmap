@@ -1,10 +1,10 @@
 NAME := ft_nmap
 INCLUDE_DIR := include
-HEADER := $(INCLUDE_DIR)/ft_nmap.h
 
 PATH_SRCS := srcs
 PATH_OBJS := objs
 
+HEADERS := $(wildcard $(INCLUDE_DIR)/*.h)
 SRCS := $(wildcard $(PATH_SRCS)/*.c)
 OBJS := $(SRCS:$(PATH_SRCS)/%.c=$(PATH_OBJS)/%.o)
 
@@ -27,13 +27,13 @@ all: $(NAME)
 $(PATH_OBJS):
 	@mkdir -p $(sort $(dir $(OBJS)))
 
-$(OBJS): $(PATH_OBJS)/%.o: $(PATH_SRCS)/%.c $(HEADER)
+$(OBJS): $(PATH_OBJS)/%.o: $(PATH_SRCS)/%.c $(HEADERS)
 	@mkdir -p $(PATH_OBJS)
 	@$(CC) -c $< -o $@
 	@echo "$(GREEN)+++ $@$(RESET)"
 
 $(NAME): $(OBJS)
-	@$(CC) $(OBJS) -o $@
+	@$(CC) $(OBJS) -o $@ -lpcap -lpthread
 	@echo "$(PURPLE)$@ is compiled.$(RESET)"
 
 clean:
@@ -67,6 +67,7 @@ clangd:
 	@echo "        - '-I$$HOME/.local/include'" >> .clangd
 	@echo "        - '-L$$HOME/.local/lib'" >> .clangd
 	@echo "        - '-lpcap'" >> .clangd
+	@echo "        - '-lpthread'" >> .clangd
 
 .clangd: clangd
 

@@ -39,7 +39,7 @@ uint16_t tcp_checksum(void* pseudohdr, void* tcphdr) {
 void fill_packet(uint8_t* packet, struct sockaddr_in target, uint16_t port) {
     struct tcphdr tcphdr = {
         .source = htons(37216), // randomize, mais que au debut
-        .dest = 0,
+        .dest = htons(port),
         .seq = 0, // TODO! randomize peut etre
         .ack_seq = 0, // a voir apres pour ACK
         .doff = 5, // 5 * 32 bits = 160 bits = 20 bytes || sur nmap Header Length: 24 bytes (6)

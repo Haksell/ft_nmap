@@ -1,92 +1,6 @@
-#include <arpa/inet.h>
-#include <ctype.h>
-#include <errno.h>
-#include <netinet/in.h>
-#include <pcap.h>
-#include <pthread.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include "ft_nmap.h"
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-
-#define APP_NAME "sniffex"
-#define APP_DESC "Sniffer example using libpcap"
-#define FILTER_EXP "ip and src host 45.33.32.156 and tcp[tcpflags] & (tcp-syn|tcp-ack) = (tcp-syn|tcp-ack)"
-#define SNAP_LEN 1518
-#define SIZE_ETHERNET 14
-#define ETHER_ADDR_LEN 6
-#define NUM_PACKETS 3 // TODO: -1
-#define LINE_WIDTH 16
-
-struct sniff_ethernet {
-    u_char ether_dhost[ETHER_ADDR_LEN];
-    u_char ether_shost[ETHER_ADDR_LEN];
-    u_short ether_type;
-};
-
-struct sniff_ip {
-    u_char ip_vhl;
-    u_char ip_tos;
-    u_short ip_len;
-    u_short ip_id;
-    u_short ip_off;
-#define IP_RF 0x8000
-#define IP_DF 0x4000
-#define IP_MF 0x2000
-#define IP_OFFMASK 0x1fff
-    u_char ip_ttl;
-    u_char ip_p;
-    u_short ip_sum;
-    struct in_addr ip_src, ip_dst;
-};
-#define IP_HL(ip) (((ip)->ip_vhl) & 0x0f)
-#define IP_V(ip) (((ip)->ip_vhl) >> 4)
-
-typedef u_int tcp_seq;
-
-struct sniff_tcp {
-    u_short th_sport;
-    u_short th_dport;
-    tcp_seq th_seq;
-    tcp_seq th_ack;
-    u_char th_offx2;
-#define TH_OFF(th) (((th)->th_offx2 & 0xf0) >> 4)
-    u_char th_flags;
-#define TH_FIN 0x01
-#define TH_SYN 0x02
-#define TH_RST 0x04
-#define TH_PUSH 0x08
-#define TH_ACK 0x10
-#define TH_URG 0x20
-#define TH_ECE 0x40
-#define TH_CWR 0x80
-#define TH_FLAGS (TH_FIN | TH_SYN | TH_RST | TH_ACK | TH_URG | TH_ECE | TH_CWR)
-    u_short th_win;
-    u_short th_sum;
-    u_short th_urp;
-};
-
-typedef struct {
-    int argc;
-    char** argv;
-    pcap_if_t* devs;
-    pcap_t* handle;
-} capture_args_t;
-
-static void panic(const char* format, ...) {
-    // TODO: free everything
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-    exit(EXIT_FAILURE);
-}
+extern pcap_t* handle;
 
 static void print_hex_line(const u_char* payload, int len) {
     for (int i = 0; i < LINE_WIDTH; ++i) {
@@ -120,13 +34,14 @@ static void print_payload(const u_char* payload, int size_payload) {
     }
 }
 
-static void got_packet(
+void got_packet(
     __attribute__((unused)) u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet
 ) {
     static int count = 0;
     ++count;
     printf("\nPacket number %d:\n", count);
 
+    // TODO: work with other things than internet
     const struct sniff_ip* ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
     int size_ip = IP_HL(ip) * 4;
     if (size_ip < 20) {
@@ -160,17 +75,12 @@ static void got_packet(
     if (size_payload > 0) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
-static void init_pcap(capture_args_t* capture_args) {
+void init_pcap(capture_args_t* capture_args) {
     char errbuf[PCAP_ERRBUF_SIZE];
     char* dev;
 
-    if (capture_args->argc == 1) {
-        if (pcap_findalldevs(&capture_args->devs, errbuf) == PCAP_ERROR)
-            panic("Couldn't find all devices: %s\n", errbuf);
-        dev = capture_args->devs->name;
-    } else if (capture_args->argc == 2) {
-        dev = capture_args->argv[1];
-    } else panic("Usage: " APP_NAME " [interface]\n");
+    if (pcap_findalldevs(&capture_args->devs, errbuf) == PCAP_ERROR) panic("Couldn't find all devices: %s\n", errbuf);
+    dev = capture_args->devs->name;
 
     printf("Device: %s\n", dev);
     printf("Number of packets: %d\n", NUM_PACKETS);
@@ -182,6 +92,7 @@ static void init_pcap(capture_args_t* capture_args) {
 
     capture_args->handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
     if (capture_args->handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
+    handle = capture_args->handle; // TODO: clean this garbage
     if (pcap_datalink(capture_args->handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
     struct bpf_program fp;
     if (pcap_compile(capture_args->handle, &fp, FILTER_EXP, 0, net) == PCAP_ERROR)
@@ -194,31 +105,4 @@ static void init_pcap(capture_args_t* capture_args) {
 void* capture_packets(__attribute__((unused)) void* arg) {
     pcap_loop(((capture_args_t*)arg)->handle, NUM_PACKETS, got_packet, NULL);
     return NULL;
-}
-
-void* send_packets(__attribute__((unused)) void* arg) {
-    while (true) {
-        printf("OK\n");
-        usleep(1000000);
-    }
-    return NULL;
-}
-
-int main(int argc, char** argv) {
-    printf(APP_NAME " - " APP_DESC "\n");
-
-    capture_args_t capture_args = {.argc = argc, .argv = argv, .devs = NULL, .handle = NULL};
-    init_pcap(&capture_args);
-
-    pthread_t capture_thread, sender_thread;
-    if (pthread_create(&capture_thread, NULL, capture_packets, (void*)&capture_args) != 0)
-        panic("Failed to create the capture thread");
-    if (pthread_create(&sender_thread, NULL, send_packets, NULL) != 0) panic("Failed to create the sender thread");
-    pthread_join(capture_thread, NULL);
-    pthread_join(sender_thread, NULL);
-
-    if (capture_args.devs) pcap_freealldevs(capture_args.devs);
-    if (capture_args.handle) pcap_close(capture_args.handle);
-    printf("\nCapture and scanning complete.\n");
-    return EXIT_SUCCESS;
 }

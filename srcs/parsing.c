@@ -64,8 +64,8 @@ static void parse_ports(char* value, uint64_t* ports) {
             int right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
             if (left > right) {
                 fprintf(
-                    stderr, "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n",
-                    left, right, right, left
+                    stderr, "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right,
+                    left
                 );
                 exit(EXIT_FAILURE);
             }
@@ -108,7 +108,7 @@ static void parse_scan(char* value, uint8_t* scans) {
     }
 }
 
-static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nmap* nmap) {
+static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_nmap* nmap) {
     if (value == NULL) {
         if (long_opt) fprintf(stderr, "nmap: option '--%s' requires an argument\n", long_opt);
         else fprintf(stderr, "nmap: option requires an argument -- '%c'\n", short_opt);
@@ -135,7 +135,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, nma
     return true;
 }
 
-static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nmap) {
+static bool handle_long_opt(char* opt, int i, int* index, char** argv, t_nmap* nmap) {
     char* equal_sign = strchr(opt, '=');
     size_t len = equal_sign != NULL ? (size_t)(equal_sign - opt) : strlen(opt);
     bool ambiguous = false;
@@ -145,8 +145,7 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nma
             if (strncmp(opt, valid_opt[j].long_opt, len) == 0) {
                 if (!ambiguous) {
                     fprintf(
-                        stderr, "nmap: option '--%s' is ambiguous; possibilities: '--%s'", opt,
-                        valid_opt[i].long_opt
+                        stderr, "nmap: option '--%s' is ambiguous; possibilities: '--%s'", opt, valid_opt[i].long_opt
                     );
                     ambiguous = true;
                 }
@@ -156,26 +155,21 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, nmap* nma
 
         if (valid_opt[i].has_arg == false) {
             if (equal_sign) {
-                fprintf(
-                    stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt
-                );
+                fprintf(stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt);
                 args_error();
             }
             handle_info_args(valid_opt[i].opt, nmap->opt);
             nmap->opt |= valid_opt[i].opt;
         } else {
             if (equal_sign == NULL) (*index)++;
-            handle_arg(
-                valid_opt[i].opt, equal_sign ? equal_sign + 1 : *(++argv), 0, valid_opt[i].long_opt,
-                nmap
-            );
+            handle_arg(valid_opt[i].opt, equal_sign ? equal_sign + 1 : *(++argv), 0, valid_opt[i].long_opt, nmap);
         }
         return true;
     }
     return false;
 }
 
-static bool is_valid_opt(char** arg, int* index, nmap* nmap) {
+static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
     bool is_long_opt = *(*arg + 1) == '-';
     bool valid = true;
     bool found_long_opt = false;
@@ -183,8 +177,7 @@ static bool is_valid_opt(char** arg, int* index, nmap* nmap) {
     do
         for (int i = 0; valid_opt[i].opt; i++) {
             if (is_long_opt)
-                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true)
-                    return true;
+                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true) return true;
             if (!is_long_opt && *(*arg + 1) == valid_opt[i].short_opt) {
                 if (valid_opt[i].has_arg == false) {
                     handle_info_args(valid_opt[i].opt, nmap->opt);
@@ -192,8 +185,7 @@ static bool is_valid_opt(char** arg, int* index, nmap* nmap) {
                 } else {
                     if (*(*arg + 2) == '\0') (*index)++;
                     return handle_arg(
-                        valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt,
-                        NULL, nmap
+                        valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt, NULL, nmap
                     );
                 }
                 break;
@@ -211,7 +203,7 @@ static void handle_unrecognized_opt(char* arg) {
     args_error();
 }
 
-void verify_arguments(int argc, char* argv[], nmap* nmap) {
+void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0) {
             if (!*nmap->hostname && i + 1 < argc) {
