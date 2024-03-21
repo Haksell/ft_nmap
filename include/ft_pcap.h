@@ -3,6 +3,7 @@
 #include <pcap.h>
 
 // TODO: source port check
+// TODO: dynamic filter
 #define FILTER_EXP "ip and src host 45.33.32.156 and tcp[tcpflags] & (tcp-syn|tcp-ack) = (tcp-syn|tcp-ack)"
 #define SNAP_LEN 1518
 #define SIZE_ETHERNET 14

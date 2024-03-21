@@ -49,6 +49,7 @@ typedef enum {
     PORT_OPEN,
     PORT_CLOSED,
     PORT_FILTERED,
+    // TODO: PORT_UNFILTERED...,
 } __attribute__((packed)) port_state;
 
 typedef enum {
@@ -82,6 +83,8 @@ typedef struct {
     char name[5];
 } scan;
 
+// TODO: host struct with name, port_states, undefined_count...
+
 typedef struct {
     int fd;
     uint8_t* packet;
@@ -96,7 +99,9 @@ typedef struct {
     uint16_t port_count;
     uint64_t port_set[1024];
     uint16_t port_array[MAX_PORTS];
+    uint16_t port_dictionary[1 << 16];
     port_state port_states[MAX_HOSTNAMES][MAX_PORTS];
+    port_state undefined_count[MAX_HOSTNAMES];
     uint8_t scans; // TODO: maybe uint16_t
     uint8_t threads;
 
@@ -142,15 +147,19 @@ void init_pcap(pcap_if_t** devs);
 // main.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
-// packet.c
-void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port);
-
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(t_nmap* nmap, uint16_t port);
 
 // random.c
 uint32_t random_u32_range(uint32_t a, uint32_t b);
+
+// send_packets.c
+void* send_packets(void* arg);
+
+// signals.c
+void handle_sigint(int sig);
+void set_signals();
 
 // utils.c
 void error(char* message);

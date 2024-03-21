@@ -1,4 +1,7 @@
 #include "ft_nmap.h"
+#include <signal.h>
+
+extern bool run;
 
 struct pseudohdr {
     uint32_t saddr;
@@ -8,7 +11,7 @@ struct pseudohdr {
     uint16_t tcp_length;
 };
 
-uint16_t calculate_checksum(uint16_t* data, size_t length) {
+static uint16_t calculate_checksum(uint16_t* data, size_t length) {
     uint32_t sum = 0;
 
     for (size_t i = 0; i < length / 2; ++i) {
@@ -26,7 +29,7 @@ uint16_t calculate_checksum(uint16_t* data, size_t length) {
     return (uint16_t)~sum;
 }
 
-uint16_t tcp_checksum(void* pseudohdr, void* tcphdr) {
+static uint16_t tcp_checksum(void* pseudohdr, void* tcphdr) {
     size_t packet_size = sizeof(struct pseudohdr) + sizeof(struct tcphdr);
     uint8_t checksum_packet[packet_size];
 
@@ -36,7 +39,7 @@ uint16_t tcp_checksum(void* pseudohdr, void* tcphdr) {
     return calculate_checksum((uint16_t*)checksum_packet, packet_size);
 }
 
-void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port) {
+static void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port) {
     struct tcphdr tcphdr = {
         .source = htons(nmap->port_source), // randomize, mais que au debut
         .dest = htons(port),
@@ -99,3 +102,47 @@ void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port) {
 //             break;
 //     }
 // }
+
+void* send_packets(void* arg) {
+    t_nmap* nmap = (t_nmap*)arg;
+    for (; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
+        printf("%d", nmap->undefined_count[nmap->hostname_index]);
+        alarm(5);
+        hostname_to_ip(nmap);
+        // TODO: local hostaddr
+        nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
+        nmap->port_source = random_u32_range(1 << 15, UINT16_MAX);
+        // TODO: shuffle
+        for (int j = 0; j < nmap->port_count && run; ++j) {
+            uint16_t port = nmap->port_array[j];
+            uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
+            fill_packet(packet, nmap, port);
+            sendto(nmap->fd, packet, NMAP_PACKET_SIZE, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr));
+        }
+
+        while (nmap->undefined_count[nmap->hostname_index] > 0) usleep(1000); // TODO: no forbidden functions
+        alarm(0);
+
+        printf("\nNmap scan report for %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
+        printf("Host is up (0.0019s latency).\n"); // TODO LORENZO PING
+        printf(
+            "rDNS record for %s: fra15s10-in-f14.1e100.net\n", nmap->hostnames[nmap->hostname_index]
+        ); // TODO LORENZO DNS uniquement s'il a trouve le dns
+
+        // if (0)
+        //     printf("Not shown: 58 filtered tcp ports (no-response)\n");
+
+        printf("PORT   STATE SERVICE\n"); // TODO align styleeeeee'
+
+        for (int j = 0; j < nmap->port_count; ++j) {
+            // port_state state = nmap->port_states[nmap->hostname_index][j];
+            // if (state != PORT_FILTERED && state != PORT_CLOSED) {
+            printf(
+                "%d/tcp %s  http\n", nmap->port_array[j], port_state_str[nmap->port_states[nmap->hostname_index][j]]
+            );
+            // }
+        }
+    }
+    handle_sigint(SIGINT);
+    return NULL;
+}

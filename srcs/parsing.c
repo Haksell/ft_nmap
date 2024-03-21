@@ -223,14 +223,19 @@ static void set_defaults(t_nmap* nmap) {
     if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
 }
 
-static void set_port_array(t_nmap* nmap) {
+static void set_port_mappings(t_nmap* nmap) {
     int port_index = 0;
     for (int port = 0; port <= UINT16_MAX; port++) {
         if (get_port(nmap->port_set, port)) {
             nmap->port_array[port_index] = port;
+            nmap->port_dictionary[port] = port_index;
             ++port_index;
         }
     }
+}
+
+static void set_undefined_count(t_nmap* nmap) {
+    for (int i = 0; i < nmap->hostname_count; ++i) nmap->undefined_count[i] = nmap->port_count;
 }
 
 void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
@@ -250,5 +255,6 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
         args_error();
     }
     set_defaults(nmap);
-    set_port_array(nmap);
+    set_port_mappings(nmap);
+    set_undefined_count(nmap);
 }
