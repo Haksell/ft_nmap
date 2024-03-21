@@ -203,25 +203,29 @@ static void handle_unrecognized_opt(char* arg) {
     args_error();
 }
 
+static void add_hostname(t_nmap* nmap, char* hostname) {
+    if (nmap->hostname_count == HOST_NAMES_MAX) {
+        fprintf(stderr, "nmap: too many hostnames `%s'\n", hostname);
+        args_error();
+    }
+    strncpy(nmap->hostnames[nmap->hostname_count], hostname, HOST_NAME_MAX);
+    nmap->hostnames[nmap->hostname_count][HOST_NAME_MAX] = '\0';
+    nmap->hostname_count++;
+}
+
 void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0) {
-            if (!*nmap->hostname && i + 1 < argc) {
-                strncpy(nmap->hostname, argv[i + 1], HOST_NAME_MAX);
-                nmap->hostname[HOST_NAME_MAX] = '\0';
-            }
+            for (int j = i + 1; j < argc; ++j) add_hostname(nmap, argv[j]);
             break;
         } else if (argv[i][0] == '-' && argv[i][1]) {
             if (!is_valid_opt(&argv[i], &i, nmap)) handle_unrecognized_opt(argv[i]);
-        } else if (!*nmap->hostname) {
-            strncpy(nmap->hostname, argv[i], HOST_NAME_MAX);
-            nmap->hostname[HOST_NAME_MAX] = '\0';
+        } else {
+            add_hostname(nmap, argv[i]);
         }
-        // else TODO multiple targets // tableu de char* pour les targets?
-        //	fprintf(stderr, "nmap: extra operand `%s'\n", argv[i]), args_error();
     }
     if (nmap->opt & (OPT_HELP | OPT_VERSION)) exit(EXIT_SUCCESS);
-    if (!*nmap->hostname) {
+    if (nmap->hostname_count == 0) {
         fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
         args_error();
     }

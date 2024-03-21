@@ -1,6 +1,4 @@
 #include "ft_nmap.h"
-#include "pcap/pcap.h"
-#include <netinet/in.h>
 
 volatile sig_atomic_t run = true;
 pcap_t* handle = NULL;
@@ -36,19 +34,24 @@ static void create_socket(t_nmap* nmap) {
     printf("Starting Nmap %s at %s\n", VERSION, timestamp);
 
     if (nmap->opt & OPT_VERBOSE) {
+        print_hostnames(nmap);
         print_ports(nmap->ports);
         print_scans(nmap->scans);
-        printf("Host: %s (%s)\n", nmap->hostname, nmap->hostip);
+        printf("Host: %s (%s)\n", nmap->hostnames[0], nmap->hostip);
     }
 }
 
 static void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
-    for (int port = 0; port < UINT16_MAX && run; port++) {
-        if (get_port(nmap->ports, port)) {
-            uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
-            fill_packet(packet, nmap->hostaddr, port);
-            sendto(nmap->fd, packet, NMAP_PACKET_SIZE, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr));
+    for (int i = 0; i < nmap->hostname_count; ++i) {
+        for (int port = 0; port < UINT16_MAX && run; port++) {
+            if (get_port(nmap->ports, port)) {
+                uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
+                fill_packet(packet, nmap->hostaddr, port);
+                sendto(
+                    nmap->fd, packet, NMAP_PACKET_SIZE, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr)
+                );
+            }
         }
     }
     return NULL;
@@ -67,9 +70,12 @@ int main(int argc, char* argv[]) {
 
     pthread_t capture_thread, sender_thread;
     if (pthread_create(&capture_thread, NULL, capture_packets, NULL) != 0) panic("Failed to create the capture thread");
+    // TODO: multiple sender threads
     if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0) panic("Failed to create the sender thread");
     pthread_join(capture_thread, NULL);
     pthread_join(sender_thread, NULL);
+
+    // TODO: print results
 
     if (nmap.devs) pcap_freealldevs(nmap.devs);
     if (handle) pcap_close(handle);

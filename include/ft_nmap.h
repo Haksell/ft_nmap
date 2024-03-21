@@ -37,6 +37,7 @@
 #define VERSION "0.4.2"
 
 #define MAX_PORTS 1024
+#define HOST_NAMES_MAX 256
 
 #define TCP_HEADER_SIZE sizeof(struct tcphdr)
 #define IP_HEADER_SIZE sizeof(struct iphdr)
@@ -77,7 +78,8 @@ typedef struct {
 typedef struct {
     int fd;
     uint8_t* packet;
-    char hostname[HOST_NAME_MAX + 1];
+    size_t hostname_count;
+    char hostnames[HOST_NAMES_MAX][HOST_NAME_MAX + 1];
     char hostip[INET_ADDRSTRLEN + 1];
     struct sockaddr_in hostaddr;
 
@@ -98,8 +100,8 @@ static const option valid_opt[] = {
     {OPT_PORTS,   'p', "ports",   true },
     {OPT_SCAN,    's', "scans",   true },
     {OPT_THREADS, 't', "threads", true },
-    {OPT_VERSION, 'v', "version", false},
-    {OPT_VERBOSE, 'V', "verbose", false},
+    {OPT_VERBOSE, 'v', "verbose", false},
+    {OPT_VERSION, 'V', "version", false},
     {0,           0,   NULL,      false}
 };
 
@@ -115,10 +117,6 @@ static const scan valid_scans[] = {
 
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);
-
-// debug.c (TODO: remove)
-void print_ports(uint64_t* ports);
-void print_scans(uint8_t scans);
 
 // info.c
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
@@ -146,3 +144,8 @@ void hostname_to_ip(t_nmap* nmap);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
 void panic(const char* format, ...);
+
+// verbose.c
+void print_hostnames(t_nmap* nmap);
+void print_ports(uint64_t* ports);
+void print_scans(uint8_t scans);

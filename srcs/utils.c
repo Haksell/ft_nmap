@@ -18,15 +18,15 @@ void hostname_to_ip(t_nmap* nmap) {
     };
     struct addrinfo* res = NULL;
 
-    int status = getaddrinfo(nmap->hostname, NULL, &hints, &res);
+    int status = getaddrinfo(nmap->hostnames[0], NULL, &hints, &res);
     if (status != 0) g_error("getaddrinfo failed", status);
 
     if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
         error("inet_ntop failed");
 
     if (res->ai_canonname) {
-        strncpy(nmap->hostname, res->ai_canonname, HOST_NAME_MAX);
-        nmap->hostname[HOST_NAME_MAX - 1] = '\0';
+        strncpy(nmap->hostnames[0], res->ai_canonname, HOST_NAME_MAX);
+        nmap->hostnames[0][HOST_NAME_MAX - 1] = '\0';
     }
 
     freeaddrinfo(res);
