@@ -14,13 +14,14 @@ Vagrant.configure("2") do |config|
                        clang git make valgrind zsh openssl  \
                        libssl-dev python3 python3-distutils \
                        libpcap-dev net-tools wget
-    
+
     wget https://nmap.org/dist/nmap-7.94.tar.bz2
     bzip2 -cd nmap-7.94.tar.bz2 | tar xvf -
     cd nmap-7.94
     ./configure
     make
     make install
+    cp nmap-services /etc/services
     cd ..
     rm -rf nmap-*
 

@@ -90,7 +90,7 @@ typedef struct {
     uint8_t* packet;
     int hostname_count;
     char hostnames[MAX_HOSTNAMES][HOST_NAME_MAX + 1];
-    char hostip[INET_ADDRSTRLEN + 1];
+    char hostip[INET_ADDRSTRLEN + 1]; // one for each hostname
     int hostname_index;
     struct sockaddr_in hostaddr;
 
@@ -110,6 +110,7 @@ typedef struct {
     uint16_t port_source;
 
     pcap_if_t* devs;
+    bpf_u_int32 net_device;
 } t_nmap;
 
 static const option valid_opt[] = {
@@ -142,7 +143,8 @@ void* capture_packets(__attribute__((unused)) void* arg);
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
 // init_pcap.c
-void init_pcap(pcap_if_t** devs);
+void set_filter(t_nmap* nmap);
+void init_pcap(t_nmap* nmap);
 
 // main.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);

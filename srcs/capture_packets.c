@@ -57,12 +57,6 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
 
     const struct sniff_tcp* tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
 
-    // on ignore si pas pour nous:
-    if (nmap->port_source != ntohs(tcp->th_dport)) {
-        printf("on a recu de la merde\n"); // TODO FILTRE
-        return;
-    }
-
     int size_tcp = TH_OFF(tcp) * 4;
     if (size_tcp < 20) {
         printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
@@ -70,9 +64,9 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
     }
 
     nmap->port_states[nmap->hostname_index][nmap->port_dictionary[ntohs(tcp->th_sport)]] =
-        tcp->th_flags == (TH_SYN | TH_ACK) ? PORT_OPEN
-        : tcp->th_flags == TH_RST          ? PORT_CLOSED
-                                           : PORT_FILTERED;
+        tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
+        : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
+                                             : PORT_FILTERED;
     --nmap->undefined_count[nmap->hostname_index];
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);

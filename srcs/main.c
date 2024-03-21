@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     create_socket(&nmap);
     set_signals();
 
-    init_pcap(&nmap.devs);
+    init_pcap(&nmap);
 
     pthread_t capture_thread, sender_thread;
     if (pthread_create(&capture_thread, NULL, capture_packets, &nmap) != 0)

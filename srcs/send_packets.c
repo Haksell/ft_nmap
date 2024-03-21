@@ -1,5 +1,6 @@
 #include "ft_nmap.h"
-#include <signal.h>
+
+#define SHOW_LIMIT 25
 
 extern bool run;
 
@@ -103,15 +104,47 @@ static void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port) {
 //     }
 // }
 
+static void print_port_states(t_nmap* nmap) {
+    int open = 0, closed = 0, filtered = 0; // TODO: other states except open
+    for (int j = 0; j < nmap->port_count; ++j) {
+        port_state state = nmap->port_states[nmap->hostname_index][j];
+        open += state == PORT_OPEN;
+        closed += state == PORT_CLOSED;
+        filtered += state == PORT_FILTERED;
+    }
+    if (open == 0)
+        printf(
+            "All %d scanned ports on %s (%s) are in ignored states.\n", nmap->port_count,
+            nmap->hostnames[nmap->hostname_index], nmap->hostip
+        ); // TODO: Lorenzo
+    if (closed > SHOW_LIMIT) printf("Not shown: %d closed tcp ports (reset)\n", closed); // TODO: not tcp and reset
+    if (filtered > SHOW_LIMIT) printf("Not shown: %d filtered tcp ports (no-response)\n", filtered);
+    if (open == 0) return;
+
+    struct servent* service;
+    printf("PORT   STATE SERVICE\n"); // TODO: Axel align styleeeeee'
+    for (int j = 0; j < nmap->port_count; ++j) {
+        port_state state = nmap->port_states[nmap->hostname_index][j];
+        if (state == PORT_OPEN || (state == PORT_CLOSED && closed <= SHOW_LIMIT) ||
+            (state == PORT_FILTERED && closed <= SHOW_LIMIT)) {
+            service = getservbyport(htons(nmap->port_array[j]), "tcp");
+            printf(
+                "%d/tcp %s  %s\n", nmap->port_array[j], port_state_str[nmap->port_states[nmap->hostname_index][j]],
+                service ? service->s_name : "unknown"
+            );
+        }
+    }
+}
+
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     for (; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
-        printf("%d", nmap->undefined_count[nmap->hostname_index]);
-        alarm(5);
+        alarm(2);
         hostname_to_ip(nmap);
         // TODO: local hostaddr
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         nmap->port_source = random_u32_range(1 << 15, UINT16_MAX);
+        set_filter(nmap);
         // TODO: shuffle
         for (int j = 0; j < nmap->port_count && run; ++j) {
             uint16_t port = nmap->port_array[j];
@@ -128,20 +161,7 @@ void* send_packets(void* arg) {
         printf(
             "rDNS record for %s: fra15s10-in-f14.1e100.net\n", nmap->hostnames[nmap->hostname_index]
         ); // TODO LORENZO DNS uniquement s'il a trouve le dns
-
-        // if (0)
-        //     printf("Not shown: 58 filtered tcp ports (no-response)\n");
-
-        printf("PORT   STATE SERVICE\n"); // TODO align styleeeeee'
-
-        for (int j = 0; j < nmap->port_count; ++j) {
-            // port_state state = nmap->port_states[nmap->hostname_index][j];
-            // if (state != PORT_FILTERED && state != PORT_CLOSED) {
-            printf(
-                "%d/tcp %s  http\n", nmap->port_array[j], port_state_str[nmap->port_states[nmap->hostname_index][j]]
-            );
-            // }
-        }
+        print_port_states(nmap);
     }
     handle_sigint(SIGINT);
     return NULL;
