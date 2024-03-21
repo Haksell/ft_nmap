@@ -36,9 +36,9 @@ uint16_t tcp_checksum(void* pseudohdr, void* tcphdr) {
     return calculate_checksum((uint16_t*)checksum_packet, packet_size);
 }
 
-void fill_packet(uint8_t* packet, struct sockaddr_in target, uint16_t port) {
+void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port) {
     struct tcphdr tcphdr = {
-        .source = htons(37216), // randomize, mais que au debut
+        .source = htons(nmap->port_source), // randomize, mais que au debut
         .dest = htons(port),
         .seq = 0, // TODO! randomize peut etre
         .ack_seq = 0, // a voir apres pour ACK
@@ -65,7 +65,7 @@ void fill_packet(uint8_t* packet, struct sockaddr_in target, uint16_t port) {
         .protocol = IPPROTO_TCP,
         .check = 0,
         .saddr = get_source_address(), // spoof possible?
-        .daddr = target.sin_addr.s_addr,
+        .daddr = nmap->hostaddr.sin_addr.s_addr,
     };
 
     iphdr.check = calculate_checksum((uint16_t*)&iphdr, sizeof(iphdr));

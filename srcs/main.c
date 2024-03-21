@@ -20,13 +20,6 @@ static void create_socket(t_nmap* nmap) {
 
     if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
 
-    if (!(nmap->opt & OPT_PORTS)) {
-        for (int i = 0; i < 16; ++i) nmap->port_set[i] = ~0;
-        nmap->port_set[0] ^= 1;
-        nmap->port_set[16] = 1;
-    }
-    if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
-
     gettimeofday(&nmap->start_time, NULL);
     struct tm* tm = localtime(&nmap->start_time.tv_sec);
     char timestamp[21];
@@ -43,34 +36,33 @@ static void create_socket(t_nmap* nmap) {
 
 static void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
-    for (int i = 0; i < nmap->hostname_count; ++i) {
+    for (; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
         hostname_to_ip(nmap);
         // TODO: local hostaddr
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
-        // TODO: ports array instead of bitset
-        for (int port = 0; port <= UINT16_MAX && run; port++) {
-            if (get_port(nmap->port_set, port)) {
-                uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
-                fill_packet(packet, nmap->hostaddr, port);
-                sendto(
-                    nmap->fd, packet, NMAP_PACKET_SIZE, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr)
-                );
-            }
+        nmap->port_source = random_u32_range(1 << 15, UINT16_MAX);
+        // TODO: shuffle
+        for (int j = 0; j <= nmap->port_count && run; ++j) {
+            uint16_t port = nmap->port_array[j];
+            uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
+            fill_packet(packet, nmap, port);
+            sendto(nmap->fd, packet, NMAP_PACKET_SIZE, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr));
         }
-        // printf(
-        //     "Nmap scan report for %s (%s)\n"
-        //     "Host is up (0.0019s latency).\n" // TODO LORENZO PING
-        //     "rDNS record for %s: fra15s10-in-f14.1e100.net\n", // TODO LORENZO DNS
-        //     nmap->hostnames[i], nmap->hostip, nmap->hostnames[i]
-        // );
+        printf("Nmap scan report for %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
+        printf("Host is up (0.0019s latency).\n"); // TODO LORENZO PING
+        printf(
+            "rDNS record for %s: fra15s10-in-f14.1e100.net\n", nmap->hostnames[nmap->hostname_index]
+        ); // TODO LORENZO DNS uniquement s'il a trouve le dns
 
         // if (0)
         //     printf("Not shown: 58 filtered tcp ports (no-response)\n");
 
-        // printf("PORT   STATE SERVICE\n");
+        printf("\nPORT   STATE SERVICE\n"); // TODO align styleeeeee'
 
-        // for (int i = 0; int < tota)
-        //     "80/tcp open  http"
+        for (int j = 0; j < nmap->port_count; ++j)
+            printf(
+                "%d/tcp %s  http\n", nmap->port_array[j], port_state_str[nmap->port_states[nmap->hostname_index][j]]
+            );
     }
     return NULL;
 }
@@ -85,7 +77,8 @@ int main(int argc, char* argv[]) {
     init_pcap(&nmap.devs);
 
     pthread_t capture_thread, sender_thread;
-    if (pthread_create(&capture_thread, NULL, capture_packets, NULL) != 0) panic("Failed to create the capture thread");
+    if (pthread_create(&capture_thread, NULL, capture_packets, &nmap) != 0)
+        panic("Failed to create the capture thread");
     // TODO: multiple sender threads
     if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0) panic("Failed to create the sender thread");
     pthread_join(capture_thread, NULL);

@@ -34,19 +34,19 @@ static void print_payload(const u_char* payload, int size_payload) {
     }
 }
 
-static void got_packet(
-    __attribute__((unused)) u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet
-) {
+static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
     static int count = 0;
     ++count;
     printf("\nPacket number %d:\n", count);
+
+    t_nmap* nmap = (t_nmap*)args;
 
     // TODO: work with other things than internet
     const struct sniff_ip* ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
     int size_ip = IP_HL(ip) * 4;
     if (size_ip < 20) {
         printf("   * Invalid IP header length: %u bytes\n", size_ip);
-        return;
+        return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
     }
 
     printf("       From: %s\n", inet_ntoa(ip->ip_src));
@@ -62,10 +62,16 @@ static void got_packet(
 
     const struct sniff_tcp* tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
 
+    // on ignore si pas pour nous:
+    if (nmap->port_source != ntohs(tcp->th_dport)) {
+        printf("on a recu de la merde"); // TODO FILTRE
+        return;
+    }
+
     int size_tcp = TH_OFF(tcp) * 4;
     if (size_tcp < 20) {
         printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
-        return;
+        return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
     }
 
     printf("   Src port: %d\n", ntohs(tcp->th_sport));
@@ -75,7 +81,7 @@ static void got_packet(
     if (size_payload > 0) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
-void* capture_packets(__attribute__((unused)) void* arg) {
-    pcap_loop(handle, -1, got_packet, NULL);
+void* capture_packets(void* nmap) {
+    pcap_loop(handle, -1, got_packet, nmap);
     return NULL;
 }

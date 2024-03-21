@@ -88,6 +88,7 @@ typedef struct {
     int hostname_count;
     char hostnames[MAX_HOSTNAMES][HOST_NAME_MAX + 1];
     char hostip[INET_ADDRSTRLEN + 1];
+    int hostname_index;
     struct sockaddr_in hostaddr;
 
     uint32_t opt;
@@ -100,6 +101,8 @@ typedef struct {
     uint8_t threads;
 
     struct timeval start_time;
+
+    uint16_t port_source;
 
     pcap_if_t* devs;
 } t_nmap;
@@ -125,6 +128,8 @@ static const scan valid_scans[] = {
     {0,         ""    },
 };
 
+static const char port_state_str[][10] = {"undefined", "open", "closed", "filtered"};
+
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);
 
@@ -138,7 +143,7 @@ void init_pcap(pcap_if_t** devs);
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
 // packet.c
-void fill_packet(uint8_t* packet, struct sockaddr_in target, uint16_t port);
+void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port);
 
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);

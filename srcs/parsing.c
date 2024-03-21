@@ -213,6 +213,16 @@ static void add_hostname(t_nmap* nmap, char* hostname) {
     nmap->hostname_count++;
 }
 
+static void set_defaults(t_nmap* nmap) {
+    if (!(nmap->opt & OPT_PORTS)) {
+        for (int i = 0; i < 16; ++i) nmap->port_set[i] = ~0;
+        nmap->port_set[0] ^= 1;
+        nmap->port_set[16] = 1;
+        nmap->port_count = MAX_PORTS;
+    }
+    if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
+}
+
 static void set_port_array(t_nmap* nmap) {
     int port_index = 0;
     for (int port = 0; port <= UINT16_MAX; port++) {
@@ -239,5 +249,6 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
         fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
         args_error();
     }
+    set_defaults(nmap);
     set_port_array(nmap);
 }
