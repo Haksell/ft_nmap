@@ -21,9 +21,9 @@ static void create_socket(t_nmap* nmap) {
     if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
 
     if (!(nmap->opt & OPT_PORTS)) {
-        for (int i = 0; i < 16; ++i) nmap->ports_set[i] = ~0;
-        nmap->ports_set[0] ^= 1;
-        nmap->ports_set[16] = 1;
+        for (int i = 0; i < 16; ++i) nmap->port_set[i] = ~0;
+        nmap->port_set[0] ^= 1;
+        nmap->port_set[16] = 1;
     }
     if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
 
@@ -35,7 +35,7 @@ static void create_socket(t_nmap* nmap) {
 
     if (nmap->opt & OPT_VERBOSE) {
         print_hostnames(nmap);
-        print_ports(nmap->ports_set);
+        print_ports(nmap);
         print_scans(nmap->scans);
         printf("Host: %s (%s)\n", nmap->hostnames[0], nmap->hostip);
     }
@@ -49,7 +49,7 @@ static void* send_packets(void* arg) {
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         // TODO: ports array instead of bitset
         for (int port = 0; port <= UINT16_MAX && run; port++) {
-            if (get_port(nmap->ports_set, port)) {
+            if (get_port(nmap->port_set, port)) {
                 uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
                 fill_packet(packet, nmap->hostaddr, port);
                 sendto(

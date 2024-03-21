@@ -37,7 +37,7 @@
 #define VERSION "0.4.2"
 
 #define MAX_PORTS 1024
-#define HOST_NAMES_MAX 256
+#define MAX_HOSTNAMES 256
 
 #define TCP_HEADER_SIZE sizeof(struct tcphdr)
 #define IP_HEADER_SIZE sizeof(struct iphdr)
@@ -49,7 +49,7 @@ typedef enum {
     PORT_OPEN,
     PORT_CLOSED,
     PORT_FILTERED,
-} port_state;
+} __attribute__((packed)) port_state;
 
 typedef enum {
     OPT_FILE = 1 << 0,
@@ -86,15 +86,17 @@ typedef struct {
     int fd;
     uint8_t* packet;
     int hostname_count;
-    char hostnames[HOST_NAMES_MAX][HOST_NAME_MAX + 1];
+    char hostnames[MAX_HOSTNAMES][HOST_NAME_MAX + 1];
     char hostip[INET_ADDRSTRLEN + 1];
     struct sockaddr_in hostaddr;
 
     uint32_t opt;
     FILE* file; // TODO: close
     uint16_t port_count;
-    uint64_t ports_set[1024];
-    uint8_t scans; // TODO: maybe 16
+    uint64_t port_set[1024];
+    uint16_t port_array[MAX_PORTS];
+    port_state port_states[MAX_HOSTNAMES][MAX_PORTS];
+    uint8_t scans; // TODO: maybe uint16_t
     uint8_t threads;
 
     struct timeval start_time;
@@ -155,5 +157,5 @@ void panic(const char* format, ...);
 
 // verbose.c
 void print_hostnames(t_nmap* nmap);
-void print_ports(uint64_t* ports);
+void print_ports(t_nmap* nmap);
 void print_scans(uint8_t scans);

@@ -6,15 +6,9 @@ void print_hostnames(t_nmap* nmap) {
     printf("\n");
 }
 
-void print_ports(uint64_t* ports) {
-    bool is_first_port = true;
+void print_ports(t_nmap* nmap) {
     printf("Ports: ");
-    for (int port = 0; port <= UINT16_MAX; ++port) {
-        if (get_port(ports, port)) {
-            printf(is_first_port ? "%d" : ",%d", port);
-            is_first_port = false;
-        }
-    }
+    for (int i = 0; i < nmap->port_count; ++i) printf(i == 0 ? "%d" : ",%d", nmap->port_array[i]);
     printf("\n");
 }
 

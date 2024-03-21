@@ -204,13 +204,23 @@ static void handle_unrecognized_opt(char* arg) {
 }
 
 static void add_hostname(t_nmap* nmap, char* hostname) {
-    if (nmap->hostname_count == HOST_NAMES_MAX) {
+    if (nmap->hostname_count == MAX_HOSTNAMES) {
         fprintf(stderr, "nmap: too many hostnames `%s'\n", hostname);
         args_error();
     }
     strncpy(nmap->hostnames[nmap->hostname_count], hostname, HOST_NAME_MAX);
     nmap->hostnames[nmap->hostname_count][HOST_NAME_MAX] = '\0';
     nmap->hostname_count++;
+}
+
+static void set_port_array(t_nmap* nmap) {
+    int port_index = 0;
+    for (int port = 0; port <= UINT16_MAX; port++) {
+        if (get_port(nmap->port_set, port)) {
+            nmap->port_array[port_index] = port;
+            ++port_index;
+        }
+    }
 }
 
 void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
@@ -229,4 +239,5 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
         fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
         args_error();
     }
+    set_port_array(nmap);
 }
