@@ -7,20 +7,17 @@ bool get_port(uint64_t* ports, uint16_t port) {
     return (ports[page] >> index) & 1;
 }
 
-void set_port(uint64_t* ports, uint16_t port) {
+void set_port(t_nmap* nmap, uint16_t port) {
     static bool warning = false;
-    static int total_ports = 0;
     uint16_t page = port >> 6;
     uint16_t index = port & 63;
 
-    if (!get_port(ports, port) && ++total_ports > MAX_PORTS) {
-        fprintf(
-            stderr, "The number of specified ports exceeds the maximum limit of %d.\n", MAX_PORTS
-        );
+    if (!get_port(nmap->ports_set, port) && ++nmap->port_count > MAX_PORTS) {
+        fprintf(stderr, "The number of specified ports exceeds the maximum limit of %d.\n", MAX_PORTS);
         exit(EXIT_FAILURE);
     }
 
-    if (!warning && (ports[page] >> index) & 1) {
+    if (!warning && (nmap->ports_set[page] >> index) & 1) {
         warning = true;
         fprintf(
             stderr,
@@ -30,5 +27,5 @@ void set_port(uint64_t* ports, uint16_t port) {
         );
     }
 
-    ports[page] |= 1ull << index;
+    nmap->ports_set[page] |= 1ull << index;
 }

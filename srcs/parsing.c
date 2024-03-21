@@ -40,7 +40,7 @@ static int atoi_check(char* s, int max, char* opt_name, bool zero_allowed) {
     return n;
 }
 
-static void parse_ports(char* value, uint64_t* ports) {
+static void parse_ports(char* value, t_nmap* nmap) {
     char* end = strchr(value, '\0');
     char* comma = end;
 
@@ -69,8 +69,8 @@ static void parse_ports(char* value, uint64_t* ports) {
                 );
                 exit(EXIT_FAILURE);
             }
-            for (int i = left; i <= right; ++i) set_port(ports, i);
-        } else set_port(ports, atoi_check(value, UINT16_MAX, "port", true));
+            for (int i = left; i <= right; ++i) set_port(nmap, i);
+        } else set_port(nmap, atoi_check(value, UINT16_MAX, "port", true));
 
         value = comma + 1;
     }
@@ -128,7 +128,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
             nmap->file = fopen(value, "r");
             if (!nmap->file) error("Failed to open input file for reading");
             break;
-        case OPT_PORTS: parse_ports(value, nmap->ports); break;
+        case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
         case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads", true); break;
     }

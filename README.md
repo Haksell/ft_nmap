@@ -69,7 +69,7 @@ pseudocode qui est illogique
     scanné ce port avec FIN, donc on va pas le refaire if (setport a set tout a 0)
     remaning_ports-- (i know ca marche pas comme ça, mais le concept est de raccourcir la
     liste de ports a scanner a chaque fois qu'on en a fully scanné un) if (type.count ==
-    total_ports) remaning_types-- (meme concept que pour les ports, mais pour les types de
+    port_count) remaning_types-- (meme concept que pour les ports, mais pour les types de
     scan) if (remaning_ports == 0) break; (si on a scanné tous les ports, on sort de la
     boucle)
 

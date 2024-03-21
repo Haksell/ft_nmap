@@ -45,6 +45,13 @@
 #define NMAP_PACKET_SIZE (IP_HEADER_SIZE + TCP_HEADER_SIZE)
 
 typedef enum {
+    PORT_UNDEFINED,
+    PORT_OPEN,
+    PORT_CLOSED,
+    PORT_FILTERED,
+} port_state;
+
+typedef enum {
     OPT_FILE = 1 << 0,
     OPT_HELP = 1 << 1,
     OPT_PORTS = 1 << 2,
@@ -78,14 +85,15 @@ typedef struct {
 typedef struct {
     int fd;
     uint8_t* packet;
-    size_t hostname_count;
+    int hostname_count;
     char hostnames[HOST_NAMES_MAX][HOST_NAME_MAX + 1];
     char hostip[INET_ADDRSTRLEN + 1];
     struct sockaddr_in hostaddr;
 
     uint32_t opt;
     FILE* file; // TODO: close
-    uint64_t ports[1024];
+    uint16_t port_count;
+    uint64_t ports_set[1024];
     uint8_t scans; // TODO: maybe 16
     uint8_t threads;
 
@@ -132,7 +140,7 @@ void fill_packet(uint8_t* packet, struct sockaddr_in target, uint16_t port);
 
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
-void set_port(uint64_t* ports, uint16_t port);
+void set_port(t_nmap* nmap, uint16_t port);
 
 // random.c
 uint32_t random_u32_range(uint32_t a, uint32_t b);

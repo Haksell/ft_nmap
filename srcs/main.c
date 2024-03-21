@@ -21,9 +21,9 @@ static void create_socket(t_nmap* nmap) {
     if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
 
     if (!(nmap->opt & OPT_PORTS)) {
-        for (int i = 0; i < 16; ++i) nmap->ports[i] = ~0;
-        nmap->ports[0] ^= 1;
-        nmap->ports[16] = 1;
+        for (int i = 0; i < 16; ++i) nmap->ports_set[i] = ~0;
+        nmap->ports_set[0] ^= 1;
+        nmap->ports_set[16] = 1;
     }
     if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
 
@@ -35,7 +35,7 @@ static void create_socket(t_nmap* nmap) {
 
     if (nmap->opt & OPT_VERBOSE) {
         print_hostnames(nmap);
-        print_ports(nmap->ports);
+        print_ports(nmap->ports_set);
         print_scans(nmap->scans);
         printf("Host: %s (%s)\n", nmap->hostnames[0], nmap->hostip);
     }
@@ -44,8 +44,12 @@ static void create_socket(t_nmap* nmap) {
 static void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     for (int i = 0; i < nmap->hostname_count; ++i) {
-        for (int port = 0; port < UINT16_MAX && run; port++) {
-            if (get_port(nmap->ports, port)) {
+        hostname_to_ip(nmap);
+        // TODO: local hostaddr
+        nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
+        // TODO: ports array instead of bitset
+        for (int port = 0; port <= UINT16_MAX && run; port++) {
+            if (get_port(nmap->ports_set, port)) {
                 uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
                 fill_packet(packet, nmap->hostaddr, port);
                 sendto(
@@ -53,6 +57,20 @@ static void* send_packets(void* arg) {
                 );
             }
         }
+        // printf(
+        //     "Nmap scan report for %s (%s)\n"
+        //     "Host is up (0.0019s latency).\n" // TODO LORENZO PING
+        //     "rDNS record for %s: fra15s10-in-f14.1e100.net\n", // TODO LORENZO DNS
+        //     nmap->hostnames[i], nmap->hostip, nmap->hostnames[i]
+        // );
+
+        // if (0)
+        //     printf("Not shown: 58 filtered tcp ports (no-response)\n");
+
+        // printf("PORT   STATE SERVICE\n");
+
+        // for (int i = 0; int < tota)
+        //     "80/tcp open  http"
     }
     return NULL;
 }
@@ -61,10 +79,8 @@ int main(int argc, char* argv[]) {
     t_nmap nmap = {0};
 
     verify_arguments(argc, argv, &nmap);
-    hostname_to_ip(&nmap);
     create_socket(&nmap);
     signal(SIGINT, handle_sigint); // TODO: sigaction instead of signal
-    nmap.hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap.hostip)};
 
     init_pcap(&nmap.devs);
 
