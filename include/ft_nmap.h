@@ -101,7 +101,7 @@ typedef struct {
     uint16_t port_array[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
     port_state port_states[MAX_HOSTNAMES][MAX_PORTS];
-    port_state undefined_count[MAX_HOSTNAMES];
+    uint16_t undefined_count[MAX_HOSTNAMES];
     uint8_t scans; // TODO: maybe uint16_t
     uint8_t threads;
 

@@ -74,7 +74,7 @@ clangd:
 define compile_from_source
     @wget -O source.tar.gz $(1)
     @mkdir source_dir && tar xvf source.tar.gz -C source_dir --strip-components=1
-    @cd source_dir && ./configure --prefix=$$HOME/.local && make && make install
+    @cd source_dir && ./configure --prefix=$$HOME/.local && make -j10 && make install
     @rm -rf source_dir source.tar.gz
 endef
 
@@ -86,6 +86,7 @@ install_libpcap: clangd
 	$(call compile_from_source,https://www.tcpdump.org/release/libpcap-1.10.4.tar.gz)
 
 uninstall_libpcap:
+	@rm -rf source_dir source.tar.gz
 	@rm -rf $$HOME/.local/bin/m4
 	@rm -rf $$HOME/.local/bin/flex
 	@rm -rf $$HOME/.local/bin/flex++

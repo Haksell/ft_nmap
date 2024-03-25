@@ -2,7 +2,7 @@ UseTab: Never
 IndentWidth: 4
 TabWidth: 4
 AccessModifierOffset: -4
-ColumnLimit: 100
+ColumnLimit: 120 # PLS ne pas changer. C'est la limite de colonnes pour les fichiers de code
 PointerAlignment: Left
 AlignOperands: true
 BreakBeforeBraces: Custom

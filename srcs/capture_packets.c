@@ -35,11 +35,7 @@ static void print_payload(const u_char* payload, int size_payload) {
     }
 }
 
-static void got_packet(
-    u_char* args,
-    __attribute__((unused)) const struct pcap_pkthdr* header,
-    const u_char* packet
-) {
+static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
     t_nmap* nmap = (t_nmap*)args;
 
     // TODO: work with other things than internet
@@ -71,19 +67,21 @@ static void got_packet(
     port_state port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
                             : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
                                                                  : PORT_FILTERED;
-    nmap->port_states[nmap->hostname_index]
-                     [nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
+    nmap->port_states[nmap->hostname_index][nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
     --nmap->undefined_count[nmap->hostname_index];
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-    if (size_payload > 0)
-        print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
+    if (size_payload > 0) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
 void* capture_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     while (run) {
-        pcap_loop(handle, -1, got_packet, arg);
+        int ret = pcap_loop(handle, -1, got_packet, arg);
+        if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) {
+            fprintf(stderr, "pcap_loop failed: %s\n", pcap_geterr(handle)); // TODO utiliser error
+            continue;
+        }
         for (int i = 0; i < nmap->port_count; ++i) {
             // for SYN
             if (nmap->port_states[nmap->hostname_index][i] == PORT_UNDEFINED) {
