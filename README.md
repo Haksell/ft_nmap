@@ -9,6 +9,7 @@
 -   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
 -   [ ] `--usage`
 -   [ ] forbid non-root user (except for info flags (and CONNECT scan?))
+-   [ ] don't print report on Ctrl+C
 
 ## mandatory
 

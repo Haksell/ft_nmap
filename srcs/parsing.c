@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-static void args_error(void) {
+static void args_error() {
     fprintf(stderr, "See the output of nmap -h for a summary of options.\n");
     exit(EXIT_ARGS);
 }

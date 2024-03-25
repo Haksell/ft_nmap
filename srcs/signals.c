@@ -3,14 +3,12 @@
 extern volatile sig_atomic_t run;
 extern pcap_t* handle;
 
-void handle_sigint(int sig) {
-    (void)sig;
+void handle_sigint(__attribute__((unused)) int sig) {
     run = false;
     if (handle) pcap_breakloop(handle);
 }
 
-static void handle_sigalrm(int sig) {
-    (void)sig;
+static void handle_sigalrm(__attribute__((unused)) int sig) {
     if (handle) pcap_breakloop(handle);
 }
 
