@@ -42,6 +42,7 @@
 -   [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
 -   [ ] Additional flags...
 -   [ ] Additional scans... (TCP Connect, TCP Window, TCP Maimon, SCTP INIT)
+-   [ ] Different output formats (XML, grepable)
 
 ## push check
 
