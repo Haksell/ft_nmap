@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
     bzip2 -cd nmap-7.94.tar.bz2 | tar xvf -
     cd nmap-7.94
     ./configure
-    make
+    make -j
     make install
     cp nmap-services /etc/services
     cd ..
