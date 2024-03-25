@@ -12,8 +12,16 @@ static void handle_sigalrm(__attribute__((unused)) int sig) {
     if (handle) pcap_breakloop(handle);
 }
 
-// TODO: sigaction instead of signal
 void set_signals() {
-    signal(SIGINT, handle_sigint);
-    signal(SIGALRM, handle_sigalrm);
+    struct sigaction sa_int, sa_alrm;
+
+    sa_int.sa_handler = handle_sigint;
+    sigemptyset(&sa_int.sa_mask);
+    sa_int.sa_flags = 0;
+    sigaction(SIGINT, &sa_int, NULL);
+
+    sa_alrm.sa_handler = handle_sigalrm;
+    sigemptyset(&sa_alrm.sa_mask);
+    sa_alrm.sa_flags = 0;
+    sigaction(SIGALRM, &sa_alrm, NULL);
 }

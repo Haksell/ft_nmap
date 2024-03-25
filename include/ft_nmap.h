@@ -107,6 +107,7 @@ typedef struct {
     uint8_t threads;
 
     struct timeval start_time;
+    struct timeval end_time;
 
     uint16_t port_source;
 
@@ -171,6 +172,9 @@ void hostname_to_ip(t_nmap* nmap);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
 void panic(const char* format, ...);
+void get_start_time(t_nmap* nmap);
+void print_stats(t_nmap* nmap);
+void cleanup(t_nmap* nmap);
 
 // verbose.c
 void print_hostnames(t_nmap* nmap);

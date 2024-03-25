@@ -1,14 +1,25 @@
 #include "ft_nmap.h"
 
+extern pcap_t* handle;
+
 void error(char* message) {
-    // ajouter if socket->fd > 0 close fd
     fprintf(stderr, "nmap: %s: %s\n", message, strerror(errno));
-    exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
 }
 
 void g_error(char* message, int status) {
     if (status != EAI_NONAME) fprintf(stderr, "nmap: %s: %s\n", message, gai_strerror(status));
     else fprintf(stderr, "nmap: %s\n", "unknown host");
+    exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
+}
+
+void panic(const char* format, ...) {
+    // TODO: use error
+    // TODO: free everything
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
     exit(EXIT_FAILURE);
 }
 
@@ -62,12 +73,52 @@ in_addr_t get_source_address() {
     return source_address; // a verifier lorenzo
 }
 
-void panic(const char* format, ...) {
-    // TODO: use error
-    // TODO: free everything
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-    exit(EXIT_FAILURE);
+static struct timeval timeval_subtract(struct timeval start, struct timeval end) {
+    struct timeval result = {
+        .tv_sec = end.tv_sec - start.tv_sec,
+        .tv_usec = end.tv_usec - start.tv_usec,
+    };
+
+    if (result.tv_usec < 0) {
+        result.tv_sec--;
+        result.tv_usec += 1000000;
+    }
+
+    return result;
+}
+
+void get_start_time(t_nmap* nmap) {
+    gettimeofday(&nmap->start_time, NULL);
+    struct tm* tm = localtime(&nmap->start_time.tv_sec);
+
+    char timestamp[21];
+    strftime(timestamp, 21, "%Y-%m-%d %H:%M", tm);
+
+    char timezone[4];
+    strftime(timezone, 4, "%Z", tm);
+
+    printf("Starting Nmap %s at %s %s\n", VERSION, timestamp, timezone);
+}
+
+static float get_elapsed_time(t_nmap* nmap) {
+    struct timeval end_time;
+    gettimeofday(&end_time, NULL);
+
+    struct timeval elapsed_time = timeval_subtract(nmap->start_time, end_time);
+    return elapsed_time.tv_sec + elapsed_time.tv_usec / 1000000.0;
+}
+
+void print_stats(t_nmap* nmap) {
+    printf(
+        "\nNmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n",
+        nmap->hostname_count,
+        nmap->hostname_count,
+        get_elapsed_time(nmap)
+    );
+}
+
+void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur
+    if (nmap->devs) pcap_freealldevs(nmap->devs);
+    if (handle) pcap_close(handle);
+    close(nmap->fd);
 }

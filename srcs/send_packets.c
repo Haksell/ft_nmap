@@ -113,7 +113,7 @@ static void print_port_states(t_nmap* nmap) {
         filtered += state == PORT_FILTERED;
     }
 
-    if (open == 0 && (closed > SHOW_LIMIT || filtered > SHOW_LIMIT))
+    if (open == 0 && filtered == 0 && closed > SHOW_LIMIT)
         printf(
             "All %d scanned ports on %s (%s) are in ignored states.\n",
             nmap->port_count,
@@ -122,25 +122,19 @@ static void print_port_states(t_nmap* nmap) {
         ); // TODO: Lorenzo
     if (closed > SHOW_LIMIT) printf("Not shown: %d closed tcp ports (reset)\n", closed); // TODO: not tcp and reset
     if (filtered > SHOW_LIMIT) printf("Not shown: %d filtered tcp ports (no-response)\n", filtered);
-    if (open == 0 && (closed > SHOW_LIMIT || filtered > SHOW_LIMIT)) return;
+    if (open == 0 && closed > SHOW_LIMIT && (filtered == 0 || filtered > SHOW_LIMIT)) return;
 
     struct servent* service;
     printf("PORT   STATE SERVICE\n"); // TODO: Axel align styleeeeee'
     for (int j = 0; j < nmap->port_count; ++j) {
         port_state state = nmap->port_states[nmap->hostname_index][j];
-        if (state == PORT_OPEN || (state == PORT_CLOSED && closed <= SHOW_LIMIT) ||
-            (state == PORT_FILTERED && closed <= SHOW_LIMIT)) {
+        if (state == PORT_OPEN || (state == PORT_CLOSED && closed <= SHOW_LIMIT) || (state == PORT_FILTERED && filtered <= SHOW_LIMIT)) {
             service = getservbyport(htons(nmap->port_array[j]), "tcp");
             port_state port_state = nmap->port_states[nmap->hostname_index][j];
             if (port_state == PORT_FILTERED && filtered > SHOW_LIMIT) continue;
             if (port_state == PORT_CLOSED && closed > SHOW_LIMIT) continue;
 
-            printf(
-                "%d/tcp %s  %s\n",
-                nmap->port_array[j],
-                port_state_str[port_state],
-                service ? service->s_name : "unknown"
-            );
+            printf("%d/tcp %s  %s\n", nmap->port_array[j], port_state_str[port_state], service ? service->s_name : "unknown");
         }
     }
 }
@@ -151,7 +145,7 @@ void* send_packets(void* arg) {
         for (int i = 0; i < 6 /*TODO: don't hardcode*/; ++i) {
             nmap->current_scan = 1 << i;
             if ((nmap->scans & nmap->current_scan) == 0) continue;
-            alarm(2);
+            alarm(5);
             hostname_to_ip(nmap);
             // TODO: local hostaddr
             nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
@@ -162,26 +156,19 @@ void* send_packets(void* arg) {
                 uint16_t port = nmap->port_array[j];
                 uint8_t packet[NMAP_PACKET_SIZE /*+data eventuellement*/];
                 fill_packet(packet, nmap, port);
-                sendto(
-                    nmap->fd,
-                    packet,
-                    NMAP_PACKET_SIZE,
-                    0,
-                    (struct sockaddr*)&nmap->hostaddr,
-                    sizeof(nmap->hostaddr)
-                );
+                sendto(nmap->fd, packet, NMAP_PACKET_SIZE, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr));
             }
 
             while (nmap->undefined_count[nmap->hostname_index] > 0) usleep(1000); // TODO: no forbidden functions
             alarm(0);
-            printf("\nNmap scan report for %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
-            printf("Host is up (0.0019s latency).\n"); // TODO LORENZO PING
-            printf(
-                "rDNS record for %s: fra15s10-in-f14.1e100.net\n",
-                nmap->hostnames[nmap->hostname_index]
-            ); // TODO LORENZO DNS uniquement s'il a trouve le dns
-            print_port_states(nmap);
         }
+        printf("\nNmap scan report for %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
+        printf("Host is up (0.0019s latency).\n"); // TODO LORENZO PING
+        printf(
+            "rDNS record for %s: fra15s10-in-f14.1e100.net\n",
+            nmap->hostnames[nmap->hostname_index]
+        ); // TODO LORENZO DNS uniquement s'il a trouve le dns
+        print_port_states(nmap);
     }
     handle_sigint(SIGINT);
     return NULL;

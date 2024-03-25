@@ -23,11 +23,10 @@ void set_filter(t_nmap* nmap) {
 void init_pcap(t_nmap* nmap) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR) panic("Couldn't find all devices: %s\n", errbuf);
+    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR) panic("Couldn't find all devices: %s\n", errbuf); //TODO error
     char* dev = nmap->devs->name;
 
-    // Pour AXEL:
-    // NULL, XMAS et FIN marchent uniquement sur localhost, j'ai pas trouver d'autres sites... donc on doit changer le device a lo. C'est pas propre mais c'est pour tester.
+    // Pour AXEL: NULL, XMAS et FIN marchent uniquement sur localhost, j'ai pas trouve d'autres sites... donc on doit changer le device a lo. C'est pas propre mais c'est pour tester.
     if (strcmp(nmap->hostnames[0], "localhost") == 0) strncpy(dev, "lo\0", 3);
 
     bpf_u_int32 _;
