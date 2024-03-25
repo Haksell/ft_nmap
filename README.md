@@ -2,6 +2,8 @@
 
 ## todo
 
+-   [ ] 4 other types of scans (except UDP)
+-   [ ] UDP scan
 -   [ ] align output
 -   [ ] parsing tester
 -   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
@@ -24,10 +26,10 @@
 -   [ ] Your program must be able to run the following scan: UDP
 -   [ ] If the scan type is not specified then all scan types must be used.
 -   [ ] We must be able to run each type of scan individually, and several scans simultaneously.
--   [ ] The ports to be scanned can be read as a range or individually.
--   [ ] In the case no port is specified the scan must run with the range 1-1024.
--   [ ] The number of ports scanned cannot exceed 1024.
--   [ ] The resolution of service types will be requested (not the version but only the TYPE).
+-   [x] The ports to be scanned can be read as a range or individually.
+-   [x] In the case no port is specified the scan must run with the range 1-1024.
+-   [x] The number of ports scanned cannot exceed 1024.
+-   [x] The resolution of service types will be requested (not the version but only the TYPE).
 -   [ ] The result of a scan should be as clean and clear as possible. The time frame should be easy to read.
 
 ## bonus
