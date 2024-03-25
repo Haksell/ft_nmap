@@ -67,14 +67,11 @@ static void got_packet(
         return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
     }
 
+    port_state port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
+                            : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
+                                                                 : PORT_FILTERED;
     nmap->port_states[nmap->hostname_index]
-                     [nmap->port_dictionary[ntohs(tcp->th_sport)]] = tcp->th_flags ==
-                                                                             (TH_SYN | TH_ACK)
-                                                                         ? PORT_OPEN
-                                                                     : tcp->th_flags ==
-                                                                             (TH_RST | TH_ACK)
-                                                                         ? PORT_CLOSED
-                                                                         : PORT_FILTERED;
+                     [nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
     --nmap->undefined_count[nmap->hostname_index];
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
