@@ -23,8 +23,7 @@ void set_filter(t_nmap* nmap) {
 void init_pcap(t_nmap* nmap) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR)
-        panic("Couldn't find all devices: %s\n", errbuf);
+    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR) panic("Couldn't find all devices: %s\n", errbuf);
     char* dev = nmap->devs->name;
 
     bpf_u_int32 _;

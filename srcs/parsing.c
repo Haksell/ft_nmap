@@ -162,24 +162,14 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, t_nmap* n
 
         if (valid_opt[i].has_arg == false) {
             if (equal_sign) {
-                fprintf(
-                    stderr,
-                    "nmap: option '--%s' doesn't allow an argument\n",
-                    valid_opt[i].long_opt
-                );
+                fprintf(stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt);
                 args_error();
             }
             handle_info_args(valid_opt[i].opt, nmap->opt);
             nmap->opt |= valid_opt[i].opt;
         } else {
             if (equal_sign == NULL) (*index)++;
-            handle_arg(
-                valid_opt[i].opt,
-                equal_sign ? equal_sign + 1 : *(++argv),
-                0,
-                valid_opt[i].long_opt,
-                nmap
-            );
+            handle_arg(valid_opt[i].opt, equal_sign ? equal_sign + 1 : *(++argv), 0, valid_opt[i].long_opt, nmap);
         }
         return true;
     }
@@ -194,8 +184,7 @@ static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
     do
         for (int i = 0; valid_opt[i].opt; i++) {
             if (is_long_opt)
-                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true)
-                    return true;
+                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true) return true;
             if (!is_long_opt && *(*arg + 1) == valid_opt[i].short_opt) {
                 if (valid_opt[i].has_arg == false) {
                     handle_info_args(valid_opt[i].opt, nmap->opt);

@@ -12,8 +12,7 @@ static void create_socket(t_nmap* nmap) {
     nmap->fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
     if (nmap->fd < 0) error("TCP socket creation failed");
 
-    if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
-        error("setsockopt IP_HDRINCL failed");
+    if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
 
     gettimeofday(&nmap->start_time, NULL);
     struct tm* tm = localtime(&nmap->start_time.tv_sec);
@@ -42,8 +41,7 @@ int main(int argc, char* argv[]) {
     if (pthread_create(&capture_thread, NULL, capture_packets, &nmap) != 0)
         panic("Failed to create the capture thread");
     // TODO: multiple sender threads
-    if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0)
-        panic("Failed to create the sender thread");
+    if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0) panic("Failed to create the sender thread");
     pthread_join(capture_thread, NULL);
     pthread_join(sender_thread, NULL);
 
