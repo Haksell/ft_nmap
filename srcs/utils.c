@@ -1,7 +1,12 @@
 #include "ft_nmap.h"
 
 void error(char* message) {
-    fprintf(stderr, "nmap: %s: %s\n", message, strerror(errno)); // ajouter if socket->fd > 0 close fd
+    fprintf(
+        stderr,
+        "nmap: %s: %s\n",
+        message,
+        strerror(errno)
+    ); // ajouter if socket->fd > 0 close fd
     exit(EXIT_FAILURE);
 }
 
@@ -22,7 +27,12 @@ void hostname_to_ip(t_nmap* nmap) {
     int status = getaddrinfo(hostname, NULL, &hints, &res);
     if (status != 0) g_error("getaddrinfo failed", status);
 
-    if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
+    if (inet_ntop(
+            AF_INET,
+            &((struct sockaddr_in*)res->ai_addr)->sin_addr,
+            nmap->hostip,
+            INET_ADDRSTRLEN
+        ) == NULL)
         error("inet_ntop failed");
 
     if (res->ai_canonname) {

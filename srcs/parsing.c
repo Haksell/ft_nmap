@@ -64,7 +64,11 @@ static void parse_ports(char* value, t_nmap* nmap) {
             int right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
             if (left > right) {
                 fprintf(
-                    stderr, "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right,
+                    stderr,
+                    "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n",
+                    left,
+                    right,
+                    right,
                     left
                 );
                 exit(EXIT_FAILURE);
@@ -145,7 +149,10 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, t_nmap* n
             if (strncmp(opt, valid_opt[j].long_opt, len) == 0) {
                 if (!ambiguous) {
                     fprintf(
-                        stderr, "nmap: option '--%s' is ambiguous; possibilities: '--%s'", opt, valid_opt[i].long_opt
+                        stderr,
+                        "nmap: option '--%s' is ambiguous; possibilities: '--%s'",
+                        opt,
+                        valid_opt[i].long_opt
                     );
                     ambiguous = true;
                 }
@@ -155,14 +162,24 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, t_nmap* n
 
         if (valid_opt[i].has_arg == false) {
             if (equal_sign) {
-                fprintf(stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt);
+                fprintf(
+                    stderr,
+                    "nmap: option '--%s' doesn't allow an argument\n",
+                    valid_opt[i].long_opt
+                );
                 args_error();
             }
             handle_info_args(valid_opt[i].opt, nmap->opt);
             nmap->opt |= valid_opt[i].opt;
         } else {
             if (equal_sign == NULL) (*index)++;
-            handle_arg(valid_opt[i].opt, equal_sign ? equal_sign + 1 : *(++argv), 0, valid_opt[i].long_opt, nmap);
+            handle_arg(
+                valid_opt[i].opt,
+                equal_sign ? equal_sign + 1 : *(++argv),
+                0,
+                valid_opt[i].long_opt,
+                nmap
+            );
         }
         return true;
     }
@@ -177,7 +194,8 @@ static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
     do
         for (int i = 0; valid_opt[i].opt; i++) {
             if (is_long_opt)
-                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true) return true;
+                if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true)
+                    return true;
             if (!is_long_opt && *(*arg + 1) == valid_opt[i].short_opt) {
                 if (valid_opt[i].has_arg == false) {
                     handle_info_args(valid_opt[i].opt, nmap->opt);
@@ -185,7 +203,11 @@ static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
                 } else {
                     if (*(*arg + 2) == '\0') (*index)++;
                     return handle_arg(
-                        valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt, NULL, nmap
+                        valid_opt[i].opt,
+                        *(*arg + 2) ? *arg + 2 : *(++arg),
+                        valid_opt[i].short_opt,
+                        NULL,
+                        nmap
                     );
                 }
                 break;

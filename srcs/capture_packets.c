@@ -35,7 +35,11 @@ static void print_payload(const u_char* payload, int size_payload) {
     }
 }
 
-static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
+static void got_packet(
+    u_char* args,
+    __attribute__((unused)) const struct pcap_pkthdr* header,
+    const u_char* packet
+) {
     t_nmap* nmap = (t_nmap*)args;
 
     // TODO: work with other things than internet
@@ -63,14 +67,19 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
     }
 
-    nmap->port_states[nmap->hostname_index][nmap->port_dictionary[ntohs(tcp->th_sport)]] =
-        tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
-        : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
-                                             : PORT_FILTERED;
+    nmap->port_states[nmap->hostname_index]
+                     [nmap->port_dictionary[ntohs(tcp->th_sport)]] = tcp->th_flags ==
+                                                                             (TH_SYN | TH_ACK)
+                                                                         ? PORT_OPEN
+                                                                     : tcp->th_flags ==
+                                                                             (TH_RST | TH_ACK)
+                                                                         ? PORT_CLOSED
+                                                                         : PORT_FILTERED;
     --nmap->undefined_count[nmap->hostname_index];
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-    if (size_payload > 0) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
+    if (size_payload > 0)
+        print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
 void* capture_packets(void* arg) {

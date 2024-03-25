@@ -2,7 +2,7 @@ UseTab: Never
 IndentWidth: 4
 TabWidth: 4
 AccessModifierOffset: -4
-ColumnLimit: 120
+ColumnLimit: 100
 PointerAlignment: Left
 AlignOperands: true
 BreakBeforeBraces: Custom
@@ -29,3 +29,10 @@ AlignArrayOfStructures: Left
 AlwaysBreakBeforeMultilineStrings: true
 AlignTrailingComments: false
 InsertNewlineAtEOF: true
+BinPackParameters: false
+BinPackArguments: false
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+PenaltyBreakAssignment: 9999
+PenaltyBreakBeforeFirstCallParameter: 1
+MaxEmptyLinesToKeep: 1

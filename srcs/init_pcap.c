@@ -3,7 +3,8 @@
 
 extern pcap_t* handle;
 
-// #define FILTER_EXP "src host 45.33.32.156 and tcp[tcpflags] & (tcp-syn|tcp-ack) = (tcp-syn|tcp-ack)"
+// #define FILTER_EXP "src host 45.33.32.156 and tcp[tcpflags] & (tcp-syn|tcp-ack) =
+// (tcp-syn|tcp-ack)"
 
 void set_filter(t_nmap* nmap) {
     struct bpf_program fp;
@@ -22,7 +23,8 @@ void set_filter(t_nmap* nmap) {
 void init_pcap(t_nmap* nmap) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR) panic("Couldn't find all devices: %s\n", errbuf);
+    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR)
+        panic("Couldn't find all devices: %s\n", errbuf);
     char* dev = nmap->devs->name;
 
     bpf_u_int32 _;
