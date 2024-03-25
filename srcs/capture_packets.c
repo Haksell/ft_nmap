@@ -64,9 +64,23 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
     }
 
-    port_state port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
-                            : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
-                                                                 : PORT_FILTERED;
+    // POUR LE RENDU FINAL, ON DOIT FAIRE UN TABLEAU DE PORTS OUVERTS ET FERMES POUR CHAQUE SCAN TYPE? A REFLECHIR
+    port_state port_state;
+    switch (nmap->current_scan) {
+        case SCAN_SYN:
+            port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
+                         : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
+                                                              : PORT_FILTERED;
+            break;
+        case SCAN_UDP: port_state = PORT_OPEN; break;
+        case SCAN_ACK:
+            // port_state = tcp->th_flags == (TH_RST) ? PORT_UNFILTERED : PORT_FILTERED;
+            break;
+        default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
+            port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_UNDEFINED; // OPEN FILTERED
+            break;
+    }
+
     nmap->port_states[nmap->hostname_index][nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
     --nmap->undefined_count[nmap->hostname_index];
 
@@ -79,13 +93,28 @@ void* capture_packets(void* arg) {
     while (run) {
         int ret = pcap_loop(handle, -1, got_packet, arg);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) {
-            fprintf(stderr, "pcap_loop failed: %s\n", pcap_geterr(handle)); // TODO utiliser error
-            continue;
+            error("pcap_loop failed");
+            exit(EXIT_FAILURE);
         }
-        for (int i = 0; i < nmap->port_count; ++i) {
-            // for SYN
-            if (nmap->port_states[nmap->hostname_index][i] == PORT_UNDEFINED) {
-                nmap->port_states[nmap->hostname_index][i] = PORT_FILTERED;
+
+        for (int i = 0; i < nmap->port_count; ++i) { // moche
+            switch (nmap->current_scan) {
+                case SCAN_SYN:
+                    if (nmap->port_states[nmap->hostname_index][i] == PORT_UNDEFINED) {
+                        nmap->port_states[nmap->hostname_index][i] = PORT_FILTERED;
+                    }
+                    break;
+                case SCAN_UDP:
+                    ///
+                    break;
+                case SCAN_ACK:
+                    ///
+                    break;
+                default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
+                    if (nmap->port_states[nmap->hostname_index][i] == PORT_UNDEFINED) {
+                        nmap->port_states[nmap->hostname_index][i] = PORT_OPEN; // PORT_FILTERED EN FAIT
+                    }
+                    break;
             }
         }
         nmap->undefined_count[nmap->hostname_index] = 0;

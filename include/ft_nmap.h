@@ -103,6 +103,7 @@ typedef struct {
     port_state port_states[MAX_HOSTNAMES][MAX_PORTS];
     uint16_t undefined_count[MAX_HOSTNAMES];
     uint8_t scans; // TODO: maybe uint16_t
+    uint8_t current_scan;
     uint8_t threads;
 
     struct timeval start_time;
