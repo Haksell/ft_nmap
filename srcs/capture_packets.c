@@ -51,11 +51,12 @@ static void got_packet(
     }
 
     // printf(
-    //     "   Protocol: %s\n", ip->ip_p == IPPROTO_TCP    ? "TCP"
-    //                          : ip->ip_p == IPPROTO_UDP  ? "UDP"
-    //                          : ip->ip_p == IPPROTO_ICMP ? "ICMP"
-    //                          : ip->ip_p == IPPROTO_IP   ? "IP"
-    //                                                     : "unknown"
+    //     "   Protocol: %s\n",
+    //     ip->ip_p == IPPROTO_TCP    ? "TCP"
+    //     : ip->ip_p == IPPROTO_UDP  ? "UDP"
+    //     : ip->ip_p == IPPROTO_ICMP ? "ICMP"
+    //     : ip->ip_p == IPPROTO_IP   ? "IP"
+    //                                : "unknown"
     // );
     if (ip->ip_p != IPPROTO_TCP) return; // pour l'instant ok
 
