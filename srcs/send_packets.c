@@ -128,8 +128,11 @@ static void print_port_states(t_nmap* nmap) {
         if (state == PORT_OPEN || (state == PORT_CLOSED && closed <= SHOW_LIMIT) ||
             (state == PORT_FILTERED && closed <= SHOW_LIMIT)) {
             service = getservbyport(htons(nmap->port_array[j]), "tcp");
+            port_state port_state = nmap->port_states[nmap->hostname_index][j];
+            if (port_state == PORT_FILTERED && filtered > SHOW_LIMIT) continue;
+            if (port_state == PORT_CLOSED && closed > SHOW_LIMIT) continue;
             printf(
-                "%d/tcp %s  %s\n", nmap->port_array[j], port_state_str[nmap->port_states[nmap->hostname_index][j]],
+                "%d/tcp %s  %s\n", nmap->port_array[j], port_state_str[port_state],
                 service ? service->s_name : "unknown"
             );
         }
