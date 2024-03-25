@@ -1,12 +1,8 @@
 #include "ft_nmap.h"
 
 void error(char* message) {
-    fprintf(
-        stderr,
-        "nmap: %s: %s\n",
-        message,
-        strerror(errno)
-    ); // ajouter if socket->fd > 0 close fd
+    // ajouter if socket->fd > 0 close fd
+    fprintf(stderr, "nmap: %s: %s\n", message, strerror(errno));
     exit(EXIT_FAILURE);
 }
 
