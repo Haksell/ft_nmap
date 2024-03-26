@@ -82,7 +82,7 @@ void* send_packets(void* arg) {
             continue;
         }
 
-        for (int i = 0; i < SCAN_NUM_MAX; ++i) {
+        for (int i = 0; i < SCAN_MAX; ++i) {
             nmap->current_scan = i;
             if ((nmap->scans & (1 << i)) == 0) continue;
 

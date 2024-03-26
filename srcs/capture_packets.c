@@ -81,16 +81,16 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
     // POUR LE RENDU FINAL, ON DOIT FAIRE UN TABLEAU DE PORTS OUVERTS ET FERMES POUR CHAQUE SCAN TYPE? A REFLECHIR
     port_state port_state;
     switch (nmap->current_scan) {
-        case SCAN_NUM_SYN:
+        case SCAN_SYN:
             port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
                          : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
                                                               : PORT_FILTERED;
             break;
-        case SCAN_NUM_UDP: port_state = PORT_OPEN; break;
-        case SCAN_NUM_ACK:
+        case SCAN_UDP: port_state = PORT_OPEN; break;
+        case SCAN_ACK:
             // port_state = tcp->th_flags == (TH_RST) ? PORT_UNFILTERED : PORT_FILTERED;
             break;
-        default: // SCAN_NUM_NULL, SCAN_NUM_FIN, SCAN_NUM_XMAS
+        default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
             port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_UNDEFINED; // OPEN FILTERED
             break;
     }
@@ -124,18 +124,18 @@ void* capture_packets(void* arg) {
 
         for (int i = 0; i < nmap->port_count; ++i) { // moche
             switch (nmap->current_scan) {
-                case SCAN_NUM_SYN:
+                case SCAN_SYN:
                     if (nmap->port_states[nmap->hostname_index][0][i] == PORT_UNDEFINED) {
                         nmap->port_states[nmap->hostname_index][0][i] = PORT_FILTERED;
                     }
                     break;
-                case SCAN_NUM_UDP:
+                case SCAN_UDP:
                     ///
                     break;
-                case SCAN_NUM_ACK:
+                case SCAN_ACK:
                     ///
                     break;
-                default: // SCAN_NUM_NULL, SCAN_NUM_FIN, SCAN_NUM_XMAS
+                default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
                     if (nmap->port_states[nmap->hostname_index][0][i] == PORT_UNDEFINED) {
                         nmap->port_states[nmap->hostname_index][0][i] = PORT_OPEN; // PORT_FILTERED EN FAIT
                     }

@@ -93,11 +93,9 @@ static void parse_scan(char* value, uint8_t* scans) {
         if (comma) *comma = '\0';
 
         bool valid_scan = false;
-        for (size_t j = 0; valid_scans[j].type; ++j) {
+        for (size_t j = 0; j < SCAN_MAX; ++j) {
             if (!strcmp(value, valid_scans[j].name)) {
-                // TODO: check duplicate?
-                // if (*scan & valid_scans[j].type)
-                *scans |= valid_scans[j].type;
+                *scans |= 1 << valid_scans[j].type;
                 valid_scan = true;
                 break;
             }

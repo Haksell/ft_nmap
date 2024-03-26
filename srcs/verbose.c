@@ -16,7 +16,7 @@ void print_scans(uint8_t scans) {
     bool is_first_scan = true;
     printf("Scans: ");
     for (int i = 0; valid_scans[i].type; ++i) {
-        if (scans & valid_scans[i].type) {
+        if (scans & (1 << valid_scans[i].type)) {
             printf(is_first_scan ? "%s" : ",%s", valid_scans[i].name);
             is_first_scan = false;
         }

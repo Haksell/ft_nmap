@@ -46,14 +46,6 @@
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 
 typedef enum {
-    PORT_UNDEFINED,
-    PORT_OPEN,
-    PORT_CLOSED,
-    PORT_FILTERED,
-    // TODO: PORT_UNFILTERED...,
-} __attribute__((packed)) port_state;
-
-typedef enum {
     OPT_FILE = 1 << 0,
     OPT_HELP = 1 << 1,
     OPT_PORTS = 1 << 2,
@@ -70,29 +62,51 @@ typedef struct {
     bool has_arg;
 } option;
 
-typedef enum {
-    SCAN_NUM_ACK,
-    SCAN_NUM_FIN,
-    SCAN_NUM_NULL,
-    SCAN_NUM_SYN,
-    SCAN_NUM_UDP,
-    SCAN_NUM_XMAS,
-    SCAN_NUM_MAX,
-} scan_num;
+static const option valid_opt[] = {
+    {OPT_FILE,    'f', "file",    true },
+    {OPT_HELP,    'h', "help",    false},
+    {OPT_PORTS,   'p', "ports",   true },
+    {OPT_SCAN,    's', "scans",   true },
+    {OPT_THREADS, 't', "threads", true },
+    {OPT_VERBOSE, 'v', "verbose", false},
+    {OPT_VERSION, 'V', "version", false},
+    {0,           0,   NULL,      false}
+};
 
 typedef enum {
-    SCAN_ACK = 1 << SCAN_NUM_ACK,
-    SCAN_FIN = 1 << SCAN_NUM_FIN,
-    SCAN_NULL = 1 << SCAN_NUM_NULL,
-    SCAN_SYN = 1 << SCAN_NUM_SYN,
-    SCAN_UDP = 1 << SCAN_NUM_UDP,
-    SCAN_XMAS = 1 << SCAN_NUM_XMAS,
+    PORT_UNDEFINED,
+    PORT_OPEN,
+    PORT_CLOSED,
+    PORT_FILTERED,
+    PORT_UNFILTERED,
+    PORT_OPEN_FILTERED,
+} __attribute__((packed)) port_state;
+
+static const char port_state_str[][14] = {"undefined", "open", "closed", "filtered", "unfiltered", "open|filtered"};
+
+typedef enum {
+    SCAN_ACK,
+    SCAN_FIN,
+    SCAN_NULL,
+    SCAN_SYN,
+    SCAN_UDP,
+    SCAN_XMAS,
+    SCAN_MAX,
 } scan_type;
 
 typedef struct {
     scan_type type;
     char name[5];
 } scan;
+
+static const scan valid_scans[] = {
+    {SCAN_ACK,  "ACK" },
+    {SCAN_FIN,  "FIN" },
+    {SCAN_NULL, "NULL"},
+    {SCAN_SYN,  "SYN" },
+    {SCAN_UDP,  "UDP" },
+    {SCAN_XMAS, "XMAS"},
+};
 
 // TODO: host struct with name, port_states, undefined_count...
 
@@ -113,7 +127,7 @@ typedef struct {
     uint64_t port_set[1024];
     uint16_t port_array[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
-    port_state port_states[MAX_HOSTNAMES][SCAN_NUM_MAX][MAX_PORTS];
+    port_state port_states[MAX_HOSTNAMES][SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[MAX_HOSTNAMES];
     uint8_t scans; // TODO: maybe uint16_t
     uint8_t current_scan;
@@ -128,29 +142,6 @@ typedef struct {
     pcap_if_t* devs;
     bpf_u_int32 net_device;
 } t_nmap;
-
-static const option valid_opt[] = {
-    {OPT_FILE,    'f', "file",    true },
-    {OPT_HELP,    'h', "help",    false},
-    {OPT_PORTS,   'p', "ports",   true },
-    {OPT_SCAN,    's', "scans",   true },
-    {OPT_THREADS, 't', "threads", true },
-    {OPT_VERBOSE, 'v', "verbose", false},
-    {OPT_VERSION, 'V', "version", false},
-    {0,           0,   NULL,      false}
-};
-
-static const scan valid_scans[] = {
-    {SCAN_ACK,  "ACK" },
-    {SCAN_FIN,  "FIN" },
-    {SCAN_NULL, "NULL"},
-    {SCAN_SYN,  "SYN" },
-    {SCAN_UDP,  "UDP" },
-    {SCAN_XMAS, "XMAS"},
-    {0,         ""    },
-};
-
-static const char port_state_str[][10] = {"undefined", "open", "closed", "filtered"};
 
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);

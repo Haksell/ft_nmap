@@ -36,13 +36,13 @@ static uint16_t tcp_checksum(void* pseudohdr, void* tcphdr) {
     return calculate_checksum((uint16_t*)checksum_packet, packet_size);
 }
 
-static void set_tcp_flags(struct tcphdr* tcph, scan_num type) {
+static void set_tcp_flags(struct tcphdr* tcph, scan_type type) {
     switch (type) {
-        case SCAN_NUM_SYN: tcph->syn = 1; break;
-        case SCAN_NUM_NULL: break;
-        case SCAN_NUM_ACK: tcph->ack = 1; break;
-        case SCAN_NUM_FIN: tcph->fin = 1; break;
-        case SCAN_NUM_XMAS:
+        case SCAN_SYN: tcph->syn = 1; break;
+        case SCAN_NULL: break;
+        case SCAN_ACK: tcph->ack = 1; break;
+        case SCAN_FIN: tcph->fin = 1; break;
+        case SCAN_XMAS:
             tcph->fin = 1;
             tcph->urg = 1;
             tcph->psh = 1;
