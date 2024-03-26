@@ -35,7 +35,8 @@ int main(int argc, char* argv[]) {
     init_pcap(&nmap);
 
     pthread_t capture_thread, sender_thread;
-    if (pthread_create(&capture_thread, NULL, capture_packets, &nmap) != 0) panic("Failed to create the capture thread");
+    if (pthread_create(&capture_thread, NULL, capture_packets, &nmap) != 0)
+        panic("Failed to create the capture thread");
     if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0) panic("Failed to create the sender thread");
     pthread_join(capture_thread, NULL);
     pthread_join(sender_thread, NULL);

@@ -33,6 +33,15 @@
 
 #include "ft_pcap.h"
 
+#define RED "\x1b[31m"
+#define GREEN "\x1b[32m"
+#define YELLOW "\x1b[33m"
+#define BLUE "\x1b[34m"
+#define MAGENTA "\x1b[35m"
+#define CYAN "\x1b[36m"
+#define WHITE "\x1b[37m"
+#define RESET "\x1b[0m"
+
 #define EXIT_ARGS 0xff
 #define VERSION "0.4.2"
 
@@ -83,6 +92,7 @@ typedef enum {
 } __attribute__((packed)) port_state;
 
 static const char port_state_str[][14] = {"undefined", "open", "closed", "filtered", "unfiltered", "open|filtered"};
+static const char port_state_color[][8] = {WHITE, GREEN, RED, YELLOW, BLUE, MAGENTA};
 
 static const size_t port_state_strlen[] = {
     strlen(port_state_str[PORT_UNDEFINED]),

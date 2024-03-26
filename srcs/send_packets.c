@@ -42,11 +42,12 @@ static t_paddings compute_paddings(t_nmap* nmap) {
 }
 
 static void print_scan_cell(t_nmap* nmap, t_paddings* paddings, scan_type scan_type, int port_index, int port) {
+    port_state port_state = port >= 0 ? nmap->port_states[nmap->hostname_index][scan_type][port_index] : PORT_UNDEFINED;
     printf(
-        "%-*s ",
+        "%s%-*s " WHITE,
+        port >= 0 ? port_state_color[port_state] : WHITE,
         paddings->port_states[scan_type],
-        port >= 0 ? port_state_str[nmap->port_states[nmap->hostname_index][scan_type][port_index]]
-                  : scans_str[scan_type]
+        port >= 0 ? port_state_str[port_state] : scans_str[scan_type]
     );
 }
 
@@ -81,6 +82,7 @@ static void print_port_states(t_nmap* nmap) {
         uint16_t port = nmap->port_array[port_index];
         print_line(nmap, &paddings, port_index, port, get_service_name(port, "tcp"), get_service_name(port, "udp"));
     }
+    printf(RESET);
 }
 
 static void print_scan_report(t_nmap* nmap) {
