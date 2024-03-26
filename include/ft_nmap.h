@@ -89,8 +89,8 @@ typedef enum {
     SCAN_FIN,
     SCAN_NULL,
     SCAN_SYN,
-    SCAN_UDP,
     SCAN_XMAS,
+    SCAN_UDP,
     SCAN_MAX,
 } scan_type;
 
@@ -104,8 +104,8 @@ static const scan valid_scans[] = {
     {SCAN_FIN,  "FIN" },
     {SCAN_NULL, "NULL"},
     {SCAN_SYN,  "SYN" },
-    {SCAN_UDP,  "UDP" },
     {SCAN_XMAS, "XMAS"},
+    {SCAN_UDP,  "UDP" },
 };
 
 // TODO: host struct with name, port_states, undefined_count...
@@ -128,7 +128,7 @@ typedef struct {
     uint16_t port_array[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
     port_state port_states[MAX_HOSTNAMES][SCAN_MAX][MAX_PORTS];
-    uint16_t undefined_count[MAX_HOSTNAMES];
+    uint16_t undefined_count[MAX_HOSTNAMES][SCAN_MAX];
     uint8_t scans; // TODO: maybe uint16_t
     uint8_t current_scan;
     uint8_t threads;

@@ -1,48 +1,38 @@
 #include "ft_nmap.h"
 
-#define SHOW_LIMIT 25
+// SHOW_LIMIT: https://github.com/Haksell/ft_nmap/blob/3825e0fd2b2909f20c425ce91910ee32788bc7b2/srcs/send_packets.c
 
 extern bool run;
 
+static void show_port_state(t_nmap* nmap, uint16_t port, scan_type scan_type) {
+    if (!(nmap->scans & (1 << scan_type))) return;
+    port_state state = nmap->port_states[nmap->hostname_index][scan_type][port];
+    printf("%-14s", port_state_str[state]);
+}
+
 static void print_port_states(t_nmap* nmap) {
-    int open = 0, closed = 0, filtered = 0; // TODO: other states except open
-
-    for (int j = 0; j < nmap->port_count; ++j) {
-        port_state state = nmap->port_states[nmap->hostname_index][0][j];
-        open += state == PORT_OPEN;
-        closed += state == PORT_CLOSED;
-        filtered += state == PORT_FILTERED;
-    }
-
-    if (open == 0 && filtered == 0 && closed > SHOW_LIMIT)
-        printf(
-            "All %d scanned ports on %s (%s) are in ignored states.\n",
-            nmap->port_count,
-            nmap->hostnames[nmap->hostname_index],
-            nmap->hostip
-        ); // TODO: Lorenzo
-    if (closed > SHOW_LIMIT) printf("Not shown: %d closed tcp ports (reset)\n", closed); // TODO: not tcp and reset
-    if (filtered > SHOW_LIMIT) printf("Not shown: %d filtered tcp ports (no-response)\n", filtered);
-    if (open == 0 && closed > SHOW_LIMIT && (filtered == 0 || filtered > SHOW_LIMIT)) return;
-
     struct servent* service;
-    printf("PORT   STATE SERVICE\n"); // TODO: Axel align styleeeeee'
-    for (int j = 0; j < nmap->port_count; ++j) {
-        port_state state = nmap->port_states[nmap->hostname_index][0][j];
-        if (state == PORT_OPEN || (state == PORT_CLOSED && closed <= SHOW_LIMIT) ||
-            (state == PORT_FILTERED && filtered <= SHOW_LIMIT)) {
-            service = getservbyport(htons(nmap->port_array[j]), "tcp");
-            port_state port_state = nmap->port_states[nmap->hostname_index][0][j];
-            if (port_state == PORT_FILTERED && filtered > SHOW_LIMIT) continue;
-            if (port_state == PORT_CLOSED && closed > SHOW_LIMIT) continue;
-
-            printf(
-                "%d/tcp %s  %s\n",
-                nmap->port_array[j],
-                port_state_str[port_state],
-                service ? service->s_name : "unknown"
-            );
+    printf("PORT\t");
+    for (int scan_type = 0; scan_type < SCAN_UDP; ++scan_type) {
+        if (!(nmap->scans & (1 << scan_type))) continue;
+        printf("%-14s", valid_scans[scan_type].name);
+    }
+    bool has_tcp = nmap->scans & ~(1 << SCAN_UDP);
+    bool has_udp = nmap->scans & (1 << SCAN_UDP);
+    if (has_tcp) printf("%-14s", "SERVICE");
+    if (has_udp) printf("    %-14s%-14s", "UDP", "SERVICE");
+    printf("\n");
+    for (int port = 0; port < nmap->port_count; ++port) {
+        printf("%d\t", nmap->port_array[port]);
+        for (int scan_type = 0; scan_type < SCAN_UDP; ++scan_type) show_port_state(nmap, port, scan_type);
+        service = getservbyport(htons(nmap->port_array[port]), "tcp");
+        if (has_tcp) printf("%-14s", service ? service->s_name : "unknown");
+        if (has_udp) {
+            printf("    ");
+            show_port_state(nmap, port, SCAN_UDP);
+            printf("%-14s", service ? service->s_name : "unknown");
         }
+        printf("\n");
     }
 }
 
@@ -104,7 +94,8 @@ void* send_packets(void* arg) {
             }
 
             alarm(1);
-            while (nmap->undefined_count[nmap->hostname_index] > 0) usleep(1000); // TODO: no forbidden functions
+            while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0)
+                usleep(1000); // TODO: no forbidden functions
             alarm(0);
         }
         print_scan_report(nmap);

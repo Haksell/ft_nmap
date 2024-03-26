@@ -95,8 +95,9 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
             break;
     }
 
-    nmap->port_states[nmap->hostname_index][0][nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
-    --nmap->undefined_count[nmap->hostname_index];
+    nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
+    // printf("j=%d state=%d current=%d\n", nmap->port_dictionary[ntohs(tcp->th_sport)], port_state, nmap->current_scan);
+    --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
 
     // int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
     // if (size_payload > 0) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
@@ -125,8 +126,8 @@ void* capture_packets(void* arg) {
         for (int i = 0; i < nmap->port_count; ++i) { // moche
             switch (nmap->current_scan) {
                 case SCAN_SYN:
-                    if (nmap->port_states[nmap->hostname_index][0][i] == PORT_UNDEFINED) {
-                        nmap->port_states[nmap->hostname_index][0][i] = PORT_FILTERED;
+                    if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
+                        nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_FILTERED;
                     }
                     break;
                 case SCAN_UDP:
@@ -136,13 +137,13 @@ void* capture_packets(void* arg) {
                     ///
                     break;
                 default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
-                    if (nmap->port_states[nmap->hostname_index][0][i] == PORT_UNDEFINED) {
-                        nmap->port_states[nmap->hostname_index][0][i] = PORT_OPEN; // PORT_FILTERED EN FAIT
+                    if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
+                        nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_OPEN; // PORT_FILTERED EN FAIT
                     }
                     break;
             }
         }
-        nmap->undefined_count[nmap->hostname_index] = 0;
+        nmap->undefined_count[nmap->hostname_index][nmap->current_scan] = 0;
     }
     return NULL;
 }

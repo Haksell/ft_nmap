@@ -244,7 +244,11 @@ static void set_port_mappings(t_nmap* nmap) {
 }
 
 static void set_undefined_count(t_nmap* nmap) {
-    for (int i = 0; i < nmap->hostname_count; ++i) nmap->undefined_count[i] = nmap->port_count;
+    for (int i = 0; i < nmap->hostname_count; ++i) {
+        for (int j = 0; j < SCAN_MAX; ++j) {
+            nmap->undefined_count[i][j] = nmap->port_count;
+        }
+    }
 }
 
 void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
