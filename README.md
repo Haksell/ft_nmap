@@ -93,6 +93,7 @@ pseudocode qui est illogique
 -   https://en.wikipedia.org/wiki/User_Datagram_Protocol
 -   https://nmap.org/book/toc.html
 -   https://nmap.org/book/man.html
+-   https://nmap.org/phrack54-09.txt
 -   https://www.it-connect.fr/les-scans-de-port-via-tcp-syn-connect-et-fin/
 -   https://www.it-connect.fr/les-scans-de-port-via-tcp-xmas-null-et-ack/
 -   https://www.it-connect.fr/technique-de-scan-de-port-udp/
