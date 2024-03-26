@@ -43,6 +43,7 @@
 #define IP_HEADER_SIZE sizeof(struct iphdr)
 #define PSEUDO_HEADER_SIZE sizeof(struct pseudohdr)
 #define NMAP_PACKET_SIZE (IP_HEADER_SIZE + TCP_HEADER_SIZE)
+#define ICMP_HDR_SIZE sizeof(struct icmphdr)
 
 typedef enum {
     PORT_UNDEFINED,
@@ -87,8 +88,10 @@ typedef struct {
 
 typedef struct {
     int fd;
+    int icmp_fd;
     uint8_t* packet;
     int hostname_count;
+    int hostname_up_count;
     char hostnames[MAX_HOSTNAMES][HOST_NAME_MAX + 1];
     char hostip[INET_ADDRSTRLEN + 1]; // one for each hostname
     int hostname_index;
@@ -108,6 +111,7 @@ typedef struct {
 
     struct timeval start_time;
     struct timeval end_time;
+    struct timeval latency;
 
     uint16_t port_source;
 
@@ -148,8 +152,15 @@ void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 void set_filter(t_nmap* nmap);
 void init_pcap(t_nmap* nmap);
 
-// main.c
+// parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
+
+// ping.c
+void send_ping(t_nmap* nmap);
+void handle_echo_reply(t_nmap* nmap, uint8_t* reply_packet);
+
+// packet.c
+void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port);
 
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
@@ -172,6 +183,7 @@ void hostname_to_ip(t_nmap* nmap);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
 void panic(const char* format, ...);
+struct timeval timeval_subtract(struct timeval start, struct timeval end);
 void get_start_time(t_nmap* nmap);
 void print_stats(t_nmap* nmap);
 void cleanup(t_nmap* nmap);

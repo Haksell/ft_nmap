@@ -11,6 +11,8 @@ static void init(t_nmap* nmap) {
 
     nmap->fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
     if (nmap->fd < 0) error("TCP socket creation failed");
+    nmap->icmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (nmap->icmp_fd < 0) error("ICMP socket creation failed");
 
     if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
 
