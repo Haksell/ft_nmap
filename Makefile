@@ -51,10 +51,10 @@ re: fclean
 help: all
 	@./$(NAME) --version --help
 
-vagrant_destroy:
-	vagrant destroy -f
-	rm -rf .vagrant
-	rm -rf *VBox*.log
+vagrant_destroy: fclean
+	vagrant destroy -f || true
+	rm -rf .vagrant || true
+	rm -rf *VBox*.log || true
 
 clangd:
 	@echo "CompileFlags:" > .clangd
