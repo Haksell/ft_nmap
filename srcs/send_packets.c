@@ -8,7 +8,7 @@ static void print_port_states(t_nmap* nmap) {
     int open = 0, closed = 0, filtered = 0; // TODO: other states except open
 
     for (int j = 0; j < nmap->port_count; ++j) {
-        port_state state = nmap->port_states[nmap->hostname_index][j];
+        port_state state = nmap->port_states[nmap->hostname_index][0][j];
         open += state == PORT_OPEN;
         closed += state == PORT_CLOSED;
         filtered += state == PORT_FILTERED;
@@ -28,11 +28,11 @@ static void print_port_states(t_nmap* nmap) {
     struct servent* service;
     printf("PORT   STATE SERVICE\n"); // TODO: Axel align styleeeeee'
     for (int j = 0; j < nmap->port_count; ++j) {
-        port_state state = nmap->port_states[nmap->hostname_index][j];
+        port_state state = nmap->port_states[nmap->hostname_index][0][j];
         if (state == PORT_OPEN || (state == PORT_CLOSED && closed <= SHOW_LIMIT) ||
             (state == PORT_FILTERED && filtered <= SHOW_LIMIT)) {
             service = getservbyport(htons(nmap->port_array[j]), "tcp");
-            port_state port_state = nmap->port_states[nmap->hostname_index][j];
+            port_state port_state = nmap->port_states[nmap->hostname_index][0][j];
             if (port_state == PORT_FILTERED && filtered > SHOW_LIMIT) continue;
             if (port_state == PORT_CLOSED && closed > SHOW_LIMIT) continue;
 
@@ -82,9 +82,9 @@ void* send_packets(void* arg) {
             continue;
         }
 
-        for (int i = 0; i < 6 /*TODO: don't hardcode*/; ++i) {
-            nmap->current_scan = 1 << i;
-            if ((nmap->scans & nmap->current_scan) == 0) continue;
+        for (int i = 0; i < SCAN_NUM_MAX; ++i) {
+            nmap->current_scan = i;
+            if ((nmap->scans & (1 << i)) == 0) continue;
 
             nmap->port_source = random_u32_range(1 << 15, UINT16_MAX);
             set_filter(nmap);

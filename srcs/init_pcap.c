@@ -41,7 +41,6 @@ void init_pcap(t_nmap* nmap) {
     if (pcap_lookupnet(dev, &nmap->net_device, &_, errbuf) == PCAP_ERROR)
         panic("Couldn't get netmask for device %s: %s\n", dev, errbuf);
 
-    // j'ai mis 10 ms pour le timeout parce que sinon le ping avait 800ms de retard. verifie si c'est ok pour toi. avant c'etait 1000ms, too much
     handle = pcap_open_live(dev, SNAP_LEN, 1, 10, errbuf);
     if (handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
     if (pcap_datalink(handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);

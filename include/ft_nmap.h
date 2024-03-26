@@ -71,12 +71,22 @@ typedef struct {
 } option;
 
 typedef enum {
-    SCAN_ACK = 1 << 0,
-    SCAN_FIN = 1 << 1,
-    SCAN_NULL = 1 << 2,
-    SCAN_SYN = 1 << 3,
-    SCAN_UDP = 1 << 4,
-    SCAN_XMAS = 1 << 5,
+    SCAN_NUM_ACK,
+    SCAN_NUM_FIN,
+    SCAN_NUM_NULL,
+    SCAN_NUM_SYN,
+    SCAN_NUM_UDP,
+    SCAN_NUM_XMAS,
+    SCAN_NUM_MAX,
+} scan_num;
+
+typedef enum {
+    SCAN_ACK = 1 << SCAN_NUM_ACK,
+    SCAN_FIN = 1 << SCAN_NUM_FIN,
+    SCAN_NULL = 1 << SCAN_NUM_NULL,
+    SCAN_SYN = 1 << SCAN_NUM_SYN,
+    SCAN_UDP = 1 << SCAN_NUM_UDP,
+    SCAN_XMAS = 1 << SCAN_NUM_XMAS,
 } scan_type;
 
 typedef struct {
@@ -103,7 +113,7 @@ typedef struct {
     uint64_t port_set[1024];
     uint16_t port_array[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
-    port_state port_states[MAX_HOSTNAMES][MAX_PORTS];
+    port_state port_states[MAX_HOSTNAMES][SCAN_NUM_MAX][MAX_PORTS];
     uint16_t undefined_count[MAX_HOSTNAMES];
     uint8_t scans; // TODO: maybe uint16_t
     uint8_t current_scan;
