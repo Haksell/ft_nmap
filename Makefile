@@ -22,6 +22,8 @@ define remove_target
 fi
 endef
 
+# ======= INSIDE VM =======
+
 all: $(NAME)
 
 $(PATH_OBJS):
@@ -43,7 +45,6 @@ clean:
 
 fclean: clean
 	$(call remove_target,$(NAME))
-	$(call remove_target,.clangd)
 
 re: fclean
 	@$(MAKE) -s $(NAME)
@@ -51,10 +52,7 @@ re: fclean
 help: all
 	@./$(NAME) --version --help
 
-vagrant_destroy: fclean
-	vagrant destroy -f || true
-	rm -rf .vagrant || true
-	rm -rf *VBox*.log || true
+# ======= OUTSIDE VM =======
 
 clangd:
 	@echo "CompileFlags:" > .clangd
@@ -71,10 +69,24 @@ clangd:
 
 .clangd: clangd
 
+setup: clangd
+	@vagrant up
+	@vagrant ssh
+
+destroy: fclean
+	$(call remove_target,.clangd)
+	vagrant destroy -f || true
+	rm -rf .vagrant || true
+	rm -rf *VBox*.log || true
+
+resetup:
+	@$(MAKE) --no-print-directory destroy
+	@$(MAKE) --no-print-directory setup
+
 define compile_from_source
     @wget -O source.tar.gz $(1)
     @mkdir source_dir && tar xvf source.tar.gz -C source_dir --strip-components=1
-    @cd source_dir && ./configure --prefix=$$HOME/.local && make -j10 && make install
+    @cd source_dir && ./configure --prefix=$$HOME/.local && make -j && make install
     @rm -rf source_dir source.tar.gz
 endef
 
@@ -95,4 +107,4 @@ uninstall_libpcap:
 	@rm -rf $$HOME/.local/share/bison
 	@rm -rf $$HOME/.local/*/*pcap*
 
-.PHONY: all clean fclean re help vagrant_destroy install_libpcap uninstall_libpcap
+.PHONY: all clean fclean re help clangd setup destroy resetup install_libpcap uninstall_libpcap
