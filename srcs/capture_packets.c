@@ -129,19 +129,19 @@ void* capture_packets(void* arg) {
 
         Loop a un buffer de environ 490/500 packets, avant de commencer a dropper des packets
         1-1000 -> Not shown: 497 filtered tcp ports (no-response) -> dropped et donc ils sont mis en filtered, il pense
-		qu'ils sont sans reponse donc à revoir tout ça. Aussi, function interdite.
+        qu'ils sont sans reponse donc à revoir tout ça. Aussi, function interdite.
 
         ChatGPT's solution:
 
-		With the pcap functions available, another approach is to ensure that your packet processing is as efficient as possible
-		to minimize the risk of buffer overflow and packet drops.
+        With the pcap functions available, another approach is to ensure that your packet processing is as efficient as
+        possible to minimize the risk of buffer overflow and packet drops.
 
-		Dispatch Packets Quickly: Use pcap_dispatch() effectively to process packets as quickly as they are captured. The faster
-		you can process packets, the less likely you are to encounter buffer overflow issues.
+        Dispatch Packets Quickly: Use pcap_dispatch() effectively to process packets as quickly as they are captured.
+        The faster you can process packets, the less likely you are to encounter buffer overflow issues.
 
-		Filtering: Use pcap_compile() and pcap_setfilter() to apply a filter that limits the captured traffic to only what's
-		necessary for your scanning task. By reducing the amount of unnecessary traffic pcap has to handle, you can mitigate the
-		impact of not being able to increase the buffer size.
+        Filtering: Use pcap_compile() and pcap_setfilter() to apply a filter that limits the captured traffic to only
+        what's necessary for your scanning task. By reducing the amount of unnecessary traffic pcap has to handle, you
+        can mitigate the impact of not being able to increase the buffer size.
 
 
         */
