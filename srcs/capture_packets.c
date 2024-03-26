@@ -64,7 +64,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         } else if (icmp->type == ICMP_TIME_EXCEEDED) {
             printf("Time exceeded\n"); // Voir le nmap book si ça va servir, sinon delete
         } else {
-            printf("Si ça arrive, screenshot sur discord\n"); // normalement on devrait pas arriver ici
+            printf("Si ça arrive, screenshot sur discord: %d\n", icmp->type); // normalement on devrait pas arriver ici
         }
         return;
     }
