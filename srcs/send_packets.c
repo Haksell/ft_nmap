@@ -48,7 +48,8 @@ static void print_port_states(t_nmap* nmap) {
 
 static void print_scan_report(t_nmap* nmap) {
     printf("\nNmap scan report for %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
-    printf("Host is up (%ld.%lds latency).\n", nmap->latency.tv_sec, nmap->latency.tv_usec / 10000);
+    double uptime = nmap->latency.tv_sec + nmap->latency.tv_usec / 1000000.0;
+    printf("Host is up (%.2gs latency).\n", uptime);
     printf(
         "rDNS record for %s: fra15s10-in-f14.1e100.net\n",
         nmap->hostnames[nmap->hostname_index]
@@ -67,8 +68,8 @@ void* send_packets(void* arg) {
         // je suis fatigue, donc c'est pas ouf, mais la logique est la.
         // si t'arrives à faire un truc plus elegant, go
         int old_hostname_up_count = nmap->hostname_up_count;
-        struct timeval countdown = {.tv_usec = 3000000}; // 3s -> MACRO
-        while (nmap->hostname_up_count == old_hostname_up_count && countdown.tv_usec > 0) {
+        struct timeval countdown = {.tv_usec = 300000}; // 3s -> MACRO
+        while (nmap->hostname_up_count == old_hostname_up_count && countdown.tv_usec > 0 && run) {
             usleep(1000); // 1ms
             countdown.tv_usec -= 1000; // 1ms
         }
@@ -85,7 +86,6 @@ void* send_packets(void* arg) {
             nmap->current_scan = 1 << i;
             if ((nmap->scans & nmap->current_scan) == 0) continue;
 
-            alarm(2);
             nmap->port_source = random_u32_range(1 << 15, UINT16_MAX);
             set_filter(nmap);
             // TODO: shuffle
@@ -103,6 +103,7 @@ void* send_packets(void* arg) {
                 );
             }
 
+            alarm(1);
             while (nmap->undefined_count[nmap->hostname_index] > 0) usleep(1000); // TODO: no forbidden functions
             alarm(0);
         }
