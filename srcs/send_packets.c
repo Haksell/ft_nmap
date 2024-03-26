@@ -2,35 +2,76 @@
 
 // SHOW_LIMIT: https://github.com/Haksell/ft_nmap/blob/3825e0fd2b2909f20c425ce91910ee32788bc7b2/srcs/send_packets.c
 
+// TODO: put display code in display file
+
 extern bool run;
 
-static void show_port_state(t_nmap* nmap, uint16_t port, scan_type scan_type) {
+typedef struct {
+    int port;
+    int port_states[SCAN_MAX];
+    int tcp_service;
+    int udp_service;
+} t_paddings;
+
+static char* get_service_name(uint16_t port, const char* proto) {
+    struct servent* service = getservbyport(htons(port), proto);
+    return service ? service->s_name : "unknown";
+}
+
+static void show_port_state(t_nmap* nmap, uint16_t port, scan_type scan_type, t_paddings* paddings) {
     if (!(nmap->scans & (1 << scan_type))) return;
     port_state state = nmap->port_states[nmap->hostname_index][scan_type][port];
-    printf("%-14s", port_state_str[state]);
+    printf("%-*s ", paddings->port_states[scan_type], port_state_str[state]);
+}
+
+static t_paddings compute_paddings(t_nmap* nmap) {
+    // TODO: macros Lorenzo
+    t_paddings paddings = {
+        .port = 4,
+        .port_states = {3, 3, 4, 3, 4, 3},
+        .tcp_service = 7,
+        .udp_service = 7
+    };
+    for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
+        uint16_t port = nmap->port_array[port_index];
+        if (port >= 10000) paddings.port = 5;
+        for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+            port_state state = nmap->port_states[nmap->hostname_index][scan_type][port_index];
+            paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_strlen[state]);
+        }
+        paddings.tcp_service = MAX(paddings.tcp_service, strlen(get_service_name(port, "tcp")));
+        paddings.udp_service = MAX(paddings.udp_service, strlen(get_service_name(port, "udp")));
+    }
+    return paddings;
+}
+
+static void separate_tcp_udp(bool has_tcp, bool has_udp) {
+    if (has_tcp && has_udp) printf(" | ");
 }
 
 static void print_port_states(t_nmap* nmap) {
-    struct servent* service;
-    printf("PORT\t");
+    t_paddings paddings = compute_paddings(nmap);
+    printf("%-*s | ", paddings.port, "PORT");
     for (int scan_type = 0; scan_type < SCAN_UDP; ++scan_type) {
         if (!(nmap->scans & (1 << scan_type))) continue;
-        printf("%-14s", valid_scans[scan_type].name);
+        printf("%-*s ", paddings.port_states[scan_type], valid_scans[scan_type].name);
     }
     bool has_tcp = nmap->scans & ~(1 << SCAN_UDP);
     bool has_udp = nmap->scans & (1 << SCAN_UDP);
-    if (has_tcp) printf("%-14s", "SERVICE");
-    if (has_udp) printf("    %-14s%-14s", "UDP", "SERVICE");
+    if (has_tcp) printf("%-*s", paddings.tcp_service, "SERVICE");
+    separate_tcp_udp(has_tcp, has_udp);
+    if (has_udp) printf("%-*s %-*s", paddings.port_states[SCAN_UDP], "UDP", paddings.udp_service, "SERVICE");
     printf("\n");
-    for (int port = 0; port < nmap->port_count; ++port) {
-        printf("%d\t", nmap->port_array[port]);
-        for (int scan_type = 0; scan_type < SCAN_UDP; ++scan_type) show_port_state(nmap, port, scan_type);
-        service = getservbyport(htons(nmap->port_array[port]), "tcp");
-        if (has_tcp) printf("%-14s", service ? service->s_name : "unknown");
+    for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
+        uint16_t port = nmap->port_array[port_index];
+        printf("%-*d | ", paddings.port, nmap->port_array[port_index]);
+        for (int scan_type = 0; scan_type < SCAN_UDP; ++scan_type)
+            show_port_state(nmap, port_index, scan_type, &paddings);
+        if (has_tcp) printf("%-*s", paddings.tcp_service, get_service_name(port, "tcp"));
+        separate_tcp_udp(has_tcp, has_udp);
         if (has_udp) {
-            printf("    ");
-            show_port_state(nmap, port, SCAN_UDP);
-            printf("%-14s", service ? service->s_name : "unknown");
+            show_port_state(nmap, port_index, SCAN_UDP, &paddings);
+            printf("%-*s", paddings.udp_service, get_service_name(port, "udp"));
         }
         printf("\n");
     }

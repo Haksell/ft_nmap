@@ -84,6 +84,15 @@ typedef enum {
 
 static const char port_state_str[][14] = {"undefined", "open", "closed", "filtered", "unfiltered", "open|filtered"};
 
+static const size_t port_state_strlen[] = {
+    strlen(port_state_str[PORT_UNDEFINED]),
+    strlen(port_state_str[PORT_OPEN]),
+    strlen(port_state_str[PORT_CLOSED]),
+    strlen(port_state_str[PORT_FILTERED]),
+    strlen(port_state_str[PORT_UNFILTERED]),
+    strlen(port_state_str[PORT_OPEN_FILTERED])
+};
+
 typedef enum {
     SCAN_ACK,
     SCAN_FIN,

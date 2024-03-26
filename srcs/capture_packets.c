@@ -91,12 +91,14 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
             // port_state = tcp->th_flags == (TH_RST) ? PORT_UNFILTERED : PORT_FILTERED;
             break;
         default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
-            port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_UNDEFINED; // OPEN FILTERED
+            port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_OPEN_FILTERED; // OPEN FILTERED
             break;
     }
 
-    nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
-    // printf("j=%d state=%d current=%d\n", nmap->port_dictionary[ntohs(tcp->th_sport)], port_state, nmap->current_scan);
+    nmap->port_states[nmap->hostname_index][nmap->current_scan]
+                     [nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
+    // printf("j=%d state=%d current=%d\n", nmap->port_dictionary[ntohs(tcp->th_sport)], port_state,
+    // nmap->current_scan);
     --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
 
     // int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
@@ -123,22 +125,23 @@ void* capture_packets(void* arg) {
             exit(EXIT_FAILURE);
         }
 
-        for (int i = 0; i < nmap->port_count; ++i) { // moche
+        for (int i = 0; i < nmap->port_count; ++i) { // tres moche
             switch (nmap->current_scan) {
                 case SCAN_SYN:
                     if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
                         nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_FILTERED;
                     }
                     break;
-                case SCAN_UDP:
-                    ///
-                    break;
-                case SCAN_ACK:
-                    ///
-                    break;
+                // case SCAN_UDP:
+                //     ///
+                //     break;
+                // case SCAN_ACK:
+                //     ///
+                //     break;
                 default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
                     if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
-                        nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_OPEN; // PORT_FILTERED EN FAIT
+                        nmap->port_states[nmap->hostname_index][nmap->current_scan]
+                                         [i] = PORT_OPEN; // PORT_FILTERED EN FAIT
                     }
                     break;
             }
