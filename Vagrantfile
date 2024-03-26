@@ -2,8 +2,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = "debian/bullseye64"
   
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = 6144
-    vb.cpus = 6
+    vb.memory = 8192
+    vb.cpus = 8
   end
 
   config.vm.provision "shell", inline: <<-SHELL
@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
     apt-get install -y binutils build-essential bzip2 curl  \
                        clang git make valgrind zsh openssl  \
                        libssl-dev python3 python3-distutils \
-                       libpcap-dev net-tools wget
+                       libpcap-dev net-tools wget tcpdump
 
     wget https://nmap.org/dist/nmap-7.94.tar.bz2
     bzip2 -cd nmap-7.94.tar.bz2 | tar xvf -
