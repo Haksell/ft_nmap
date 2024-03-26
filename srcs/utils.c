@@ -91,13 +91,10 @@ void get_start_time(t_nmap* nmap) {
     gettimeofday(&nmap->start_time, NULL);
     struct tm* tm = localtime(&nmap->start_time.tv_sec);
 
-    char timestamp[21];
-    strftime(timestamp, 21, "%Y-%m-%d %H:%M", tm);
+    char timestamp[32];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
 
-    char timezone[4];
-    strftime(timezone, 4, "%Z", tm);
-
-    printf("Starting Nmap %s at %s %s\n", VERSION, timestamp, timezone);
+    printf("Starting Nmap %s at %s\n", VERSION, timestamp);
 }
 
 static float get_elapsed_time(t_nmap* nmap) {
@@ -117,9 +114,10 @@ void print_stats(t_nmap* nmap) {
     );
 }
 
-void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
+void cleanup(t_nmap* nmap
+) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     if (handle) pcap_close(handle);
-	if (nmap->fd >= 0) close(nmap->fd);
-	if (nmap->icmp_fd >= 0) close(nmap->icmp_fd);
+    if (nmap->fd >= 0) close(nmap->fd);
+    if (nmap->icmp_fd >= 0) close(nmap->icmp_fd);
 }
