@@ -108,14 +108,7 @@ typedef struct {
     char name[5];
 } scan;
 
-static const scan valid_scans[] = {
-    {SCAN_ACK,  "ACK" },
-    {SCAN_FIN,  "FIN" },
-    {SCAN_NULL, "NULL"},
-    {SCAN_SYN,  "SYN" },
-    {SCAN_XMAS, "XMAS"},
-    {SCAN_UDP,  "UDP" },
-};
+static const char scans_str[][5] = {"ACK", "FIN", "NULL", "SYN", "XMAS", "UDP"};
 
 // TODO: host struct with name, port_states, undefined_count...
 

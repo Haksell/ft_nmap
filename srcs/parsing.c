@@ -94,8 +94,8 @@ static void parse_scan(char* value, uint8_t* scans) {
 
         bool valid_scan = false;
         for (size_t j = 0; j < SCAN_MAX; ++j) {
-            if (!strcmp(value, valid_scans[j].name)) {
-                *scans |= 1 << valid_scans[j].type;
+            if (!strcmp(value, scans_str[j])) {
+                *scans |= 1 << j;
                 valid_scan = true;
                 break;
             }
