@@ -7,12 +7,14 @@
 #include <errno.h>
 #include <ifaddrs.h>
 #include <limits.h>
+#include <linux/if_ether.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
+#include <netinet/udp.h>
 #include <pcap.h>
 #include <poll.h>
 #include <pthread.h>
@@ -30,8 +32,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-
-#include "ft_pcap.h"
 
 #define RED "\x1b[31m"
 #define GREEN "\x1b[32m"
@@ -53,6 +53,10 @@
 #define PSEUDO_HEADER_SIZE sizeof(struct pseudohdr)
 #define NMAP_PACKET_SIZE (IP_HEADER_SIZE + TCP_HEADER_SIZE)
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
+#define SIZE_ETHERNET sizeof(struct ethhdr)
+
+// TODO pcap define, peut etre bouger ou meme hardcode, voir a quoi ca sert
+#define SNAP_LEN 1518
 
 typedef enum {
     OPT_FILE = 1 << 0,
@@ -104,10 +108,10 @@ static const size_t port_state_strlen[] = {
 };
 
 typedef enum {
+    SCAN_SYN,
     SCAN_ACK,
     SCAN_FIN,
     SCAN_NULL,
-    SCAN_SYN,
     SCAN_XMAS,
     SCAN_UDP,
     SCAN_MAX,
@@ -118,7 +122,7 @@ typedef struct {
     char name[5];
 } scan;
 
-static const char scans_str[][5] = {"ACK", "FIN", "NULL", "SYN", "XMAS", "UDP"};
+static const char scans_str[][5] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP"};
 
 // TODO: host struct with name, port_states, undefined_count...
 
@@ -165,6 +169,9 @@ void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 void set_filter(t_nmap* nmap);
 void init_pcap(t_nmap* nmap);
 
+// packet.c
+void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port);
+
 // parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
@@ -172,12 +179,12 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 void send_ping(t_nmap* nmap);
 void handle_echo_reply(t_nmap* nmap, uint8_t* reply_packet);
 
-// packet.c
-void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port);
-
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(t_nmap* nmap, uint16_t port);
+
+// print_payload.c
+void print_payload(const u_char* payload, int size_payload);
 
 // random.c
 uint32_t random_u32_range(uint32_t a, uint32_t b);

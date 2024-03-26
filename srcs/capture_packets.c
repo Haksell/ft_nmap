@@ -3,104 +3,97 @@
 extern bool run;
 extern pcap_t* handle;
 
-// static void print_hex_line(const u_char* payload, int len) {
-//     for (int i = 0; i < LINE_WIDTH; ++i) {
-//         if (i < len) printf("%02x ", *payload);
-//         else printf("   ");
-//         ++payload;
-//         if (i == 7) printf(" ");
-//     }
-// }
+#define TCP_FILTERED 0b0010011000001110
+#define UDP_FILTERED 0b0010011000000110
 
-// static void print_ascii_line(const u_char* payload, int len) {
-//     for (int i = 0; i < len; ++i) {
-//         printf("%c", isprint(*payload) ? *payload : '.');
-//         ++payload;
-//     }
-// }
+static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip) {
+    int icmp_offset = SIZE_ETHERNET + ip->ip_hl * 4;
+    struct icmphdr* icmp = (struct icmphdr*)(packet + icmp_offset);
 
-// static void print_hex_ascii_line(const u_char* payload, int len, int offset) {
-//     printf("%05x   ", offset);
-//     print_hex_line(payload, len);
-//     printf("   ");
-//     print_ascii_line(payload, len);
-//     printf("\n");
-// }
+    if (icmp->type == ICMP_ECHOREPLY) {
+        handle_echo_reply(nmap, (uint8_t*)(packet + icmp_offset + ICMP_HDR_SIZE));
+    } else if (icmp->type == ICMP_DEST_UNREACH) {
+        uint16_t mask = (1 << icmp->code);
 
-// static void print_payload(const u_char* payload, int size_payload) {
-//     printf("   Payload (%d bytes):\n", size_payload);
-//     for (int offset = 0; size_payload > 0; size_payload -= LINE_WIDTH) {
-//         print_hex_ascii_line(payload + offset, MIN(size_payload, LINE_WIDTH), offset);
-//         offset += LINE_WIDTH;
-//     }
-// }
+        int original_ip_offset = icmp_offset + ICMP_HDR_SIZE;
+        struct ip* original_ip = (struct ip*)(packet + original_ip_offset);
+        int original_ip_hdr_len = original_ip->ip_hl * 4;
 
-static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
-    t_nmap* nmap = (t_nmap*)args;
+        uint8_t* original_packet = (uint8_t*)(packet + original_ip_offset + original_ip_hdr_len);
+        uint16_t original_port;
 
-    // TODO: work with other things than internet
-    // TODO: LORENZO utiliser vrai struct ip et struct tcp pour aleger le code
-    const struct sniff_ip* ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
-    int size_ip = IP_HL(ip) * 4;
-    if (size_ip < 20) {
-        //printf("   * Invalid IP header length: %u bytes\n", size_ip);
-        return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
-    }
-
-    // todo switch case pour les types de paquets
-    // handle_icmp handle_tcp handle_udp
-    if (ip->ip_p == IPPROTO_ICMP) {
-        struct icmphdr* icmp = (struct icmphdr*)(packet + SIZE_ETHERNET + size_ip);
-        if (icmp->type == ICMP_ECHOREPLY) {
-            handle_echo_reply(nmap, (uint8_t*)(packet + SIZE_ETHERNET + size_ip + ICMP_HDR_SIZE));
-        } else if (icmp->type == ICMP_DEST_UNREACH) {
-            printf("Destination unreachable\n");
-            // TCP FIN, NULL, XMAS, ACK, SYN
-            // ICMP unreachable error (type 3, code 1, 2, 3, 9, 10, or 13)? FILTERED!
-
-            // UDP
-            // ICMP unreachable error (type 3, code 1, 2, 9, 10, or 13)	? FILTERED!
-            // ICMP port unreachable error (type 3, code 3)	? CLOSED!
-        } else if (icmp->type == ICMP_TIME_EXCEEDED) {
-            printf("Time exceeded\n"); // Voir le nmap book si ça va servir, sinon delete
+        if (nmap->current_scan == SCAN_UDP) {
+            struct udphdr* udp = (struct udphdr*)(original_packet);
+            original_port = ntohs(udp->uh_dport);
+        } else {
+            struct tcphdr* tcp = (struct tcphdr*)(original_packet);
+            original_port = ntohs(tcp->th_dport);
         }
+
+        // si t'arrives a faire un truc plus propre que ca c'est bien. PORT_UNDEFINED est superflu
+        port_state port_state = nmap->current_scan == SCAN_UDP ? (mask & UDP_FILTERED        ? PORT_FILTERED
+                                                                  : mask & ICMP_PORT_UNREACH ? PORT_CLOSED
+                                                                                             : PORT_UNDEFINED)
+                                                               : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNDEFINED);
+
+        nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[original_port]] = port_state;
+        --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+    }
+}
+
+static void handle_tcp(t_nmap* nmap, const u_char* packet, const struct ip* ip, int size_ip) {
+    const struct tcphdr* tcp = (struct tcphdr*)(packet + SIZE_ETHERNET + size_ip);
+
+    int size_tcp = tcp->th_off * 4;
+    if (size_tcp < 20) {
+        if (nmap->opt & OPT_VERBOSE) printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
         return;
     }
-    if (ip->ip_p != IPPROTO_TCP) return; // pour l'instant ok
 
-    const struct sniff_tcp* tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
-
-    int size_tcp = TH_OFF(tcp) * 4;
-    if (size_tcp < 20) {
-        printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
-        return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
-    }
-
-    // POUR LE RENDU FINAL, ON DOIT FAIRE UN TABLEAU DE PORTS OUVERTS ET FERMES POUR CHAQUE SCAN TYPE? A REFLECHIR
     port_state port_state;
+     // si t'arrives a faire un truc plus propre que ca c'est bien. PORT_UNDEFINED est superflu
     switch (nmap->current_scan) {
         case SCAN_SYN:
             port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
                          : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
-                                                              : PORT_FILTERED;
+                                                              : PORT_UNDEFINED;
             break;
-        case SCAN_UDP: port_state = PORT_OPEN; break;
-        case SCAN_ACK:
-            // port_state = tcp->th_flags == (TH_RST) ? PORT_UNFILTERED : PORT_FILTERED;
-            break;
-        default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
-            port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_OPEN_FILTERED; // OPEN FILTERED
-            break;
+        case SCAN_ACK: port_state = tcp->th_flags == (TH_RST) ? PORT_UNFILTERED : PORT_UNDEFINED; break;
+        case SCAN_NULL:
+        case SCAN_FIN:
+        case SCAN_XMAS: port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_UNDEFINED; break;
     }
 
     nmap->port_states[nmap->hostname_index][nmap->current_scan]
                      [nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
-    // printf("j=%d state=%d current=%d\n", nmap->port_dictionary[ntohs(tcp->th_sport)], port_state,
-    // nmap->current_scan);
     --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
 
-    // int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-    // if (size_payload > 0) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
+    int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
+    if (size_payload > 0 && nmap->opt & OPT_VERBOSE)
+        print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
+}
+
+static void handle_udp(t_nmap* nmap, const u_char* packet, const struct ip* ip, int size_ip) {
+    (void)nmap;
+    (void)packet;
+    (void)ip;
+    (void)size_ip;
+}
+
+static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
+    t_nmap* nmap = (t_nmap*)args;
+
+    const struct ip* ip = (struct ip*)(packet + SIZE_ETHERNET);
+    int size_ip = ip->ip_hl * 4;
+    if (size_ip < 20) {
+        if (nmap->opt & OPT_VERBOSE) printf("   * Invalid IP header length: %u bytes\n", size_ip);
+        return;
+    }
+
+    if (ip->ip_p == IPPROTO_ICMP) handle_icmp(nmap, packet, ip);
+    else if (ip->ip_p == IPPROTO_TCP) handle_tcp(nmap, packet, ip, size_ip);
+    else if (ip->ip_p == IPPROTO_UDP) handle_udp(nmap, packet, ip, size_ip);
+    else printf("WTF   Protocol: %d\n", ip->ip_p);
 }
 
 void* capture_packets(void* arg) {
@@ -123,24 +116,17 @@ void* capture_packets(void* arg) {
             exit(EXIT_FAILURE);
         }
 
-        for (int i = 0; i < nmap->port_count; ++i) { // tres moche
+        for (int i = 0; i < nmap->port_count; ++i) {
+            if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] != PORT_UNDEFINED) continue;
+            // TODO: axbrisse: array of default states
             switch (nmap->current_scan) {
                 case SCAN_SYN:
-                    if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
-                        nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_FILTERED;
-                    }
-                    break;
-                // case SCAN_UDP:
-                //     ///
-                //     break;
-                // case SCAN_ACK:
-                //     ///
-                //     break;
-                default: // SCAN_NULL, SCAN_FIN, SCAN_XMAS
-                    if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
-                        nmap->port_states[nmap->hostname_index][nmap->current_scan]
-                                         [i] = PORT_OPEN; // PORT_FILTERED EN FAIT
-                    }
+                case SCAN_ACK: nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_FILTERED; break;
+                case SCAN_NULL:
+                case SCAN_FIN:
+                case SCAN_XMAS:
+                case SCAN_UDP:
+                    nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_OPEN_FILTERED;
                     break;
             }
         }

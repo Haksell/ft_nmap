@@ -1,5 +1,4 @@
 #include "ft_nmap.h"
-#include <stdio.h>
 
 extern pcap_t* handle;
 
