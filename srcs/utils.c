@@ -95,6 +95,10 @@ void get_start_time(t_nmap* nmap) {
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
 
     printf("Starting Nmap %s at %s\n", VERSION, timestamp);
+
+    if (nmap->hostname_count == 0) {
+        fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
+    }
 }
 
 static float get_elapsed_time(t_nmap* nmap) {

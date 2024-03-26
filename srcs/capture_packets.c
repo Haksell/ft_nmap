@@ -43,7 +43,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
     const struct sniff_ip* ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
     int size_ip = IP_HL(ip) * 4;
     if (size_ip < 20) {
-        printf("   * Invalid IP header length: %u bytes\n", size_ip);
+        //printf("   * Invalid IP header length: %u bytes\n", size_ip);
         return; // TODO VOIR CAS LIMITE, EST CE QUE CA SERT LE PRINT OU JUSTE RETURN
     }
 
@@ -63,8 +63,6 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
             // ICMP port unreachable error (type 3, code 3)	? CLOSED!
         } else if (icmp->type == ICMP_TIME_EXCEEDED) {
             printf("Time exceeded\n"); // Voir le nmap book si ça va servir, sinon delete
-        } else {
-            printf("Si ça arrive, screenshot sur discord: %d\n", icmp->type); // normalement on devrait pas arriver ici
         }
         return;
     }

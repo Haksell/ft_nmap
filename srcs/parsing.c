@@ -263,10 +263,7 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
         }
     }
     if (nmap->opt & (OPT_HELP | OPT_VERSION)) exit(EXIT_SUCCESS);
-    if (nmap->hostname_count == 0) {
-        fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
-        args_error();
-    }
+
     set_defaults(nmap);
     set_port_mappings(nmap);
     set_undefined_count(nmap);

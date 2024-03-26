@@ -80,7 +80,12 @@ static void print_port_states(t_nmap* nmap) {
     print_line(nmap, &paddings, -1, -1, "SERVICE", "SERVICE");
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
         uint16_t port = nmap->port_array[port_index];
-        print_line(nmap, &paddings, port_index, port, get_service_name(port, "tcp"), get_service_name(port, "udp"));
+
+        char tcp_service[32];
+        char udp_service[32];
+        strncpy(tcp_service, get_service_name(port, "tcp"), sizeof(tcp_service));
+        strncpy(udp_service, get_service_name(port, "udp"), sizeof(udp_service));
+        print_line(nmap, &paddings, port_index, port, tcp_service, udp_service);
     }
     printf(RESET);
 }
