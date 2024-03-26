@@ -120,5 +120,6 @@ void print_stats(t_nmap* nmap) {
 void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     if (handle) pcap_close(handle);
-    close(nmap->fd);
+	if (nmap->fd >= 0) close(nmap->fd);
+	if (nmap->icmp_fd >= 0) close(nmap->icmp_fd);
 }
