@@ -186,6 +186,9 @@ void set_port(t_nmap* nmap, uint16_t port);
 // print_payload.c
 void print_payload(const u_char* payload, int size_payload);
 
+// print_results.c
+void print_scan_report(t_nmap* nmap);
+
 // random.c
 uint32_t random_u32_range(uint32_t a, uint32_t b);
 
