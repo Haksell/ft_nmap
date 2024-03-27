@@ -83,11 +83,11 @@ static void print_line(
     printf("\n");
 }
 
-#define SHOW_LIMIT 25 // TODO: en haut
+#define SHOW_LIMIT 1000 // TODO: en haut
 
 static void print_port_states(t_nmap* nmap) {
     uint16_t unresponsive_count = nmap->port_count - nmap->responsive_count[nmap->hostname_index];
-    bool hide_unresponsive = false && unresponsive_count > SHOW_LIMIT;
+    bool hide_unresponsive = unresponsive_count > SHOW_LIMIT;
     if (hide_unresponsive) printf("Not shown: %d unresponsive ports\n", unresponsive_count);
     printf("\n");
     t_paddings paddings = compute_paddings(nmap);

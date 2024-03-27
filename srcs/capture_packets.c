@@ -1,6 +1,7 @@
 #include "ft_nmap.h"
 
-extern bool run;
+extern sig_atomic_t run;
+extern sig_atomic_t sender_finished;
 extern pcap_t* handle;
 
 #define TCP_FILTERED 0b0010011000001110
@@ -115,6 +116,8 @@ void* capture_packets(void* arg) {
         int ret = pcap_loop(handle, -1, got_packet, arg);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         nmap->undefined_count[nmap->hostname_index][nmap->current_scan] = 0;
+        while (run && !sender_finished) usleep(1000);
+        sender_finished = false;
     }
     return NULL;
 }

@@ -1,6 +1,7 @@
 #include "ft_nmap.h"
 
 volatile sig_atomic_t run = true;
+volatile sig_atomic_t sender_finished = false;
 pcap_t* handle = NULL;
 
 static void init(t_nmap* nmap) {

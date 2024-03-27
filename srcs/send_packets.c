@@ -1,6 +1,7 @@
 #include "ft_nmap.h"
 
-extern bool run;
+extern sig_atomic_t run;
+extern sig_atomic_t sender_finished;
 
 #define NTP1                                                                                                           \
     "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
@@ -81,11 +82,12 @@ void* send_packets(void* arg) {
                 if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
                     nmap->port_states[nmap->hostname_index][nmap->current_scan]
                                      [i] = default_port_state[nmap->current_scan];
-                } else {
+                } else if (!nmap->is_responsive[nmap->hostname_index]) {
                     ++nmap->responsive_count[nmap->hostname_index];
                     nmap->is_responsive[nmap->hostname_index][i] = true;
                 }
             }
+            sender_finished = true;
         }
         print_scan_report(nmap);
     }
