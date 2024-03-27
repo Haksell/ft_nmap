@@ -92,8 +92,10 @@ void* send_packets(void* arg) {
             set_filter(nmap);
 
             // TODO: shuffle
-            for (int port_index = 0; port_index < nmap->port_count && run; ++port_index)
+            for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
+                if (nmap->current_scan == SCAN_UDP) usleep(1000000);
                 send_packet(nmap, nmap->port_array[port_index]);
+            }
 
             alarm(1);
             // TODO: no forbidden functions

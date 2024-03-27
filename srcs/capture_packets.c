@@ -106,7 +106,6 @@ static void handle_udp(t_nmap* nmap, const u_char* packet, /* const struct ip* i
 static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
     t_nmap* nmap = (t_nmap*)args;
 
-    printf("i was here\n");
     const struct ip* ip = (struct ip*)(packet + SIZE_ETHERNET);
     int size_ip = ip->ip_hl * 4;
     if (size_ip < 20) {
@@ -114,6 +113,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         return;
     }
 
+    printf("i was here ip:%d\n", ip->ip_p);
     if (ip->ip_p == IPPROTO_ICMP) handle_icmp(nmap, packet, ip);
     else if (ip->ip_p == IPPROTO_TCP) handle_tcp(nmap, packet, ip, size_ip);
     else if (ip->ip_p == IPPROTO_UDP) handle_udp(nmap, packet, size_ip);
