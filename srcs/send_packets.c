@@ -1,33 +1,12 @@
 #include "ft_nmap.h"
 
-extern bool run;
-
-//
-/*  Test Ntp (port 123/udp) | A trouver database de payloads pour automatiser les UDP.
-
-    sudo ./ft_nmap scanme.nmap.org -p 68,123,22
-    Starting Nmap 0.4.2 at 2024-03-27 04:10 CET
-
-    Nmap scan report for scanme.nmap.org (45.33.32.156)
-    Host is up (0.22s latency).
-    rDNS record for scanme.nmap.org: fra15s10-in-f14.1e100.net
-
-    PORT | SYN    ACK        FIN           NULL          XMAS            SERVICE | UDP             SERVICE
-    22   | open   unfiltered open|filtered open|filtered open|filtered   ssh     | closed          unknown
-    68   | closed unfiltered open|filtered open|filtered open|filtered   unknown | open|filtered   bootpc
-    123  | closed unfiltered open|filtered open|filtered open|filtered   unknown | >>> open <<<    ntp		<-- NTP (no payload == open|filtered)
-*/
+extern sig_atomic_t run;
+extern sig_atomic_t sender_finished;
 
 #define NTP1                                                                                                           \
     "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc5O#Kq\xb1R\xf3"
 #define NTP2                                                                                                           \
-    "\xd9\x00\x0a\xfa\x00\x00\x00\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
-#define NTP3                                                                                                           \
-    "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc5O#Kq\xb1R\xf3"
-#define NTP4                                                                                                           \
     "\xd9\x00\x0a\xfa\x00\x00\x00\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
 #define NTP_SIZE 48
@@ -41,7 +20,7 @@ static void send_packet(t_nmap* nmap, uint16_t port) {
     if (port == 123 && nmap->current_scan == SCAN_UDP) {
         uint8_t packetntp[sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE];
         packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE;
-        unsigned char payload[4][48] = {NTP1, NTP2, NTP3, NTP4};
+        unsigned char payload[4][48] = {NTP1, NTP2, NTP1, NTP2}; // TODO: only 2?
         for (int i = 0; i < 4; i++) {
             fill_packet(nmap, packetntp, port, payload[i], NTP_SIZE);
             sendto(nmap->udp_fd, packetntp, packet_size, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr));
@@ -76,31 +55,44 @@ static bool is_host_down(t_nmap* nmap) { // faire un select avec timeout? plus p
 
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
-    for (; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
+    for (nmap->hostname_index = 0; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
         hostname_to_ip(nmap); // TODO if unkown host continue
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         // TODO: local hostaddr. ça veut dire quoi?
         send_ping(nmap);
         if (is_host_down(nmap)) continue;
 
-        for (int scan = 0; scan < SCAN_MAX; ++scan) {
-            nmap->current_scan = scan;
+        for (scan_type scan = 0; scan < SCAN_MAX; ++scan) {
             if ((nmap->scans & (1 << scan)) == 0) continue;
+            nmap->current_scan = scan;
 
             nmap->port_source = random_u32_range(1 << 15, UINT16_MAX);
             set_filter(nmap);
 
-            for (int j = 0; j < nmap->port_count && run; ++j) { // TODO: shuffle
-                send_packet(nmap, nmap->port_array[j]);
+            // TODO: shuffle
+            for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
+                if (nmap->current_scan == SCAN_UDP) sleep(1);
+                send_packet(nmap, nmap->port_array[port_index]);
             }
 
-            alarm(1);
-            while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0)
-                usleep(1000); // TODO: no forbidden functions
+            alarm(1); // TODO: alarm(2)
+            // TODO: no forbidden functions
+            while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0) usleep(1000);
             alarm(0);
+
+            for (int i = 0; i < nmap->port_count; ++i) {
+                if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
+                    nmap->port_states[nmap->hostname_index][nmap->current_scan]
+                                     [i] = default_port_state[nmap->current_scan];
+                } else if (!nmap->is_responsive[nmap->hostname_index]) {
+                    ++nmap->responsive_count[nmap->hostname_index];
+                    nmap->is_responsive[nmap->hostname_index][i] = true;
+                }
+            }
+            sender_finished = true;
         }
         print_scan_report(nmap);
     }
-    handle_sigint(SIGINT);
+    handle_sigint(SIGINT); // TODO: not like thats
     return NULL;
 }

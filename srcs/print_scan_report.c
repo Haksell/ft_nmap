@@ -50,8 +50,17 @@ static void print_scan_cell(t_nmap* nmap, t_paddings* paddings, scan_type scan_t
     );
 }
 
-static void
-print_line(t_nmap* nmap, t_paddings* paddings, int port_index, int port, char* tcp_service, char* udp_service) {
+static void print_line(
+    t_nmap* nmap,
+    t_paddings* paddings,
+    bool hide_unresponsive,
+    int port_index,
+    int port,
+    char* tcp_service,
+    char* udp_service
+) {
+    if (port >= 0 && hide_unresponsive && !nmap->is_responsive[nmap->hostname_index][port_index]) return;
+
     if (port >= 0) printf("%-*d", paddings->port, port);
     else printf("%-*s", paddings->port, "PORT");
 
@@ -74,9 +83,15 @@ print_line(t_nmap* nmap, t_paddings* paddings, int port_index, int port, char* t
     printf("\n");
 }
 
+#define SHOW_LIMIT 1000 // TODO: en haut
+
 static void print_port_states(t_nmap* nmap) {
+    uint16_t unresponsive_count = nmap->port_count - nmap->responsive_count[nmap->hostname_index];
+    bool hide_unresponsive = unresponsive_count > SHOW_LIMIT;
+    if (hide_unresponsive) printf("Not shown: %d unresponsive ports\n", unresponsive_count);
+    printf("\n");
     t_paddings paddings = compute_paddings(nmap);
-    print_line(nmap, &paddings, -1, -1, "SERVICE", "SERVICE");
+    print_line(nmap, &paddings, hide_unresponsive, -1, -1, "SERVICE", "SERVICE");
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
         uint16_t port = nmap->port_array[port_index];
 
@@ -84,7 +99,7 @@ static void print_port_states(t_nmap* nmap) {
         char udp_service[SERVICE_BUFFER_SIZE];
         strncpy(tcp_service, get_service_name(port, "tcp"), SERVICE_BUFFER_SIZE);
         strncpy(udp_service, get_service_name(port, "udp"), SERVICE_BUFFER_SIZE);
-        print_line(nmap, &paddings, port_index, port, tcp_service, udp_service);
+        print_line(nmap, &paddings, hide_unresponsive, port_index, port, tcp_service, udp_service);
     }
     printf(RESET);
 }
@@ -94,7 +109,7 @@ void print_scan_report(t_nmap* nmap) {
     double uptime = nmap->latency.tv_sec + nmap->latency.tv_usec / 1000000.0;
     printf("Host is up (%.2gs latency).\n", uptime);
     printf(
-        "rDNS record for %s: fra15s10-in-f14.1e100.net\n\n", // TODO: only one \n sometimes
+        "rDNS record for %s: fra15s10-in-f14.1e100.net\n",
         nmap->hostnames[nmap->hostname_index]
     ); // TODO LORENZO DNS uniquement s'il a trouve le dns
     print_port_states(nmap);

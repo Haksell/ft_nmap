@@ -1,10 +1,19 @@
 #include "ft_nmap.h"
 
-extern bool run;
+extern sig_atomic_t run;
+extern sig_atomic_t sender_finished;
 extern pcap_t* handle;
 
 #define TCP_FILTERED 0b0010011000001110
 #define UDP_FILTERED 0b0010011000000110
+
+static void set_port_state(t_nmap* nmap, port_state port_state, uint16_t port) {
+    if (nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[port]] == PORT_UNDEFINED) {
+        nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[port]] = port_state;
+        --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+        if (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] == 0) pcap_breakloop(handle);
+    }
+}
 
 static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip) {
     int icmp_offset = SIZE_ETHERNET + ip->ip_hl * 4;
@@ -30,14 +39,13 @@ static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip)
             original_port = ntohs(tcp->th_dport);
         }
 
-        // si t'arrives a faire un truc plus propre que ca c'est bien. PORT_UNDEFINED est superflu. Ou non?
-        port_state port_state = nmap->current_scan == SCAN_UDP ? (mask & UDP_FILTERED               ? PORT_FILTERED
-                                                                  : mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
-                                                                                                    : PORT_UNDEFINED)
-                                                               : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNDEFINED);
+        port_state port_state = nmap->current_scan == SCAN_UDP
+                                    ? (mask & UDP_FILTERED               ? PORT_FILTERED
+                                       : mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
+                                                                         : PORT_UNEXPECTED)
+                                    : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
-        nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[original_port]] = port_state;
-        if (port_state != PORT_UNDEFINED) --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+        set_port_state(nmap, port_state, original_port);
     }
 }
 
@@ -51,31 +59,19 @@ static void handle_tcp(t_nmap* nmap, const u_char* packet, const struct ip* ip, 
     }
 
     port_state port_state;
-    // si t'arrives a faire un truc plus propre que ca c'est bien. PORT_UNDEFINED est superflu
-    // a discuter si laisser undefined et attendre l'alarme, ou mettre la suite logique
     switch (nmap->current_scan) {
         case SCAN_SYN:
-            port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
-                         : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
-                                                              : PORT_UNDEFINED;
+            port_state = tcp->th_flags == (TH_SYN | TH_ACK) ? PORT_OPEN
+                         : tcp->th_flags & TH_RST           ? PORT_CLOSED
+                                                            : PORT_UNEXPECTED;
             break;
-        case SCAN_ACK:
-            port_state = (tcp->th_flags == (TH_RST) || tcp->th_flags == (TH_RST | TH_ACK))
-                             ? PORT_UNFILTERED
-                             : PORT_UNDEFINED; // bug trouvé: ./ft_nmap scanme.nmap.org -sACK -p 1-500 != nmap.org . Je
-                                               // pense probleme de buffer. notre nmap mets trop peu de temps.
-                                               // l'original il s'arrête quand le buffer est plein
-            break; // localhost envoi RST et scanme ACK RST, a verifier pour le reste. Peut etre eviter == et faire un
-                   // bitwise pour rendre propre ?
+        case SCAN_ACK: port_state = tcp->th_flags & TH_RST ? PORT_UNFILTERED : PORT_UNEXPECTED; break;
         case SCAN_NULL:
         case SCAN_FIN:
-        case SCAN_XMAS: port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_UNDEFINED; break;
+        case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
     }
 
-    nmap->port_states[nmap->hostname_index][nmap->current_scan]
-                     [nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
-
-    if (port_state != PORT_UNDEFINED) --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+    set_port_state(nmap, port_state, ntohs(tcp->th_sport));
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
     if (size_payload > 0 && nmap->opt & OPT_VERBOSE)
@@ -96,9 +92,7 @@ static void handle_udp(t_nmap* nmap, const u_char* packet, /* const struct ip* i
         );
     }
 
-    nmap->port_states[nmap->hostname_index][nmap->current_scan]
-                     [nmap->port_dictionary[ntohs(udp->uh_sport)]] = PORT_OPEN;
-    --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+    set_port_state(nmap, PORT_OPEN, ntohs(udp->uh_sport));
 }
 
 static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
@@ -120,17 +114,10 @@ void* capture_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     while (run) {
         int ret = pcap_loop(handle, -1, got_packet, arg);
-        if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) {
-            error("pcap_loop failed");
-            exit(EXIT_FAILURE);
-        }
-
-        for (int i = 0; i < nmap->port_count; ++i) {
-            if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
-                nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = default_port_state[nmap->current_scan];
-            };
-        }
+        if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         nmap->undefined_count[nmap->hostname_index][nmap->current_scan] = 0;
+        while (run && !sender_finished) usleep(1000);
+        sender_finished = false;
     }
     return NULL;
 }
