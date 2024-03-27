@@ -52,6 +52,9 @@ re: fclean
 help: all
 	@./$(NAME) --version --help
 
+loc:
+	@echo $(SRCS) | sort | xargs wc -l
+
 # ======= OUTSIDE VM =======
 
 clangd:
@@ -107,4 +110,4 @@ uninstall_libpcap:
 	@rm -rf $$HOME/.local/share/bison
 	@rm -rf $$HOME/.local/*/*pcap*
 
-.PHONY: all clean fclean re help clangd setup destroy resetup install_libpcap uninstall_libpcap
+.PHONY: all clean fclean re help loc clangd setup destroy resetup install_libpcap uninstall_libpcap
