@@ -8,13 +8,11 @@ static void args_error() {
 static int atoi_check(char* s, int max, char* opt_name) {
     if (!s[0]) panic("nmap: empty %s value\n", opt_name);
 
-    bool is_negative = s[0] == '-';
-    for (int i = is_negative; s[i]; ++i) {
+    for (int i = 0; s[i]; ++i) {
         if (!isdigit(s[i])) {
             panic("nmap: invalid %s value: `%s'\n", opt_name, s);
         }
     }
-    if (is_negative) panic("nmap: %s value too small: `%s'\n", opt_name, s);
 
     int modulo = max % 10;
     int limit = max / 10;
