@@ -65,6 +65,7 @@
 -   [ ] check forbidden functions
 -   [ ] consistent typedef names (PascalCase or t_snake_case)
 -   [ ] remove unused libraries
+-   [ ] remove `garbage` folder (and maybe `hosts`?)
 
 ## tests
 
