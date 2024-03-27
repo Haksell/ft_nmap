@@ -4,7 +4,6 @@
 
 ### axbrisse
 
--   [ ] parse file (accept duplicates) (FILE\* not in t_nmap)
 -   [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
 -   [ ] array of default states instead of switch in `capture_packets`
 -   [ ] simplify atoi
@@ -22,6 +21,7 @@
 
 -   [ ] forbid non-root user (except for info flags (and CONNECT scan?))
 -   [ ] don't print report on Ctrl+C
+-   [ ] fix `Host xxx is down` when scanning multiple hosts (et quand on Ctrl+C ca meurt)
 
 ## mandatory
 
