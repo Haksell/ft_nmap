@@ -3,35 +3,36 @@
 ## todo
 
 -   [ ] 4 other types of scans (except UDP)
--   [ ] UDP scan
--   [ ] align output
+-   [x] UDP scan
+-   [x] align output
+-   [ ] output ne pas afficher si plus de 25 closed, filtered, etc
 -   [ ] parsing tester
 -   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
 -   [ ] `--usage`
--   [ ] forbid non-root user (except for info flags (and CONNECT scan?))
+-   [\] forbid non-root user (except for info flags (and CONNECT scan?))
 -   [ ] don't print report on Ctrl+C
 
 ## mandatory
 
 -   [x] The executable must be named ft_nmap.
--   [ ] A help menu must be available.
--   [ ] You must only manage a simple IPv4 (address/hostname) as parameter for your scans.
+-   [ ] A help menu must be available. > Lorenzo faire un help de ouf
+-   [x] You must only manage a simple IPv4 (address/hostname) as parameter for your scans.
 -   [ ] You must manage FQDN however you don’t have to make the DNS resolution.
 -   [ ] It must be possible to choose the number of threads (default:0 max:250) to make the scan faster
 -   [ ] It must be possible to read a list of IPv4 addresses and hostname from a file (formatting is free).
--   [ ] Your program must be able to run the following scan: SYN
--   [ ] Your program must be able to run the following scan: NULL
--   [ ] Your program must be able to run the following scan: ACK
--   [ ] Your program must be able to run the following scan: FIN
--   [ ] Your program must be able to run the following scan: XMAS
--   [ ] Your program must be able to run the following scan: UDP
--   [ ] If the scan type is not specified then all scan types must be used.
--   [ ] We must be able to run each type of scan individually, and several scans simultaneously.
+-   [x] Your program must be able to run the following scan: SYN
+-   [x] Your program must be able to run the following scan: NULL
+-   [\] Your program must be able to run the following scan: ACK > bug overflow
+-   [x] Your program must be able to run the following scan: FIN
+-   [x] Your program must be able to run the following scan: XMAS
+-   [x] Your program must be able to run the following scan: UDP
+-   [x] If the scan type is not specified then all scan types must be used.
+-   [x] We must be able to run each type of scan individually, and several scans simultaneously.
 -   [x] The ports to be scanned can be read as a range or individually.
 -   [x] In the case no port is specified the scan must run with the range 1-1024.
 -   [x] The number of ports scanned cannot exceed 1024.
 -   [x] The resolution of service types will be requested (not the version but only the TYPE).
--   [ ] The result of a scan should be as clean and clear as possible. The time frame should be easy to read.
+-   [x] The result of a scan should be as clean and clear as possible. The time frame should be easy to read.
 
 ## bonus
 
@@ -52,9 +53,10 @@
 
 ## tests
 
--   [ ] `./ft_nmap --help`
+-   [ ] `./ft_nmap --help` lol
 -   [ ] `./ft_nmap 8.8.8.8 --threads 70 --ports 70-90 --scans SYN`
 -   [ ] `./ft_nmap 8.8.8.8 --threads 200 --ports 75-85`
+-   [ ] faire un script qui fait 1000 portes x 6 scans sur nmap et compare avec le notre pour plusieurs hostnames
 
 ## misc
 
@@ -80,11 +82,6 @@ pseudocode qui est illogique
     a besoin de stocker les resultats pour les afficher a la fin). justement parce-que il
     randomize les ports et les types de scan, il pourra pas afficher les resultats dans
     l'ordre.
-
-// TODO creer un header TCP (regarder ping.c pour exemple de header IP
-// TODO creer un pseudo header
-// TODO calculer le checksum
-// TODO envoyer le paquet
 ```
 
 ## resources
