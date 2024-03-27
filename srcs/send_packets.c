@@ -76,6 +76,16 @@ void* send_packets(void* arg) {
             // TODO: no forbidden functions
             while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0) usleep(1000);
             alarm(0);
+
+            for (int i = 0; i < nmap->port_count; ++i) {
+                if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
+                    nmap->port_states[nmap->hostname_index][nmap->current_scan]
+                                     [i] = default_port_state[nmap->current_scan];
+                } else {
+                    ++nmap->responsive_count[nmap->hostname_index];
+                    nmap->is_responsive[nmap->hostname_index][i] = true;
+                }
+            }
         }
         print_scan_report(nmap);
     }

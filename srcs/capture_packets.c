@@ -6,11 +6,18 @@ extern pcap_t* handle;
 #define TCP_FILTERED 0b0010011000001110
 #define UDP_FILTERED 0b0010011000000110
 
+static void set_port_state(t_nmap* nmap, port_state port_state, uint16_t port) {
+    if (nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[port]] == PORT_UNDEFINED) {
+        nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[port]] = port_state;
+        --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+        if (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] == 0) pcap_breakloop(handle);
+    }
+}
+
 static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip) {
     int icmp_offset = SIZE_ETHERNET + ip->ip_hl * 4;
     struct icmphdr* icmp = (struct icmphdr*)(packet + icmp_offset);
 
-    printf("XXX=%d\n", icmp->type);
     if (icmp->type == ICMP_ECHOREPLY) {
         handle_echo_reply(nmap, (uint8_t*)(packet + icmp_offset + ICMP_HDR_SIZE));
     } else if (icmp->type == ICMP_DEST_UNREACH) {
@@ -37,8 +44,7 @@ static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip)
                                                                          : PORT_UNEXPECTED)
                                     : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
-        nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[original_port]] = port_state;
-        if (port_state != PORT_UNDEFINED) --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+        set_port_state(nmap, port_state, original_port);
     }
 }
 
@@ -58,23 +64,13 @@ static void handle_tcp(t_nmap* nmap, const u_char* packet, const struct ip* ip, 
                          : tcp->th_flags & TH_RST           ? PORT_CLOSED
                                                             : PORT_UNEXPECTED;
             break;
-        case SCAN_ACK:
-            // bug trouvé: ./ft_nmap scanme.nmap.org -sACK -p 1-500 != nmap.org . Je
-            // pense probleme de buffer. notre nmap mets trop peu de temps.
-            // l'original il s'arrête quand le buffer est plein
-            // localhost envoi RST et scanme ACK RST, a verifier pour le reste. Peut etre eviter == et faire un
-            // bitwise pour rendre propre ?
-            port_state = tcp->th_flags & TH_RST ? PORT_UNFILTERED : PORT_UNEXPECTED;
-            break;
+        case SCAN_ACK: port_state = tcp->th_flags & TH_RST ? PORT_UNFILTERED : PORT_UNEXPECTED; break;
         case SCAN_NULL:
         case SCAN_FIN:
         case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
     }
 
-    nmap->port_states[nmap->hostname_index][nmap->current_scan]
-                     [nmap->port_dictionary[ntohs(tcp->th_sport)]] = port_state;
-
-    if (port_state != PORT_UNDEFINED) --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+    set_port_state(nmap, port_state, ntohs(tcp->th_sport));
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
     if (size_payload > 0 && nmap->opt & OPT_VERBOSE)
@@ -95,15 +91,12 @@ static void handle_udp(t_nmap* nmap, const u_char* packet, /* const struct ip* i
         );
     }
 
-    nmap->port_states[nmap->hostname_index][nmap->current_scan]
-                     [nmap->port_dictionary[ntohs(udp->uh_sport)]] = PORT_OPEN;
-    --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
+    set_port_state(nmap, PORT_OPEN, ntohs(udp->uh_sport));
 }
 
 static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
     t_nmap* nmap = (t_nmap*)args;
 
-    printf("i was here\n");
     const struct ip* ip = (struct ip*)(packet + SIZE_ETHERNET);
     int size_ip = ip->ip_hl * 4;
     if (size_ip < 20) {
@@ -121,17 +114,6 @@ void* capture_packets(void* arg) {
     while (run) {
         int ret = pcap_loop(handle, -1, got_packet, arg);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
-
-        for (int i = 0; i < nmap->port_count; ++i) {
-            // int port = nmap->port_array[i];
-            // printf("port=%d state=%d\n", port, nmap->port_states[nmap->hostname_index][nmap->current_scan][i]);
-            if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
-                nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = default_port_state[nmap->current_scan];
-            } else {
-                ++nmap->responsive_count[nmap->hostname_index];
-                nmap->is_responsive[nmap->hostname_index][i] = true;
-            }
-        }
         nmap->undefined_count[nmap->hostname_index][nmap->current_scan] = 0;
     }
     return NULL;
