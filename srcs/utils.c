@@ -34,7 +34,7 @@ void hostname_to_ip(t_nmap* nmap) {
     char* hostname = nmap->hostnames[nmap->hostname_index];
 
     int status = getaddrinfo(hostname, NULL, &hints, &res);
-    if (status != 0) g_error("getaddrinfo failed", status);
+    if (status != 0) g_error("getaddrinfo failed", status); // TODO != status != EAI_NONAME ? else return false comme ca c'est bien
 
     if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
         error("inet_ntop failed");

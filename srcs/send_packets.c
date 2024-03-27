@@ -1,4 +1,6 @@
 #include "ft_nmap.h"
+#include <stdint.h>
+#include <sys/types.h>
 
 extern sig_atomic_t run;
 extern sig_atomic_t sender_finished;
@@ -38,18 +40,22 @@ static void send_packet(t_nmap* nmap, uint16_t port) {
     }
 }
 
-static bool is_host_down(t_nmap* nmap) { // faire un select avec timeout? plus propre mais aussi long
-    int old_hostname_up_count = nmap->hostname_up_count;
-    struct timeval countdown = {.tv_usec = 300000}; // 3s -> MACRO
-    while (nmap->hostname_up_count == old_hostname_up_count && countdown.tv_usec > 0 && run) {
-        usleep(1000);
-        countdown.tv_usec -= 1000;
-    }
-    if (countdown.tv_usec <= 0) {
-        // a print uniquement si le seul host est down, donc pas ici // Lorenzo
+static bool is_host_down(t_nmap* nmap) {
+    uint8_t buffer[64] = {0};
+
+    int bytes_received = recv(nmap->icmp_fd, buffer + SIZE_ETHERNET, sizeof(buffer), 0);
+    if (bytes_received < 0) {
+        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+            printf("Host %s is down.\n", nmap->hostnames[nmap->hostname_index]);
+            return true;
+        } else error("recv failed");
+    } else if (bytes_received == 0) {
         printf("Host %s is down.\n", nmap->hostnames[nmap->hostname_index]);
         return true;
     }
+
+    //faire ici packet icmp handle icmp
+
     return false;
 }
 

@@ -15,7 +15,6 @@
 
 - [ ] better help menu
 - [ ] `--usage`
-- [ ] randomize source port
 
 ### whoever
 
