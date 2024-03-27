@@ -3,19 +3,21 @@
 extern pcap_t* handle;
 
 void error(char* message) {
+    // TODO: use panic
     fprintf(stderr, "nmap: %s: %s\n", message, strerror(errno));
     exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
 }
 
 void g_error(char* message, int status) {
+    // TODO: use panic
     if (status != EAI_NONAME) fprintf(stderr, "nmap: %s: %s\n", message, gai_strerror(status));
     else fprintf(stderr, "nmap: %s\n", "unknown host");
     exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
 }
 
 void panic(const char* format, ...) {
-    // TODO: use error
     // TODO: free everything
+    // TODO: write "ft_nmap: " directly here
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
