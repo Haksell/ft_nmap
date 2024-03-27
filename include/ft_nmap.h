@@ -92,20 +92,12 @@ typedef enum {
     PORT_CLOSED,
     PORT_FILTERED,
     PORT_UNFILTERED,
-    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED
 } __attribute__((packed)) port_state;
 
 static const char port_state_str[][14] = {"undefined", "open", "closed", "filtered", "unfiltered", "open|filtered"};
 static const char port_state_color[][8] = {WHITE, GREEN, RED, YELLOW, BLUE, MAGENTA};
-
-static const size_t port_state_strlen[] = {
-    strlen(port_state_str[PORT_UNDEFINED]),
-    strlen(port_state_str[PORT_OPEN]),
-    strlen(port_state_str[PORT_CLOSED]),
-    strlen(port_state_str[PORT_FILTERED]),
-    strlen(port_state_str[PORT_UNFILTERED]),
-    strlen(port_state_str[PORT_OPEN_FILTERED])
-};
+static const size_t port_state_strlen[] = {9, 5, 6, 8, 10, 13}; // TODO: compute automatically
 
 typedef enum {
     SCAN_SYN,
@@ -128,7 +120,7 @@ static const char scans_str[][5] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP"};
 
 typedef struct {
     int tcp_fd;
-	int udp_fd;
+    int udp_fd;
     int icmp_fd;
     uint8_t* packet;
     int hostname_count;
@@ -171,7 +163,7 @@ void set_filter(t_nmap* nmap);
 void init_pcap(t_nmap* nmap);
 
 // packet.c
-void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t *payload, size_t payload_size);
+void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size);
 
 // parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);

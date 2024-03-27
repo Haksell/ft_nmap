@@ -2,14 +2,22 @@
 
 ## todo
 
--   [ ] 4 other types of scans (except UDP)
--   [x] UDP scan
--   [x] align output
--   [ ] output ne pas afficher si plus de 25 closed, filtered, etc
+### axbrisse
+
+-   [ ] parse file (accept duplicaes)
 -   [ ] parsing tester
--   [ ] file shoudln't be a named argument (`ft_nmap <ip/hostname/file> [options]`)
+-   [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
+-   [ ] randomize ports
+
+### lsimanic
+
+-   [ ] better help menu
 -   [ ] `--usage`
--   [\] forbid non-root user (except for info flags (and CONNECT scan?))
+-   [ ] randomize source port
+
+### whoever
+
+-   [ ] forbid non-root user (except for info flags (and CONNECT scan?))
 -   [ ] don't print report on Ctrl+C
 
 ## mandatory
@@ -22,7 +30,7 @@
 -   [ ] It must be possible to read a list of IPv4 addresses and hostname from a file (formatting is free).
 -   [x] Your program must be able to run the following scan: SYN
 -   [x] Your program must be able to run the following scan: NULL
--   [\] Your program must be able to run the following scan: ACK > bug overflow
+-   [ ] Your program must be able to run the following scan: ACK > bug overflow
 -   [x] Your program must be able to run the following scan: FIN
 -   [x] Your program must be able to run the following scan: XMAS
 -   [x] Your program must be able to run the following scan: UDP
@@ -44,12 +52,15 @@
 -   [ ] Additional flags...
 -   [ ] Additional scans... (TCP Connect, TCP Window, TCP Maimon, SCTP INIT)
 -   [ ] Different output formats (XML, grepable)
+-   [ ] Flag for n most common ports instead of just 1-1024
+-   [ ] `-iR`
 
 ## push check
 
 -   [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes`
 -   [ ] static all the functions
 -   [ ] check forbidden functions
+-   [ ] consistent typedef names (PascalCase or t_snake_case)
 
 ## tests
 
@@ -57,32 +68,6 @@
 -   [ ] `./ft_nmap 8.8.8.8 --threads 70 --ports 70-90 --scans SYN`
 -   [ ] `./ft_nmap 8.8.8.8 --threads 200 --ports 75-85`
 -   [ ] faire un script qui fait 1000 portes x 6 scans sur nmap et compare avec le notre pour plusieurs hostnames
-
-## misc
-
--   use `-lpcap`
--   use `-lpthread`
--   use `clock_gettime` or just `clock`
-
-```
-pro: randomize source port for no detection -> sequentielle et on est detecté
-randomize type of scan -> de facon random on change de type de scan (multi-threading?)
-pseudocode qui est illogique
-    port = rand() % remaning_ports
-    type = rand() % remaning_types
-    if (!get_port(namp.ports, port, SCAN_FIN) set_port(nmap.ports, port, SCAN_FIN) -> on a
-    scanné ce port avec FIN, donc on va pas le refaire if (setport a set tout a 0)
-    remaning_ports-- (i know ca marche pas comme ça, mais le concept est de raccourcir la
-    liste de ports a scanner a chaque fois qu'on en a fully scanné un) if (type.count ==
-    port_count) remaning_types-- (meme concept que pour les ports, mais pour les types de
-    scan) if (remaning_ports == 0) break; (si on a scanné tous les ports, on sort de la
-    boucle)
-
-    print results (que il faudra donc stocker dans une structure. a diffrence de ping, nmap
-    a besoin de stocker les resultats pour les afficher a la fin). justement parce-que il
-    randomize les ports et les types de scan, il pourra pas afficher les resultats dans
-    l'ordre.
-```
 
 ## resources
 

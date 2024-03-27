@@ -98,6 +98,7 @@ void get_start_time(t_nmap* nmap) {
 
     if (nmap->hostname_count == 0) {
         fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
+        // Pourquoi on exit plus ? Et qu'est-ce que ca fait dans cette fonction ?
     }
 }
 
@@ -123,6 +124,6 @@ void cleanup(t_nmap* nmap
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     if (handle) pcap_close(handle);
     if (nmap->tcp_fd >= 0) close(nmap->tcp_fd); // > 2 plutot ?
-	if (nmap->udp_fd >= 0) close(nmap->udp_fd);
+    if (nmap->udp_fd >= 0) close(nmap->udp_fd);
     if (nmap->icmp_fd >= 0) close(nmap->icmp_fd);
 }

@@ -5,6 +5,7 @@
 // mais pas du tout urgent
 
 #define SEPARATOR " | "
+#define SERVICE_BUFFER_SIZE 32
 
 typedef struct {
     int port;
@@ -57,7 +58,7 @@ print_line(t_nmap* nmap, t_paddings* paddings, int port_index, int port, char* t
     printf(SEPARATOR);
 
     for (int scan_type = 0; scan_type < SCAN_UDP; ++scan_type) {
-        if ((nmap->scans & (1 << scan_type))) {
+        if (nmap->scans & (1 << scan_type)) {
             print_scan_cell(nmap, paddings, scan_type, port_index, port);
         }
     }
@@ -79,10 +80,10 @@ static void print_port_states(t_nmap* nmap) {
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
         uint16_t port = nmap->port_array[port_index];
 
-        char tcp_service[32];
-        char udp_service[32];
-        strncpy(tcp_service, get_service_name(port, "tcp"), sizeof(tcp_service));
-        strncpy(udp_service, get_service_name(port, "udp"), sizeof(udp_service));
+        char tcp_service[SERVICE_BUFFER_SIZE];
+        char udp_service[SERVICE_BUFFER_SIZE];
+        strncpy(tcp_service, get_service_name(port, "tcp"), SERVICE_BUFFER_SIZE);
+        strncpy(udp_service, get_service_name(port, "udp"), SERVICE_BUFFER_SIZE);
         print_line(nmap, &paddings, port_index, port, tcp_service, udp_service);
     }
     printf(RESET);
