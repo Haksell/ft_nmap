@@ -4,7 +4,10 @@
 
 ### axbrisse
 
--   [ ] parse file (accept duplicaes)
+-   [ ] parse file (accept duplicates) (FILE\* not in t_nmap)
+-   [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
+-   [ ] array of default states instead of switch in `capture_packets`
+-   [ ] simplify atoi
 -   [ ] parsing tester
 -   [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 -   [ ] randomize ports

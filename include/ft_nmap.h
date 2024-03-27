@@ -1,6 +1,6 @@
 #pragma once
 
-// TODO: bring back to root if it is only header file?
+// TODO: bring back to root if it is only header file? (stp Lorenzo)
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -55,8 +55,7 @@
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
 
-// TODO pcap define, peut etre bouger ou meme hardcode, voir a quoi ca sert
-#define SNAP_LEN 1518
+#define SNAP_LEN 1518 // maximum size of ethernet packet
 
 typedef enum {
     OPT_FILE = 1 << 0,
@@ -128,10 +127,10 @@ typedef struct {
     char hostnames[MAX_HOSTNAMES][HOST_NAME_MAX + 1];
     char hostip[INET_ADDRSTRLEN + 1]; // one for each hostname
     int hostname_index;
-    struct sockaddr_in hostaddr;
+    struct sockaddr_in hostaddr; // TODO: remove
 
     uint32_t opt;
-    FILE* file; // TODO: close
+    FILE* file; // TODO: remove
     uint16_t port_count;
     uint64_t port_set[1024];
     uint16_t port_array[MAX_PORTS];
@@ -158,15 +157,15 @@ void* capture_packets(__attribute__((unused)) void* arg);
 // info.c
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
-// init_pcap.c
-void set_filter(t_nmap* nmap);
-void init_pcap(t_nmap* nmap);
-
 // packet.c
 void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size);
 
 // parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
+
+// pcap.c
+void set_filter(t_nmap* nmap);
+void init_pcap(t_nmap* nmap);
 
 // ping.c
 void send_ping(t_nmap* nmap);
