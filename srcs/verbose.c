@@ -15,7 +15,7 @@ void print_ports(t_nmap* nmap) {
 void print_scans(uint8_t scans) {
     bool is_first_scan = true;
     printf("Scans: ");
-    for (int i = 0; SCAN_MAX; ++i) {
+    for (int i = 0; i < SCAN_MAX; ++i) {
         if (scans & (1 << i)) {
             printf(is_first_scan ? "%s" : ",%s", scans_str[i]);
             is_first_scan = false;

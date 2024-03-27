@@ -127,7 +127,8 @@ static const char scans_str[][5] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP"};
 // TODO: host struct with name, port_states, undefined_count...
 
 typedef struct {
-    int fd;
+    int tcp_fd;
+	int udp_fd;
     int icmp_fd;
     uint8_t* packet;
     int hostname_count;
@@ -170,7 +171,7 @@ void set_filter(t_nmap* nmap);
 void init_pcap(t_nmap* nmap);
 
 // packet.c
-void fill_packet(uint8_t* packet, t_nmap* nmap, uint16_t port);
+void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t *payload, size_t payload_size);
 
 // parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);

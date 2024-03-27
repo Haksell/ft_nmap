@@ -9,12 +9,17 @@ static void init(t_nmap* nmap) {
         exit(EXIT_FAILURE);
     }
 
-    nmap->fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
-    if (nmap->fd < 0) error("TCP socket creation failed");
+    nmap->tcp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+    if (nmap->tcp_fd < 0) error("TCP socket creation failed");
+    nmap->udp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+    if (nmap->udp_fd < 0) error("UDP socket creation failed"); // look next comment
     nmap->icmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (nmap->icmp_fd < 0) error("ICMP socket creation failed"); // leaks -> error -> exit -> cleanup
+    if (nmap->icmp_fd < 0) error("ICMP socket creation failed"); // open fd leaks -> error -> exit -> cleanup
 
-    if (setsockopt(nmap->fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
+    if (setsockopt(nmap->tcp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
+        error("setsockopt IP_HDRINCL failed");
+    if (setsockopt(nmap->udp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
+        error("setsockopt IP_HDRINCL failed");
 
     get_start_time(nmap);
 
@@ -22,7 +27,7 @@ static void init(t_nmap* nmap) {
         print_hostnames(nmap);
         print_ports(nmap);
         print_scans(nmap->scans);
-        printf("Host: %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
+        // printf("Host: %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
     }
 }
 

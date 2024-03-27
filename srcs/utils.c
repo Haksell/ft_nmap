@@ -122,6 +122,7 @@ void cleanup(t_nmap* nmap
 ) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     if (handle) pcap_close(handle);
-    if (nmap->fd >= 0) close(nmap->fd);
+    if (nmap->tcp_fd >= 0) close(nmap->tcp_fd); // > 2 plutot ?
+	if (nmap->udp_fd >= 0) close(nmap->udp_fd);
     if (nmap->icmp_fd >= 0) close(nmap->icmp_fd);
 }

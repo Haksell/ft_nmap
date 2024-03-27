@@ -12,7 +12,7 @@ void set_filter(t_nmap* nmap) {
     // TODO: UDP and exact flags
     sprintf(
         filter_exp,
-        "(icmp and src host %s) or (tcp and src host %s and dst port %d)",
+        "(icmp and src host %s) or ((tcp or udp) and src host %s and dst port %d)", // a changer
         nmap->hostip,
         nmap->hostip,
         nmap->port_source
