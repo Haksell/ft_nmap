@@ -94,10 +94,27 @@ typedef enum {
     PORT_OPEN_FILTERED
 } __attribute__((packed)) port_state;
 
-static const char port_state_str[][14] = {"undefined", "open", "closed", "filtered", "unfiltered", "open|filtered"};
-static const char port_state_color[][8] = {WHITE, GREEN, RED, YELLOW, BLUE, MAGENTA};
-// TODO: compute automatically or assert the lengths are correct
-static const size_t port_state_strlen[] = {9, 5, 6, 8, 10, 13};
+typedef struct {
+    char str[14];
+    char color[8];
+    size_t strlen;
+} t_port_state_info;
+
+#define STR_PORT_UNDEFINED "undefined"
+#define STR_PORT_OPEN "open"
+#define STR_PORT_CLOSED "closed"
+#define STR_PORT_FILTERED "filtered"
+#define STR_PORT_UNFILTERED "unfiltered"
+#define STR_PORT_OPEN_FILTERED "open|filtered"
+
+static const t_port_state_info port_state_info[] = {
+    {STR_PORT_UNDEFINED,     WHITE,   sizeof(STR_PORT_UNDEFINED) - 1    },
+    {STR_PORT_OPEN,          GREEN,   sizeof(STR_PORT_OPEN) - 1         },
+    {STR_PORT_CLOSED,        RED,     sizeof(STR_PORT_CLOSED) - 1       },
+    {STR_PORT_FILTERED,      YELLOW,  sizeof(STR_PORT_FILTERED) - 1     },
+    {STR_PORT_UNFILTERED,    BLUE,    sizeof(STR_PORT_UNFILTERED) - 1   },
+    {STR_PORT_OPEN_FILTERED, MAGENTA, sizeof(STR_PORT_OPEN_FILTERED) - 1},
+};
 
 typedef enum {
     SCAN_SYN,
@@ -109,6 +126,11 @@ typedef enum {
     SCAN_MAX,
 } scan_type;
 
+typedef struct {
+    scan_type type;
+    char name[5];
+} scan;
+
 static const port_state default_port_state[SCAN_MAX] = {
     PORT_FILTERED,
     PORT_FILTERED,
@@ -117,11 +139,6 @@ static const port_state default_port_state[SCAN_MAX] = {
     PORT_OPEN_FILTERED,
     PORT_OPEN_FILTERED,
 };
-
-typedef struct {
-    scan_type type;
-    char name[5];
-} scan;
 
 static const char scans_str[][5] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP"};
 

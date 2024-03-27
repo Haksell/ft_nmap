@@ -32,7 +32,7 @@ static t_paddings compute_paddings(t_nmap* nmap) {
         if (port >= 10000) paddings.port = 5;
         for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
             port_state state = nmap->port_states[nmap->hostname_index][scan_type][port_index];
-            paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_strlen[state]);
+            paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_info[state].strlen);
         }
         paddings.tcp_service = MAX(paddings.tcp_service, strlen(get_service_name(port, "tcp")));
         paddings.udp_service = MAX(paddings.udp_service, strlen(get_service_name(port, "udp")));
@@ -44,9 +44,9 @@ static void print_scan_cell(t_nmap* nmap, t_paddings* paddings, scan_type scan_t
     port_state port_state = port >= 0 ? nmap->port_states[nmap->hostname_index][scan_type][port_index] : PORT_UNDEFINED;
     printf(
         "%s%-*s " WHITE,
-        port >= 0 ? port_state_color[port_state] : WHITE,
+        port >= 0 ? port_state_info[port_state].color : WHITE,
         paddings->port_states[scan_type],
-        port >= 0 ? port_state_str[port_state] : scans_str[scan_type]
+        port >= 0 ? port_state_info[port_state].str : scans_str[scan_type]
     );
 }
 
