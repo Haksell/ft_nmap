@@ -16,7 +16,6 @@ static void send_packet(t_nmap* nmap, uint16_t port) {
     size_t packet_size = sizeof(struct iphdr) +
                          (nmap->current_scan == SCAN_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
 
-    // Test NTP 123/udp open  ntp || sudo ./ft_nmap scanme.nmap.org -p 68,123,22
     if (port == 123 && nmap->current_scan == SCAN_UDP) {
         uint8_t packetntp[sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE];
         packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE;

@@ -236,6 +236,12 @@ static void set_undefined_count(t_nmap* nmap) {
     }
 }
 
+static void set_scan_count(t_nmap* nmap) {
+    for (scan_type scan = 0; scan < SCAN_MAX; ++scan) {
+        nmap->scan_count += (nmap->scans >> scan) & 1;
+    }
+}
+
 void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0) {
@@ -252,4 +258,5 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     set_defaults(nmap);
     set_port_mappings(nmap);
     set_undefined_count(nmap);
+    set_scan_count(nmap);
 }

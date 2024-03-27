@@ -4,7 +4,6 @@
 
 ### axbrisse
 
-- [ ] only one service column if they are all the same
 - [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 - [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
 - [ ] better directory structure (based on ending/receiving threads?)
