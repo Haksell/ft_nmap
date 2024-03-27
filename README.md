@@ -4,8 +4,8 @@
 
 ### axbrisse
 
-- [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 - [ ] only one service column if they are all the same
+- [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 - [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
 - [ ] better directory structure (based on ending/receiving threads?)
 - [ ] randomize ports
@@ -74,9 +74,11 @@
 ## tests
 
 - [ ] `./ft_nmap --help`
-- [ ] `./ft_nmap 8.8.8.8 --threads 70 --ports 70-90 --scans SYN`
-- [ ] `./ft_nmap 8.8.8.8 --threads 200 --ports 75-85`
-- [ ] faire un script qui fait 1000 portes x 6 scans sur nmap et compare avec le notre pour plusieurs hostnames
+- [ ] `sudo ./ft_nmap 8.8.8.8 --threads 70 --ports 70-90 --scans SYN`
+- [ ] `sudo ./ft_nmap 8.8.8.8 --threads 200 --ports 75-85`
+- [ ] `sudo ./ft_nmap scanme.nmap.org -p 68,123,22`
+- [ ] `sudo ./ft_nmap scanme.nmap.org -p 22,68,123,481 --verbose -sU,XMAS,A,X -sUDP`
+- [ ] faire un script qui fait 1000 ports x 6 scans sur nmap et compare avec le notre pour plusieurs hostnames
 
 ## resources
 
