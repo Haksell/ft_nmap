@@ -19,7 +19,7 @@ void send_ping(t_nmap* nmap) {
         .code = 0,
         .checksum = 0,
         .un.echo.id = htons(getpid() & 0xFFFF),
-        .un.echo.sequence = 17,
+        .un.echo.sequence = 0,
     };
 
     int icmp_packet_size = ICMP_HDR_SIZE + sizeof(struct timeval);
