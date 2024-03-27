@@ -1,0 +1,8 @@
+With the pcap functions available, another approach is to ensure that your packet processing is as efficient as possible to minimize the risk of buffer overflow and packet drops.
+
+Dispatch Packets Quickly: Use pcap_dispatch() effectively to process packets as quickly as they are captured.
+The faster you can process packets, the less likely you are to encounter buffer overflow issues.
+
+Filtering: Use pcap_compile() and pcap_setfilter() to apply a filter that limits the captured traffic to only
+what's necessary for your scanning task. By reducing the amount of unnecessary traffic pcap has to handle, you
+can mitigate the impact of not being able to increase the buffer size.

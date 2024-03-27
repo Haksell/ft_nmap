@@ -96,7 +96,8 @@ typedef enum {
 
 static const char port_state_str[][14] = {"undefined", "open", "closed", "filtered", "unfiltered", "open|filtered"};
 static const char port_state_color[][8] = {WHITE, GREEN, RED, YELLOW, BLUE, MAGENTA};
-static const size_t port_state_strlen[] = {9, 5, 6, 8, 10, 13}; // TODO: compute automatically
+// TODO: compute automatically or assert the lengths are correct
+static const size_t port_state_strlen[] = {9, 5, 6, 8, 10, 13};
 
 typedef enum {
     SCAN_SYN,
@@ -107,6 +108,15 @@ typedef enum {
     SCAN_UDP,
     SCAN_MAX,
 } scan_type;
+
+static const port_state default_port_state[SCAN_MAX] = {
+    PORT_FILTERED,
+    PORT_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
+};
 
 typedef struct {
     scan_type type;

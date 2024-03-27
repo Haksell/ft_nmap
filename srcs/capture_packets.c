@@ -120,35 +120,15 @@ void* capture_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     while (run) {
         int ret = pcap_loop(handle, -1, got_packet, arg);
-        /*
-        With the pcap functions available, another approach is to ensure that your packet processing is as efficient as
-        possible to minimize the risk of buffer overflow and packet drops.
-
-        Dispatch Packets Quickly: Use pcap_dispatch() effectively to process packets as quickly as they are captured.
-        The faster you can process packets, the less likely you are to encounter buffer overflow issues.
-
-        Filtering: Use pcap_compile() and pcap_setfilter() to apply a filter that limits the captured traffic to only
-        what's necessary for your scanning task. By reducing the amount of unnecessary traffic pcap has to handle, you
-        can mitigate the impact of not being able to increase the buffer size.
-        */
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) {
             error("pcap_loop failed");
             exit(EXIT_FAILURE);
         }
 
         for (int i = 0; i < nmap->port_count; ++i) {
-            if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] != PORT_UNDEFINED) continue;
-            // TODO: axbrisse: array of default states
-            switch (nmap->current_scan) {
-                case SCAN_SYN:
-                case SCAN_ACK: nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_FILTERED; break;
-                case SCAN_NULL:
-                case SCAN_FIN:
-                case SCAN_XMAS:
-                case SCAN_UDP:
-                    nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = PORT_OPEN_FILTERED;
-                    break;
-            }
+            if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
+                nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = default_port_state[nmap->current_scan];
+            };
         }
         nmap->undefined_count[nmap->hostname_index][nmap->current_scan] = 0;
     }
