@@ -167,6 +167,9 @@ typedef struct {
     uint8_t current_scan;
     uint8_t threads;
 
+    bool is_responsive[MAX_HOSTNAMES][MAX_PORTS];
+    uint16_t responsive_count[MAX_HOSTNAMES];
+
     struct timeval start_time;
     struct timeval end_time;
     struct timeval latency;
@@ -204,7 +207,7 @@ void set_port(t_nmap* nmap, uint16_t port);
 // print_payload.c
 void print_payload(const u_char* payload, int size_payload);
 
-// print_results.c
+// print_scan_report.c
 void print_scan_report(t_nmap* nmap);
 
 // random.c

@@ -10,6 +10,7 @@ static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip)
     int icmp_offset = SIZE_ETHERNET + ip->ip_hl * 4;
     struct icmphdr* icmp = (struct icmphdr*)(packet + icmp_offset);
 
+    printf("XXX=%d\n", icmp->type);
     if (icmp->type == ICMP_ECHOREPLY) {
         handle_echo_reply(nmap, (uint8_t*)(packet + icmp_offset + ICMP_HDR_SIZE));
     } else if (icmp->type == ICMP_DEST_UNREACH) {
@@ -31,6 +32,7 @@ static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip)
         }
 
         // si t'arrives a faire un truc plus propre que ca c'est bien. PORT_UNDEFINED est superflu. Ou non?
+        printf("%d\n", mask);
         port_state port_state = nmap->current_scan == SCAN_UDP ? (mask & UDP_FILTERED               ? PORT_FILTERED
                                                                   : mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
                                                                                                     : PORT_UNDEFINED)
@@ -60,7 +62,7 @@ static void handle_tcp(t_nmap* nmap, const u_char* packet, const struct ip* ip, 
                                                               : PORT_UNDEFINED;
             break;
         case SCAN_ACK:
-            port_state = (tcp->th_flags == (TH_RST) || tcp->th_flags == (TH_RST | TH_ACK))
+            port_state = tcp->th_flags & TH_RST
                              ? PORT_UNFILTERED
                              : PORT_UNDEFINED; // bug trouvé: ./ft_nmap scanme.nmap.org -sACK -p 1-500 != nmap.org . Je
                                                // pense probleme de buffer. notre nmap mets trop peu de temps.
@@ -104,6 +106,7 @@ static void handle_udp(t_nmap* nmap, const u_char* packet, /* const struct ip* i
 static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
     t_nmap* nmap = (t_nmap*)args;
 
+    printf("i was here\n");
     const struct ip* ip = (struct ip*)(packet + SIZE_ETHERNET);
     int size_ip = ip->ip_hl * 4;
     if (size_ip < 20) {
@@ -120,15 +123,17 @@ void* capture_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     while (run) {
         int ret = pcap_loop(handle, -1, got_packet, arg);
-        if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) {
-            error("pcap_loop failed");
-            exit(EXIT_FAILURE);
-        }
+        if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
 
         for (int i = 0; i < nmap->port_count; ++i) {
+            // int port = nmap->port_array[i];
+            // printf("port=%d state=%d\n", port, nmap->port_states[nmap->hostname_index][nmap->current_scan][i]);
             if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
                 nmap->port_states[nmap->hostname_index][nmap->current_scan][i] = default_port_state[nmap->current_scan];
-            };
+            } else {
+                ++nmap->responsive_count[nmap->hostname_index];
+                nmap->is_responsive[nmap->hostname_index][i] = true;
+            }
         }
         nmap->undefined_count[nmap->hostname_index][nmap->current_scan] = 0;
     }

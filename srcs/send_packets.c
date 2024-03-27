@@ -15,7 +15,8 @@ extern bool run;
     PORT | SYN    ACK        FIN           NULL          XMAS            SERVICE | UDP             SERVICE
     22   | open   unfiltered open|filtered open|filtered open|filtered   ssh     | closed          unknown
     68   | closed unfiltered open|filtered open|filtered open|filtered   unknown | open|filtered   bootpc
-    123  | closed unfiltered open|filtered open|filtered open|filtered   unknown | >>> open <<<    ntp		<-- NTP (no payload == open|filtered)
+    123  | closed unfiltered open|filtered open|filtered open|filtered   unknown | >>> open <<<    ntp		<-- NTP (no
+   payload == open|filtered)
 */
 
 #define NTP1                                                                                                           \
@@ -76,31 +77,31 @@ static bool is_host_down(t_nmap* nmap) { // faire un select avec timeout? plus p
 
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
-    for (; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
+    for (nmap->hostname_index = 0; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
         hostname_to_ip(nmap); // TODO if unkown host continue
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         // TODO: local hostaddr. ça veut dire quoi?
         send_ping(nmap);
         if (is_host_down(nmap)) continue;
 
-        for (int scan = 0; scan < SCAN_MAX; ++scan) {
-            nmap->current_scan = scan;
+        for (scan_type scan = 0; scan < SCAN_MAX; ++scan) {
             if ((nmap->scans & (1 << scan)) == 0) continue;
+            nmap->current_scan = scan;
 
             nmap->port_source = random_u32_range(1 << 15, UINT16_MAX);
             set_filter(nmap);
 
-            for (int j = 0; j < nmap->port_count && run; ++j) { // TODO: shuffle
-                send_packet(nmap, nmap->port_array[j]);
-            }
+            // TODO: shuffle
+            for (int port_index = 0; port_index < nmap->port_count && run; ++port_index)
+                send_packet(nmap, nmap->port_array[port_index]);
 
             alarm(1);
-            while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0)
-                usleep(1000); // TODO: no forbidden functions
+            // TODO: no forbidden functions
+            while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0) usleep(1000);
             alarm(0);
         }
         print_scan_report(nmap);
     }
-    handle_sigint(SIGINT);
+    handle_sigint(SIGINT); // TODO: not like thats
     return NULL;
 }
