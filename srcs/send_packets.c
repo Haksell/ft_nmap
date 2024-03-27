@@ -70,10 +70,12 @@ void* send_packets(void* arg) {
             set_filter(nmap);
 
             // TODO: shuffle
-            for (int port_index = 0; port_index < nmap->port_count && run; ++port_index)
+            for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
+                if (nmap->current_scan == SCAN_UDP) sleep(1);
                 send_packet(nmap, nmap->port_array[port_index]);
+            }
 
-            alarm(1);
+            alarm(1); // TODO: alarm(2)
             // TODO: no forbidden functions
             while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0) usleep(1000);
             alarm(0);

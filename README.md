@@ -4,8 +4,8 @@
 
 ### axbrisse
 
-- [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 - [ ] -sS -sA -sF -sN -sZ -sU
+- [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 - [ ] only one service column if they are all the same
 - [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
 - [ ] better directory structure (based on ending/receiving threads?)
@@ -32,10 +32,10 @@
 - [x] You must only manage a simple IPv4 (address/hostname) as parameter for your scans.
 - [ ] You must manage FQDN however you don’t have to make the DNS resolution.
 - [ ] It must be possible to choose the number of threads (default:0 max:250) to make the scan faster
-- [ ] It must be possible to read a list of IPv4 addresses and hostname from a file (formatting is free).
+- [ ] It must be possible to read a list of IPv4 addresses and hostname from a file. (parsing good, execution bad)
 - [x] Your program must be able to run the following scan: SYN
 - [x] Your program must be able to run the following scan: NULL
-- [ ] Your program must be able to run the following scan: ACK > bug overflow
+- [x] Your program must be able to run the following scan: ACK
 - [x] Your program must be able to run the following scan: FIN
 - [x] Your program must be able to run the following scan: XMAS
 - [x] Your program must be able to run the following scan: UDP
@@ -49,11 +49,14 @@
 
 ## bonus
 
-- [ ] DNS/Version management.
-- [ ] OS detection.
-- [ ] Flag to go over the IDS/Firewall.
+- [ ] DNS (a la main?)
+- [ ] Reverse DNS
+- [ ] Version detection
+- [ ] OS detection
+- [ ] Flag to go over the IDS/Firewall
 - [ ] Being able to hide the source address. (IP spoofing? ez)
 - [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
+- [ ] Randomize hosts (once CIDR is done)
 - [ ] Additional flags...
 - [ ] Additional scans... (TCP Connect, TCP Window, TCP Maimon, SCTP INIT)
 - [ ] Different output formats (XML, grepable)
