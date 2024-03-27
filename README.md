@@ -5,7 +5,6 @@
 ### axbrisse
 
 -   [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
--   [ ] simplify atoi
 -   [ ] parsing tester
 -   [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 -   [ ] randomize ports

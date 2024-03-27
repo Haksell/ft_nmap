@@ -5,38 +5,24 @@ static void args_error() {
     exit(EXIT_ARGS);
 }
 
-static int atoi_check(char* s, int max, char* opt_name, bool zero_allowed) {
-    // TODO: Axel check no negative
-    // TODO: Axel check 0
-    int n = 0;
+static int atoi_check(char* s, int max, char* opt_name) {
+    if (!s[0]) panic("nmap: empty %s value\n", opt_name);
+
+    bool is_negative = s[0] == '-';
+    for (int i = is_negative; s[i]; ++i) {
+        if (!isdigit(s[i])) {
+            panic("nmap: invalid %s value: `%s'\n", opt_name, s);
+        }
+    }
+    if (is_negative) panic("nmap: %s value too small: `%s'\n", opt_name, s);
+
     int modulo = max % 10;
     int limit = max / 10;
-    bool is_negative = s[0] == '-';
-
-    for (int i = is_negative; s[i]; i++)
-        if (!isdigit(s[i])) {
-            fprintf(stderr, "nmap: invalid %s value (`%s' near `%s')\n", opt_name, s, s + i);
-            exit(EXIT_FAILURE);
-        }
-
-    if (is_negative) {
-        fprintf(stderr, "nmap: %s value too small: %s\n", opt_name, s);
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; s[i]; i++) {
-        if ((n == limit && s[i] > modulo + '0') || n > limit) {
-            fprintf(stderr, "nmap: %s value too big: %s\n", opt_name, s);
-            exit(EXIT_FAILURE);
-        }
+    int n = 0;
+    for (int i = 0; s[i]; ++i) {
+        if ((n == limit && s[i] > modulo + '0') || n > limit) panic("nmap: %s value too big: `%s'\n", opt_name, s);
         n = n * 10 + s[i] - '0';
     }
-
-    if (!zero_allowed && n == 0) {
-        fprintf(stderr, "nmap: %s value too small: 0", opt_name);
-        exit(EXIT_FAILURE);
-    }
-
     return n;
 }
 
@@ -46,35 +32,19 @@ static void parse_ports(char* value, t_nmap* nmap) {
 
     while (comma) {
         comma = strchr(value, ',');
-        if (value == comma || comma == end - 1) {
-            fprintf(stderr, "nmap: invalid port value (`%s')\n", comma);
-            exit(EXIT_FAILURE);
-        }
         if (comma) *comma = '\0';
 
         char* hyphen = strchr(value, '-');
-        if (value == hyphen || hyphen == end - 1) {
-            fprintf(stderr, "nmap: invalid port value (`%s')\n", hyphen);
-            exit(EXIT_FAILURE);
-        }
+        if (value == hyphen || hyphen == end - 1) atoi_check(value, UINT16_MAX, "port");
 
         if (hyphen) {
             *hyphen = '\0';
-            int left = atoi_check(value, UINT16_MAX, "port", true);
-            int right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
-            if (left > right) {
-                fprintf(
-                    stderr,
-                    "Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n",
-                    left,
-                    right,
-                    right,
-                    left
-                );
-                exit(EXIT_FAILURE);
-            }
+            int left = atoi_check(value, UINT16_MAX, "port");
+            int right = atoi_check(hyphen + 1, UINT16_MAX, "port");
+            if (left > right)
+                panic("Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
             for (int i = left; i <= right; ++i) set_port(nmap, i);
-        } else set_port(nmap, atoi_check(value, UINT16_MAX, "port", true));
+        } else set_port(nmap, atoi_check(value, UINT16_MAX, "port"));
 
         value = comma + 1;
     }
@@ -166,7 +136,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
-        case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads", true); break;
+        case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads"); break;
     }
     return true;
 }
