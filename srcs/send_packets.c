@@ -2,33 +2,10 @@
 
 extern bool run;
 
-//
-/*  Test Ntp (port 123/udp) | A trouver database de payloads pour automatiser les UDP.
-
-    sudo ./ft_nmap scanme.nmap.org -p 68,123,22
-    Starting Nmap 0.4.2 at 2024-03-27 04:10 CET
-
-    Nmap scan report for scanme.nmap.org (45.33.32.156)
-    Host is up (0.22s latency).
-    rDNS record for scanme.nmap.org: fra15s10-in-f14.1e100.net
-
-    PORT | SYN    ACK        FIN           NULL          XMAS            SERVICE | UDP             SERVICE
-    22   | open   unfiltered open|filtered open|filtered open|filtered   ssh     | closed          unknown
-    68   | closed unfiltered open|filtered open|filtered open|filtered   unknown | open|filtered   bootpc
-    123  | closed unfiltered open|filtered open|filtered open|filtered   unknown | >>> open <<<    ntp		<-- NTP (no
-   payload == open|filtered)
-*/
-
 #define NTP1                                                                                                           \
     "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc5O#Kq\xb1R\xf3"
 #define NTP2                                                                                                           \
-    "\xd9\x00\x0a\xfa\x00\x00\x00\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
-#define NTP3                                                                                                           \
-    "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
-    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc5O#Kq\xb1R\xf3"
-#define NTP4                                                                                                           \
     "\xd9\x00\x0a\xfa\x00\x00\x00\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
 #define NTP_SIZE 48
@@ -42,7 +19,7 @@ static void send_packet(t_nmap* nmap, uint16_t port) {
     if (port == 123 && nmap->current_scan == SCAN_UDP) {
         uint8_t packetntp[sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE];
         packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE;
-        unsigned char payload[4][48] = {NTP1, NTP2, NTP3, NTP4};
+        unsigned char payload[4][48] = {NTP1, NTP2, NTP1, NTP2}; // TODO: only 2?
         for (int i = 0; i < 4; i++) {
             fill_packet(nmap, packetntp, port, payload[i], NTP_SIZE);
             sendto(nmap->udp_fd, packetntp, packet_size, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr));

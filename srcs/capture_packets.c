@@ -31,12 +31,11 @@ static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip)
             original_port = ntohs(tcp->th_dport);
         }
 
-        // si t'arrives a faire un truc plus propre que ca c'est bien. PORT_UNDEFINED est superflu. Ou non?
-        printf("%d\n", mask);
-        port_state port_state = nmap->current_scan == SCAN_UDP ? (mask & UDP_FILTERED               ? PORT_FILTERED
-                                                                  : mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
-                                                                                                    : PORT_UNDEFINED)
-                                                               : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNDEFINED);
+        port_state port_state = nmap->current_scan == SCAN_UDP
+                                    ? (mask & UDP_FILTERED               ? PORT_FILTERED
+                                       : mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
+                                                                         : PORT_UNEXPECTED)
+                                    : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
         nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[original_port]] = port_state;
         if (port_state != PORT_UNDEFINED) --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
@@ -53,25 +52,23 @@ static void handle_tcp(t_nmap* nmap, const u_char* packet, const struct ip* ip, 
     }
 
     port_state port_state;
-    // si t'arrives a faire un truc plus propre que ca c'est bien. PORT_UNDEFINED est superflu
-    // a discuter si laisser undefined et attendre l'alarme, ou mettre la suite logique
     switch (nmap->current_scan) {
         case SCAN_SYN:
-            port_state = tcp->th_flags == (TH_SYN | TH_ACK)   ? PORT_OPEN
-                         : tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED
-                                                              : PORT_UNDEFINED;
+            port_state = tcp->th_flags == (TH_SYN | TH_ACK) ? PORT_OPEN
+                         : tcp->th_flags & TH_RST           ? PORT_CLOSED
+                                                            : PORT_UNEXPECTED;
             break;
         case SCAN_ACK:
-            port_state = tcp->th_flags & TH_RST
-                             ? PORT_UNFILTERED
-                             : PORT_UNDEFINED; // bug trouvé: ./ft_nmap scanme.nmap.org -sACK -p 1-500 != nmap.org . Je
-                                               // pense probleme de buffer. notre nmap mets trop peu de temps.
-                                               // l'original il s'arrête quand le buffer est plein
-            break; // localhost envoi RST et scanme ACK RST, a verifier pour le reste. Peut etre eviter == et faire un
-                   // bitwise pour rendre propre ?
+            // bug trouvé: ./ft_nmap scanme.nmap.org -sACK -p 1-500 != nmap.org . Je
+            // pense probleme de buffer. notre nmap mets trop peu de temps.
+            // l'original il s'arrête quand le buffer est plein
+            // localhost envoi RST et scanme ACK RST, a verifier pour le reste. Peut etre eviter == et faire un
+            // bitwise pour rendre propre ?
+            port_state = tcp->th_flags & TH_RST ? PORT_UNFILTERED : PORT_UNEXPECTED;
+            break;
         case SCAN_NULL:
         case SCAN_FIN:
-        case SCAN_XMAS: port_state = tcp->th_flags == (TH_RST | TH_ACK) ? PORT_CLOSED : PORT_UNDEFINED; break;
+        case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
     }
 
     nmap->port_states[nmap->hostname_index][nmap->current_scan]
