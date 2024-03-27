@@ -58,9 +58,9 @@ static void parse_scan(char* value, uint8_t* scans) {
         if (comma) *comma = '\0';
 
         bool valid_scan = false;
-        for (size_t j = 0; j < SCAN_MAX; ++j) {
-            if (!strcmp(value, scans_str[j])) {
-                *scans |= 1 << j;
+        for (scan_type scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+            if (!strcmp(value, scans_str[scan_type]) || (value[0] == scans_str[scan_type][0] && value[1] == '\0')) {
+                *scans |= 1 << scan_type;
                 valid_scan = true;
                 break;
             }

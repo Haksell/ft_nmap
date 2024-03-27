@@ -4,7 +4,6 @@
 
 ### axbrisse
 
-- [ ] -sS -sA -sF -sN -sZ -sU
 - [ ] output ne pas afficher si plus de 25 closed, filtered, etc (is_responsive array)
 - [ ] only one service column if they are all the same
 - [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
