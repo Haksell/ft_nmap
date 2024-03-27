@@ -56,10 +56,7 @@ static void parse_scan(char* value, uint8_t* scans) {
 
     while (comma) {
         comma = strchr(value, ',');
-        if (value == comma || comma == end - 1) {
-            fprintf(stderr, "nmap: invalid scan value (`%s')\n", comma);
-            exit(EXIT_FAILURE);
-        }
+        if (value == comma || comma == end - 1) panic("nmap: invalid scan value (`%s')\n", comma);
         if (comma) *comma = '\0';
 
         bool valid_scan = false;
@@ -70,11 +67,7 @@ static void parse_scan(char* value, uint8_t* scans) {
                 break;
             }
         }
-
-        if (!valid_scan) {
-            fprintf(stderr, "nmap: invalid scan value (`%s')\n", value);
-            exit(EXIT_FAILURE);
-        }
+        if (!valid_scan) panic("nmap: invalid scan value (`%s')\n", value);
 
         value = comma + 1;
     }
