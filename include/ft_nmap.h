@@ -130,7 +130,6 @@ typedef struct {
     struct sockaddr_in hostaddr; // TODO: remove
 
     uint32_t opt;
-    FILE* file; // TODO: remove
     uint16_t port_count;
     uint64_t port_set[1024];
     uint16_t port_array[MAX_PORTS];

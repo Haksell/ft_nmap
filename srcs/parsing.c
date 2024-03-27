@@ -110,6 +110,50 @@ static void parse_scan(char* value, uint8_t* scans) {
     }
 }
 
+static void add_hostname(t_nmap* nmap, char* hostname) {
+    if (hostname[0] == '\0') return;
+    if (nmap->hostname_count == MAX_HOSTNAMES) {
+        fprintf(stderr, "nmap: too many hostnames `%s'\n", hostname);
+        args_error();
+    }
+    strncpy(nmap->hostnames[nmap->hostname_count], hostname, HOST_NAME_MAX);
+    nmap->hostnames[nmap->hostname_count][HOST_NAME_MAX] = '\0';
+    nmap->hostname_count++;
+}
+
+static void parse_file(char* filename, t_nmap* nmap) {
+    char buffer[1024];
+    size_t bytesRead;
+
+    FILE* file = fopen(filename, "r");
+    if (!file) panic("nmap: failed to open hosts file \"%s\": %s\n", filename, strerror(errno));
+    char hostname[HOST_NAME_MAX + 1];
+    size_t hostname_idx = 0;
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+        for (size_t i = 0; i < bytesRead; ++i) {
+            if (isspace(buffer[i])) {
+                hostname[hostname_idx] = '\0';
+                add_hostname(nmap, hostname);
+                hostname_idx = 0;
+            } else {
+                if (hostname_idx == HOST_NAME_MAX) {
+                    fclose(file);
+                    hostname[HOST_NAME_MAX] = '\0';
+                    panic("nmap: hostname too long in \"%s\": %s...\n", filename, hostname);
+                } else {
+                    hostname[hostname_idx] = buffer[i];
+                    ++hostname_idx;
+                }
+            }
+        }
+    }
+    bool read_failed = !!ferror(file); // forbidden function
+    fclose(file);
+    if (read_failed) panic("nmap: failed to read hosts file \"%s\": %s\n", filename, strerror(errno));
+    hostname[hostname_idx] = '\0';
+    add_hostname(nmap, hostname);
+}
+
 static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_nmap* nmap) {
     if (value == NULL) {
         if (long_opt) fprintf(stderr, "nmap: option '--%s' requires an argument\n", long_opt);
@@ -119,17 +163,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
 
     nmap->opt |= opt;
     switch (opt) {
-        case OPT_FILE:
-            if (nmap->file) {
-                fprintf(stderr, "Only one input filename allowed\nQUITTING!\n");
-                // TODO check directory /dev/* symlink
-                exit(EXIT_FAILURE);
-                // TODO: custom exit qui verifie deux choses:  if (nmap->file)
-                // fclose(nmap->file); et if (nmap->fd) close(nmap->fd);
-            }
-            nmap->file = fopen(value, "r");
-            if (!nmap->file) error("Failed to open input file for reading");
-            break;
+        case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
         case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads", true); break;
@@ -210,16 +244,6 @@ static void handle_unrecognized_opt(char* arg) {
     if (*arg == '-') fprintf(stderr, "nmap: unrecognized option '%s'\n", arg);
     else fprintf(stderr, "nmap: invalid option -- '%c'\n", *(arg + 1));
     args_error();
-}
-
-static void add_hostname(t_nmap* nmap, char* hostname) {
-    if (nmap->hostname_count == MAX_HOSTNAMES) {
-        fprintf(stderr, "nmap: too many hostnames `%s'\n", hostname);
-        args_error();
-    }
-    strncpy(nmap->hostnames[nmap->hostname_count], hostname, HOST_NAME_MAX);
-    nmap->hostnames[nmap->hostname_count][HOST_NAME_MAX] = '\0';
-    nmap->hostname_count++;
 }
 
 static void set_defaults(t_nmap* nmap) {

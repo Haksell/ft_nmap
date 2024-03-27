@@ -5,3 +5,4 @@ ft_nmap
 garbage/a.out
 *.pcap*
 .clangd
+test_hosts.txt
