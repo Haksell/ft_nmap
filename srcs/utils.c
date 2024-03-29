@@ -25,7 +25,7 @@ void panic(const char* format, ...) {
     exit(EXIT_FAILURE);
 }
 
-void hostname_to_ip(t_nmap* nmap) {
+bool hostname_to_ip(t_nmap* nmap) {
     struct addrinfo hints = {
         .ai_family = AF_INET,
         .ai_flags = AI_CANONNAME,
@@ -34,17 +34,24 @@ void hostname_to_ip(t_nmap* nmap) {
     char* hostname = nmap->hostnames[nmap->hostname_index];
 
     int status = getaddrinfo(hostname, NULL, &hints, &res);
-    if (status != 0) g_error("getaddrinfo failed", status); // TODO != status != EAI_NONAME ? else return false comme ca c'est bien
+    if (status != 0)
+	{
+		freeaddrinfo(res);
+		if (status == EAI_NONAME)
+			return false;
+		g_error("getaddrinfo failed", status);
+	}
 
     if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
         error("inet_ntop failed");
 
     if (res->ai_canonname) {
         strncpy(hostname, res->ai_canonname, HOST_NAME_MAX);
-        hostname[HOST_NAME_MAX - 1] = '\0';
+        hostname[HOST_NAME_MAX] = '\0';
     }
 
     freeaddrinfo(res);
+	return true;
 }
 
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {

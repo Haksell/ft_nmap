@@ -108,9 +108,10 @@ void print_scan_report(t_nmap* nmap) {
     printf("\nNmap scan report for %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
     double uptime = nmap->latency.tv_sec + nmap->latency.tv_usec / 1000000.0;
     printf("Host is up (%.2gs latency).\n", uptime);
-    printf(
-        "rDNS record for %s: fra15s10-in-f14.1e100.net\n",
-        nmap->hostnames[nmap->hostname_index]
-    ); // TODO LORENZO DNS uniquement s'il a trouve le dns
+
+    char host[NI_MAXHOST];
+    if (ip_to_hostname(nmap->hostaddr.sin_addr, host, sizeof(host)))
+        printf("rDNS record for %s: %s\n", nmap->hostnames[nmap->hostname_index], host);
+
     print_port_states(nmap);
 }

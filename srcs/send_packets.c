@@ -41,9 +41,9 @@ static void send_packet(t_nmap* nmap, uint16_t port) {
 }
 
 static bool is_host_down(t_nmap* nmap) {
-    uint8_t buffer[64] = {0};
+    uint8_t buffer[64] = {0};  //  a refaire avec socket a partir de l'autre thread
 
-    int bytes_received = recv(nmap->icmp_fd, buffer + SIZE_ETHERNET, sizeof(buffer), 0);
+    int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
     if (bytes_received < 0) {
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
             printf("Host %s is down.\n", nmap->hostnames[nmap->hostname_index]);
@@ -54,15 +54,13 @@ static bool is_host_down(t_nmap* nmap) {
         return true;
     }
 
-    //faire ici packet icmp handle icmp
-
     return false;
 }
 
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     for (nmap->hostname_index = 0; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
-        hostname_to_ip(nmap); // TODO if unkown host continue
+        if (!hostname_to_ip(nmap)) continue;
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         // TODO: local hostaddr. ça veut dire quoi?
         send_ping(nmap);
@@ -90,7 +88,7 @@ void* send_packets(void* arg) {
                 if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
                     nmap->port_states[nmap->hostname_index][nmap->current_scan]
                                      [i] = default_port_state[nmap->current_scan];
-                } else if (!nmap->is_responsive[nmap->hostname_index]) {
+                } else if (!nmap->is_responsive[nmap->hostname_index][i]) {
                     ++nmap->responsive_count[nmap->hostname_index];
                     nmap->is_responsive[nmap->hostname_index][i] = true;
                 }
