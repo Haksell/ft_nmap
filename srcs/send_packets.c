@@ -1,4 +1,6 @@
 #include "ft_nmap.h"
+#include <stdint.h>
+#include <sys/types.h>
 
 extern sig_atomic_t run;
 extern sig_atomic_t sender_finished;
@@ -37,25 +39,27 @@ static void send_packet(t_nmap* nmap, uint16_t port) {
     }
 }
 
-static bool is_host_down(t_nmap* nmap) { // faire un select avec timeout? plus propre mais aussi long
-    int old_hostname_up_count = nmap->hostname_up_count;
-    struct timeval countdown = {.tv_usec = 300000}; // 3s -> MACRO
-    while (nmap->hostname_up_count == old_hostname_up_count && countdown.tv_usec > 0 && run) {
-        usleep(1000);
-        countdown.tv_usec -= 1000;
-    }
-    if (countdown.tv_usec <= 0) {
-        // a print uniquement si le seul host est down, donc pas ici // Lorenzo
+static bool is_host_down(t_nmap* nmap) {
+    uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
+
+    int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
+    if (bytes_received < 0) {
+        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+            printf("Host %s is down.\n", nmap->hostnames[nmap->hostname_index]);
+            return true;
+        } else error("recv failed");
+    } else if (bytes_received == 0) {
         printf("Host %s is down.\n", nmap->hostnames[nmap->hostname_index]);
         return true;
     }
+
     return false;
 }
 
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     for (nmap->hostname_index = 0; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
-        hostname_to_ip(nmap); // TODO if unkown host continue
+        if (!hostname_to_ip(nmap)) continue;
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         // TODO: local hostaddr. ça veut dire quoi?
         send_ping(nmap);
@@ -70,7 +74,7 @@ void* send_packets(void* arg) {
 
             // TODO: shuffle
             for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
-                if (nmap->current_scan == SCAN_UDP) sleep(1);
+                if (nmap->current_scan == SCAN_UDP) sleep(1); // TODO: NO
                 send_packet(nmap, nmap->port_array[port_index]);
             }
 

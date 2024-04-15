@@ -22,6 +22,10 @@ static void init(t_nmap* nmap) {
     if (setsockopt(nmap->udp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
         error("setsockopt IP_HDRINCL failed");
 
+    struct timeval tv = {.tv_sec = 3};
+    if (setsockopt(nmap->icmp_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
+        perror("setsockopt SO_RCVTIMEO failed");
+
     get_start_time(nmap);
 
     if (nmap->opt & OPT_VERBOSE) {

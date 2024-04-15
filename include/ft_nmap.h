@@ -227,7 +227,7 @@ void set_signals();
 // utils.c
 void error(char* message);
 void g_error(char* message, int status);
-void hostname_to_ip(t_nmap* nmap);
+bool hostname_to_ip(t_nmap* nmap);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
 void panic(const char* format, ...);
