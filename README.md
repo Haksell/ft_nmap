@@ -13,6 +13,7 @@
 
 ### lsimanic
 
+-   [ ] fix unexpected with several hosts
 -   [ ] better help menu
 -   [ ] `--usage`
 
