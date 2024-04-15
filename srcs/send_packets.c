@@ -102,6 +102,6 @@ void* send_packets(void* arg) {
         }
         print_scan_report(nmap);
     }
-    handle_sigint(SIGINT); // TODO: not like thats
+    handle_sigint(SIGINT); // TODO: not like that
     return NULL;
 }
