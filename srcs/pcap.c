@@ -12,8 +12,7 @@ void set_filter(t_nmap* nmap) {
     // TODO: UDP and exact flags
     sprintf(
         filter_exp,
-        "(icmp and src host %s) or ((tcp or udp) and src host %s and dst port %d)", // a changer
-        nmap->hostip,
+        "(icmp) or ((tcp or udp) and src host %s and dst port %d)", // a changer
         nmap->hostip,
         nmap->port_source
     );
@@ -40,7 +39,7 @@ void init_pcap(t_nmap* nmap) {
     if (pcap_lookupnet(dev, &nmap->net_device, &_, errbuf) == PCAP_ERROR)
         panic("Couldn't get netmask for device %s: %s\n", dev, errbuf);
 
-    handle = pcap_open_live(dev, SNAP_LEN, 1, 10, errbuf);
+    handle = pcap_open_live(dev, SNAP_LEN, 1, 1, errbuf);
     if (handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
     if (pcap_datalink(handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
 }

@@ -34,16 +34,18 @@ bool hostname_to_ip(t_nmap* nmap) {
     char* hostname = nmap->hostnames[nmap->hostname_index];
 
     int status = getaddrinfo(hostname, NULL, &hints, &res);
-    if (status != 0)
-	{
-		freeaddrinfo(res);
-		if (status == EAI_NONAME)
-			return false;
-		g_error("getaddrinfo failed", status);
-	}
+    if (status != 0 || res == NULL) {
+        if (status == EAI_NONAME || status == EAI_AGAIN) {
+            fprintf(stderr, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
+            return false;
+        }
+        g_error("getaddrinfo failed", status);
+    }
 
-    if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL)
+    if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL) {
+        freeaddrinfo(res);
         error("inet_ntop failed");
+    }
 
     if (res->ai_canonname) {
         strncpy(hostname, res->ai_canonname, HOST_NAME_MAX);
@@ -51,7 +53,7 @@ bool hostname_to_ip(t_nmap* nmap) {
     }
 
     freeaddrinfo(res);
-	return true;
+    return true;
 }
 
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {
@@ -132,7 +134,7 @@ void cleanup(t_nmap* nmap
 ) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     if (handle) pcap_close(handle);
-    if (nmap->tcp_fd >= 0) close(nmap->tcp_fd); // > 2 plutot ?
-    if (nmap->udp_fd >= 0) close(nmap->udp_fd);
-    if (nmap->icmp_fd >= 0) close(nmap->icmp_fd);
+    if (nmap->tcp_fd > 2) close(nmap->tcp_fd); // > 2 plutot ?
+    if (nmap->udp_fd > 2) close(nmap->udp_fd);
+    if (nmap->icmp_fd > 2) close(nmap->icmp_fd);
 }
