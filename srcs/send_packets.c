@@ -83,19 +83,10 @@ void* send_packets(void* arg) {
             while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0) usleep(1000);
             alarm(0);
 
-            // Pourquoi on rentre la-dedans que pour le dernier scan ?
             for (int i = 0; i < nmap->port_count; ++i) {
                 if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
                     nmap->port_states[nmap->hostname_index][nmap->current_scan]
                                      [i] = default_port_state[nmap->current_scan];
-                } else if (!nmap->is_responsive[nmap->hostname_index][i]) {
-                    // printf(
-                    //     "ooga port=%d scan=%d\n",
-                    //     nmap->port_array[i],
-                    //     nmap->port_states[nmap->hostname_index][nmap->current_scan][i]
-                    // );
-                    ++nmap->responsive_count[nmap->hostname_index];
-                    nmap->is_responsive[nmap->hostname_index][i] = true;
                 }
             }
             sender_finished = true;

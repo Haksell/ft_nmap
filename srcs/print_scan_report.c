@@ -69,7 +69,7 @@ static void print_line(
     char* tcp_service,
     char* udp_service
 ) {
-    if (port >= 0 && hide_unresponsive && !nmap->is_responsive[nmap->hostname_index][port_index]) return;
+    if (port >= 0 && hide_unresponsive && false) return;
 
     bool has_udp = (nmap->scans >> SCAN_UDP) & 1;
 
