@@ -4,7 +4,6 @@
 
 ### axbrisse
 
--   [ ] randomize ports
 -   [ ] multithreading
 -   [ ] clean `t_nmap`: `t_host`, remove fields that can be local variables...
 -   [ ] better directory structure (based on ending/receiving threads?)
@@ -12,7 +11,6 @@
 
 ### lsimanic
 
--   [ ] fix unexpected with several hosts
 -   [ ] better help menu
 -   [ ] `--usage`
 
