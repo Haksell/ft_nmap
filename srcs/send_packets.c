@@ -41,7 +41,7 @@ static void send_packet(t_nmap* nmap, uint16_t port) {
 }
 
 static bool is_host_down(t_nmap* nmap) {
-    uint8_t buffer[64] = {0};  //  a refaire avec socket a partir de l'autre thread
+    uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
 
     int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
     if (bytes_received < 0) {
@@ -75,7 +75,7 @@ void* send_packets(void* arg) {
 
             // TODO: shuffle
             for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
-                if (nmap->current_scan == SCAN_UDP) sleep(1);
+                if (nmap->current_scan == SCAN_UDP) sleep(1); // TODO: NO
                 send_packet(nmap, nmap->port_array[port_index]);
             }
 
