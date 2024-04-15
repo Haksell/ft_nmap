@@ -62,9 +62,10 @@ typedef enum {
     OPT_HELP = 1 << 1,
     OPT_PORTS = 1 << 2,
     OPT_SCAN = 1 << 3,
-    OPT_THREADS = 1 << 4,
-    OPT_VERSION = 1 << 5,
-    OPT_VERBOSE = 1 << 6,
+    OPT_RANDOMIZE = 1 << 4,
+    OPT_THREADS = 1 << 5,
+    OPT_VERSION = 1 << 6,
+    OPT_VERBOSE = 1 << 7,
 } option_value;
 
 typedef struct {
@@ -75,14 +76,15 @@ typedef struct {
 } option;
 
 static const option valid_opt[] = {
-    {OPT_FILE,    'f', "file",    true },
-    {OPT_HELP,    'h', "help",    false},
-    {OPT_PORTS,   'p', "ports",   true },
-    {OPT_SCAN,    's', "scans",   true },
-    {OPT_THREADS, 't', "threads", true },
-    {OPT_VERBOSE, 'v', "verbose", false},
-    {OPT_VERSION, 'V', "version", false},
-    {0,           0,   NULL,      false}
+    {OPT_FILE,      'f', "file",      true },
+    {OPT_HELP,      'h', "help",      false},
+    {OPT_PORTS,     'p', "ports",     true },
+    {OPT_SCAN,      's', "scans",     true },
+    {OPT_RANDOMIZE, 'r', "randomize", false},
+    {OPT_THREADS,   't', "threads",   true },
+    {OPT_VERBOSE,   'v', "verbose",   false},
+    {OPT_VERSION,   'V', "version",   false},
+    {0,             0,   NULL,        false}
 };
 
 typedef enum {
@@ -163,6 +165,7 @@ typedef struct {
     uint16_t port_count;
     uint64_t port_set[1024];
     uint16_t port_array[MAX_PORTS];
+    uint16_t random_port_array[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
     port_state port_states[MAX_HOSTNAMES][SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[MAX_HOSTNAMES][SCAN_MAX];
@@ -235,5 +238,5 @@ void cleanup(t_nmap* nmap);
 
 // verbose.c
 void print_hostnames(t_nmap* nmap);
-void print_ports(t_nmap* nmap);
+void print_ports(t_nmap* nmap, char* name, uint16_t* port_array);
 void print_scans(uint8_t scans);

@@ -30,7 +30,8 @@ static void init(t_nmap* nmap) {
 
     if (nmap->opt & OPT_VERBOSE) {
         print_hostnames(nmap);
-        print_ports(nmap);
+        print_ports(nmap, "Sequential ports", nmap->port_array);
+        if (!(nmap->opt & OPT_RANDOMIZE)) print_ports(nmap, "    Random ports", nmap->random_port_array);
         print_scans(nmap->scans);
     }
 }
