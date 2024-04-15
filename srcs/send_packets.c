@@ -85,11 +85,11 @@ void* send_packets(void* arg) {
                     nmap->port_states[nmap->hostname_index][nmap->current_scan]
                                      [i] = default_port_state[nmap->current_scan];
                 } else if (!nmap->is_responsive[nmap->hostname_index][i]) {
-                    printf(
-                        "ooga port=%d scan=%d\n",
-                        nmap->port_array[i],
-                        nmap->port_states[nmap->hostname_index][nmap->current_scan][i]
-                    );
+                    // printf(
+                    //     "ooga port=%d scan=%d\n",
+                    //     nmap->port_array[i],
+                    //     nmap->port_states[nmap->hostname_index][nmap->current_scan][i]
+                    // );
                     ++nmap->responsive_count[nmap->hostname_index];
                     nmap->is_responsive[nmap->hostname_index][i] = true;
                 }
