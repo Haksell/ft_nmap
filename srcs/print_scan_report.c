@@ -20,7 +20,22 @@ static void get_service_name(uint16_t port, const char* proto, char buffer[MAX_S
     strncpy(buffer, service_name, MAX_SERVICE_LEN - 1);
 }
 
-static t_paddings compute_paddings(t_nmap* nmap) {
+static void copy_port_state_combination(t_nmap* nmap, port_state combination[SCAN_MAX], int port_index) {
+    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+        combination[scan_type] = nmap->port_states[nmap->hostname_index][scan_type][port_index];
+    }
+}
+
+static bool same_port_combination(t_nmap* nmap, port_state combination[SCAN_MAX], int port_index) {
+    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+        if (combination[scan_type] != nmap->port_states[nmap->hostname_index][scan_type][port_index]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static t_paddings compute_paddings(t_nmap* nmap, int hide_count, port_state common_port_state_combination[SCAN_MAX]) {
     t_paddings paddings = {
         .port = 4,
         .port_states = {3, 3, 4, 3, 4, 3},
@@ -39,29 +54,16 @@ static t_paddings compute_paddings(t_nmap* nmap) {
         char udp_service[MAX_SERVICE_LEN + 1];
         get_service_name(port, "tcp", tcp_service);
         get_service_name(port, "udp", udp_service);
-        paddings.tcp_service = MAX(paddings.tcp_service, strlen(tcp_service));
-        paddings.udp_service = MAX(paddings.udp_service, strlen(udp_service));
+        if (hide_count == 0 || !same_port_combination(nmap, common_port_state_combination, port_index)) {
+            paddings.tcp_service = MAX(paddings.tcp_service, strlen(tcp_service));
+            paddings.udp_service = MAX(paddings.udp_service, strlen(udp_service));
+        }
         if (!paddings.two_columns && strcmp(tcp_service, udp_service) != 0) paddings.two_columns = true;
     }
     bool has_tcp = nmap->scans & ~(1 << SCAN_UDP);
     bool has_udp = nmap->scans & (1 << SCAN_UDP);
     if (!has_tcp || !has_udp) paddings.two_columns = false;
     return paddings;
-}
-
-static void copy_port_state_combination(t_nmap* nmap, port_state combination[SCAN_MAX], int port_index) {
-    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-        combination[scan_type] = nmap->port_states[nmap->hostname_index][scan_type][port_index];
-    }
-}
-
-static bool same_port_combination(t_nmap* nmap, port_state combination[SCAN_MAX], int port_index) {
-    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-        if (combination[scan_type] != nmap->port_states[nmap->hostname_index][scan_type][port_index]) {
-            return false;
-        }
-    }
-    return true;
 }
 
 static int find_most_common_port_state_combination(t_nmap* nmap, port_state combination[SCAN_MAX]) {
@@ -142,7 +144,7 @@ static void print_port_states(t_nmap* nmap) {
     port_state common_port_state_combination[SCAN_MAX];
     int hide_count = find_most_common_port_state_combination(nmap, common_port_state_combination);
     printf("\n");
-    t_paddings paddings = compute_paddings(nmap);
+    t_paddings paddings = compute_paddings(nmap, hide_count, common_port_state_combination);
     print_line(
         nmap,
         &paddings,

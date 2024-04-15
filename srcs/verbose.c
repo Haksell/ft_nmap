@@ -6,9 +6,9 @@ void print_hostnames(t_nmap* nmap) {
     printf("\n");
 }
 
-void print_ports(t_nmap* nmap) {
-    printf("Ports: ");
-    for (int i = 0; i < nmap->port_count; ++i) printf(i == 0 ? "%d" : ",%d", nmap->port_array[i]);
+void print_ports(t_nmap* nmap, char* name, uint16_t* port_array) {
+    printf("%s: ", name);
+    for (int i = 0; i < nmap->port_count; ++i) printf(i == 0 ? "%d" : ",%d", port_array[i]);
     printf("\n");
 }
 

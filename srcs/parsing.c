@@ -242,6 +242,16 @@ static void set_scan_count(t_nmap* nmap) {
     }
 }
 
+static void randomize_ports(t_nmap* nmap) {
+    for (int i = 0; i < nmap->port_count; ++i) nmap->random_port_array[i] = nmap->port_array[i];
+    for (int i = 0; i < nmap->port_count; ++i) {
+        uint32_t rd = random_u32_range(i, nmap->port_count);
+        uint16_t tmp_port = nmap->random_port_array[rd];
+        nmap->random_port_array[rd] = nmap->random_port_array[i];
+        nmap->random_port_array[i] = tmp_port;
+    }
+}
+
 void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0) {
@@ -259,4 +269,5 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     set_port_mappings(nmap);
     set_undefined_count(nmap);
     set_scan_count(nmap);
+    if (!(nmap->opt & OPT_RANDOMIZE)) randomize_ports(nmap);
 }

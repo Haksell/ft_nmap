@@ -58,6 +58,7 @@ static bool is_host_down(t_nmap* nmap) {
 
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
+    uint16_t* loop_port_array = nmap->opt & OPT_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
     for (nmap->hostname_index = 0; nmap->hostname_index < nmap->hostname_count; ++nmap->hostname_index) {
         if (!hostname_to_ip(nmap)) continue;
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
@@ -75,7 +76,7 @@ void* send_packets(void* arg) {
             // TODO: shuffle
             for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
                 if (nmap->current_scan == SCAN_UDP) sleep(1); // TODO: NO
-                send_packet(nmap, nmap->port_array[port_index]);
+                send_packet(nmap, loop_port_array[port_index]);
             }
 
             alarm(1); // TODO: alarm(2)
