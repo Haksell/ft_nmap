@@ -185,8 +185,8 @@ void print_scan_report(t_nmap* nmap) {
     printf("Host is up (%.2gs latency).\n", uptime);
 
     char host[NI_MAXHOST];
-    if (ip_to_hostname(nmap->hostaddr.sin_addr, host, sizeof(host)))
-        printf("rDNS record for %s: %s\n", nmap->hosts[nmap->h_index].name, host); // TODO: don't display if same
+    if (ip_to_hostname(nmap->hostaddr.sin_addr, host, sizeof(host)) && strcmp(nmap->hosts[nmap->h_index].name, host))
+        printf("rDNS record for %s: %s\n", nmap->hosts[nmap->h_index].name, host);
 
     print_port_states(nmap);
 }
