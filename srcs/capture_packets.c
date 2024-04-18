@@ -120,6 +120,5 @@ void* capture_packets(void* arg) {
         while (run && !sender_finished) usleep(1000);
         sender_finished = false;
     }
-    printf("miao\n"), fflush(stdout);
     return NULL;
 }
