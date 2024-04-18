@@ -8,10 +8,10 @@ extern pcap_t* handle;
 #define UDP_FILTERED 0b0010011000000110
 
 static void set_port_state(t_nmap* nmap, port_state port_state, uint16_t port) {
-    if (nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[port]] == PORT_UNDEFINED) {
-        nmap->port_states[nmap->hostname_index][nmap->current_scan][nmap->port_dictionary[port]] = port_state;
-        --nmap->undefined_count[nmap->hostname_index][nmap->current_scan];
-        if (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] == 0) pcap_breakloop(handle);
+    if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][nmap->port_dictionary[port]] == PORT_UNDEFINED) {
+        nmap->hosts[nmap->h_index].port_states[nmap->current_scan][nmap->port_dictionary[port]] = port_state;
+        --nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan];
+        if (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] == 0) pcap_breakloop(handle);
     }
 }
 
@@ -116,7 +116,7 @@ void* capture_packets(void* arg) {
     while (run) {
         int ret = pcap_loop(handle, -1, got_packet, arg);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
-        nmap->undefined_count[nmap->hostname_index][nmap->current_scan] = 0;
+        nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] = 0;
         while (run && !sender_finished) usleep(1000);
         sender_finished = false;
     }

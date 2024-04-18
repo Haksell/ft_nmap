@@ -22,13 +22,13 @@ static void get_service_name(uint16_t port, const char* proto, char buffer[MAX_S
 
 static void copy_port_state_combination(t_nmap* nmap, port_state combination[SCAN_MAX], int port_index) {
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-        combination[scan_type] = nmap->port_states[nmap->hostname_index][scan_type][port_index];
+        combination[scan_type] = nmap->hosts[nmap->h_index].port_states[scan_type][port_index];
     }
 }
 
 static bool same_port_combination(t_nmap* nmap, port_state combination[SCAN_MAX], int port_index) {
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-        if (combination[scan_type] != nmap->port_states[nmap->hostname_index][scan_type][port_index]) {
+        if (combination[scan_type] != nmap->hosts[nmap->h_index].port_states[scan_type][port_index]) {
             return false;
         }
     }
@@ -47,7 +47,7 @@ static t_paddings compute_paddings(t_nmap* nmap, int hide_count, port_state comm
         uint16_t port = nmap->port_array[port_index];
         if (port >= 10000) paddings.port = 5;
         for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-            port_state state = nmap->port_states[nmap->hostname_index][scan_type][port_index];
+            port_state state = nmap->hosts[nmap->h_index].port_states[scan_type][port_index];
             paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_info[state].strlen);
         }
         char tcp_service[MAX_SERVICE_LEN + 1];
@@ -95,7 +95,7 @@ static void print_scan_cell(
 ) {
     port_state port_state = port == HEADER_LINE ? PORT_UNDEFINED
                             : port == HIDE_LINE ? common_port_state_combination[scan_type]
-                                                : nmap->port_states[nmap->hostname_index][scan_type][port_index];
+                                                : nmap->hosts[nmap->h_index].port_states[scan_type][port_index];
     printf(
         "%s%-*s " WHITE,
         port == HEADER_LINE ? WHITE : port_state_info[port_state].color,
@@ -180,13 +180,13 @@ static void print_port_states(t_nmap* nmap) {
 }
 
 void print_scan_report(t_nmap* nmap) {
-    printf("\nNmap scan report for %s (%s)\n", nmap->hostnames[nmap->hostname_index], nmap->hostip);
+    printf("\nNmap scan report for %s (%s)\n", nmap->hosts[nmap->h_index].name, nmap->hostip);
     double uptime = nmap->latency.tv_sec + nmap->latency.tv_usec / 1000000.0;
     printf("Host is up (%.2gs latency).\n", uptime);
 
     char host[NI_MAXHOST];
     if (ip_to_hostname(nmap->hostaddr.sin_addr, host, sizeof(host)))
-        printf("rDNS record for %s: %s\n", nmap->hostnames[nmap->hostname_index], host);
+        printf("rDNS record for %s: %s\n", nmap->hosts[nmap->h_index].name, host); // TODO: don't display if same
 
     print_port_states(nmap);
 }

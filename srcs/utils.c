@@ -31,7 +31,7 @@ bool hostname_to_ip(t_nmap* nmap) {
         .ai_flags = AI_CANONNAME,
     };
     struct addrinfo* res = NULL;
-    char* hostname = nmap->hostnames[nmap->hostname_index];
+    char* hostname = nmap->hosts[nmap->h_index].name;
 
     int status = getaddrinfo(hostname, NULL, &hints, &res);
     if (status != 0 || res == NULL) {
@@ -134,7 +134,7 @@ void cleanup(t_nmap* nmap
 ) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     if (handle) pcap_close(handle);
-    if (nmap->tcp_fd > 2) close(nmap->tcp_fd); // > 2 plutot ?
+    if (nmap->tcp_fd > 2) close(nmap->tcp_fd);
     if (nmap->udp_fd > 2) close(nmap->udp_fd);
     if (nmap->icmp_fd > 2) close(nmap->icmp_fd);
 }

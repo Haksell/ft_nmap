@@ -77,8 +77,8 @@ static void add_hostname(t_nmap* nmap, char* hostname) {
         fprintf(stderr, "nmap: too many hostnames `%s'\n", hostname);
         args_error();
     }
-    strncpy(nmap->hostnames[nmap->hostname_count], hostname, HOST_NAME_MAX);
-    nmap->hostnames[nmap->hostname_count][HOST_NAME_MAX] = '\0';
+    strncpy(nmap->hosts[nmap->hostname_count].name, hostname, HOST_NAME_MAX);
+    nmap->hosts[nmap->hostname_count].name[HOST_NAME_MAX] = '\0';
     nmap->hostname_count++;
 }
 
@@ -231,7 +231,7 @@ static void set_port_mappings(t_nmap* nmap) {
 static void set_undefined_count(t_nmap* nmap) {
     for (int i = 0; i < nmap->hostname_count; ++i) {
         for (int j = 0; j < SCAN_MAX; ++j) {
-            nmap->undefined_count[i][j] = nmap->port_count;
+            nmap->hosts[i].undefined_count[j] = nmap->port_count;
         }
     }
 }

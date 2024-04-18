@@ -2,7 +2,7 @@
 
 void print_hostnames(t_nmap* nmap) {
     printf("Hosts: ");
-    for (int i = 0; i < nmap->hostname_count; ++i) printf(i == 0 ? "%s" : ", %s", nmap->hostnames[i]);
+    for (int i = 0; i < nmap->hostname_count; ++i) printf(i == 0 ? "%s" : ", %s", nmap->hosts[i].name);
     printf("\n");
 }
 

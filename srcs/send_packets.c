@@ -45,11 +45,11 @@ static bool is_host_down(t_nmap* nmap) {
     int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
     if (bytes_received < 0) {
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
-            printf("Host %s is down.\n", nmap->hostnames[nmap->hostname_index]);
+            printf("Host %s is down.\n", nmap->hosts[nmap->h_index].name);
             return true;
         } else error("recv failed");
     } else if (bytes_received == 0) {
-        printf("Host %s is down.\n", nmap->hostnames[nmap->hostname_index]);
+        printf("Host %s is down.\n", nmap->hosts[nmap->h_index].name);
         return true;
     }
 
@@ -59,7 +59,7 @@ static bool is_host_down(t_nmap* nmap) {
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
     uint16_t* loop_port_array = nmap->opt & OPT_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
-    for (nmap->hostname_index = 0; nmap->hostname_index < nmap->hostname_count && run; ++nmap->hostname_index) {
+    for (nmap->h_index = 0; nmap->h_index < nmap->hostname_count && run; ++nmap->h_index) {
         if (!hostname_to_ip(nmap)) continue;
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         send_ping(nmap);
@@ -78,13 +78,13 @@ void* send_packets(void* arg) {
 
             alarm(1); // TODO: alarm(2)
             // TODO: no forbidden functions
-            while (nmap->undefined_count[nmap->hostname_index][nmap->current_scan] > 0 && run) usleep(1000);
+            while (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] > 0 && run) usleep(1000);
             alarm(0);
 
             for (int i = 0; i < nmap->port_count; ++i) {
-                if (nmap->port_states[nmap->hostname_index][nmap->current_scan][i] == PORT_UNDEFINED) {
-                    nmap->port_states[nmap->hostname_index][nmap->current_scan]
-                                     [i] = default_port_state[nmap->current_scan];
+                if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][i] == PORT_UNDEFINED) {
+                    nmap->hosts[nmap->h_index]
+                        .port_states[nmap->current_scan][i] = default_port_state[nmap->current_scan];
                 }
             }
             sender_finished = true;
