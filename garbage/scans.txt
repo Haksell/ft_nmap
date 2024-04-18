@@ -1,6 +1,0 @@
-SYN		sS	   meme port
-NULL	sN     2 portes separes de 2 40200 40202 par ex
-ACK		sA
-FIN		sF     gi
-XMAS	sX
-UDP		sU

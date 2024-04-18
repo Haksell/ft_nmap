@@ -7,6 +7,7 @@
 - [ ] parsing tester
 - [ ] better help menu
 - [ ] `--usage`
+- [ ] `pcap_loop` -> `pcap_dispatch`
 - [ ] consistent usage of `error`, `g_error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
 
 ## mandatory
