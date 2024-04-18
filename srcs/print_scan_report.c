@@ -143,7 +143,6 @@ static void print_line(
 static void print_port_states(t_nmap* nmap) {
     port_state common_port_state_combination[SCAN_MAX];
     int hide_count = find_most_common_port_state_combination(nmap, common_port_state_combination);
-    printf("\n");
     t_paddings paddings = compute_paddings(nmap, hide_count, common_port_state_combination);
     print_line(
         nmap,

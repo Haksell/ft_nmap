@@ -105,7 +105,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         return;
     }
 
-    printf("IP_p type: %d\n", ip->ip_p);
+    // printf("IP_p type: %d\n", ip->ip_p);
     if (ip->ip_p == IPPROTO_ICMP) handle_icmp(nmap, packet, ip);
     else if (ip->ip_p == IPPROTO_TCP) handle_tcp(nmap, packet, ip, size_ip);
     else if (ip->ip_p == IPPROTO_UDP) handle_udp(nmap, packet, size_ip);

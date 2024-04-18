@@ -10,9 +10,11 @@ void set_filter(t_nmap* nmap) {
 
     char filter_exp[128] = {0};
     // TODO: UDP and exact flags
+
     sprintf(
         filter_exp,
-        "(icmp) or ((tcp or udp) and src host %s and dst port %d)", // a changer
+        "(icmp) or (%s and src host %s and dst port %d)", // a changer
+        nmap->current_scan == SCAN_UDP ? "udp" : "tcp",
         nmap->hostip,
         nmap->port_source
     );
