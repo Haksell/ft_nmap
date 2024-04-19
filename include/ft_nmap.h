@@ -61,12 +61,13 @@
 typedef enum {
     OPT_FILE = 1 << 0,
     OPT_HELP = 1 << 1,
-    OPT_PORTS = 1 << 2,
-    OPT_SCAN = 1 << 3,
-    OPT_RANDOMIZE = 1 << 4,
-    OPT_THREADS = 1 << 5,
-    OPT_VERSION = 1 << 6,
-    OPT_VERBOSE = 1 << 7,
+    OPT_NO_PING = 1 << 2,
+    OPT_NO_RANDOMIZE = 1 << 3,
+    OPT_PORTS = 1 << 4,
+    OPT_SCAN = 1 << 5,
+    OPT_THREADS = 1 << 6,
+    OPT_VERSION = 1 << 7,
+    OPT_VERBOSE = 1 << 8,
 } option_value;
 
 typedef struct {
@@ -77,15 +78,16 @@ typedef struct {
 } option;
 
 static const option valid_opt[] = {
-    {OPT_FILE,      'f', "file",      true },
-    {OPT_HELP,      'h', "help",      false},
-    {OPT_PORTS,     'p', "ports",     true },
-    {OPT_SCAN,      's', "scans",     true },
-    {OPT_RANDOMIZE, 'r', "randomize", false},
-    {OPT_THREADS,   't', "threads",   true },
-    {OPT_VERBOSE,   'v', "verbose",   false},
-    {OPT_VERSION,   'V', "version",   false},
-    {0,             0,   NULL,        false}
+    {OPT_FILE,         'f',  "file",         true },
+    {OPT_HELP,         'h',  "help",         false},
+    {OPT_NO_PING,      '\0', "no-ping",      false},
+    {OPT_NO_RANDOMIZE, '\0', "no-randomize", false},
+    {OPT_PORTS,        'p',  "ports",        true },
+    {OPT_SCAN,         's',  "scans",        true },
+    {OPT_THREADS,      't',  "threads",      true },
+    {OPT_VERBOSE,      'v',  "verbose",      false},
+    {OPT_VERSION,      'V',  "version",      false},
+    {0,                0,    NULL,           false}
 };
 
 typedef enum {

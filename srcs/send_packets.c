@@ -59,12 +59,14 @@ static bool is_host_down(t_nmap* nmap) {
 
 void* send_packets(void* arg) {
     t_nmap* nmap = (t_nmap*)arg;
-    uint16_t* loop_port_array = nmap->opt & OPT_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
+    uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
     for (nmap->h_index = 0; nmap->h_index < nmap->hostname_count && run; ++nmap->h_index) {
         if (!hostname_to_ip(nmap)) continue;
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
-        send_ping(nmap);
-        if (is_host_down(nmap)) continue;
+        if (!(nmap->opt & OPT_NO_PING)) {
+            send_ping(nmap);
+            if (is_host_down(nmap)) continue;
+        }
         current_handle = (nmap->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo : handle_net;
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {

@@ -33,8 +33,8 @@
 
 ## bonus
 
-- [x] randomize ports (`--randomize`)
-- [ ] `--no-ping` `-p`
+- [x] `--no-randomize`
+- [x] `--no-ping`
 - [ ] DNS
 - [x] Reverse DNS
 - [ ] Version detection
