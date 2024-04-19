@@ -45,7 +45,7 @@
 #define VERSION "0.4.2"
 
 #define MAX_PORTS 1024
-#define MAX_HOSTNAMES 256
+#define MAX_HOSTNAMES 250
 
 #define TCP_HEADER_SIZE sizeof(struct tcphdr)
 #define IP_HEADER_SIZE sizeof(struct iphdr)
