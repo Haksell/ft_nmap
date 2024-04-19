@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-extern pcap_t* handle_net, *handle_lo;
+extern pcap_t *handle_net, *handle_lo;
 
 void error(char* message) {
     // TODO: use panic
@@ -73,7 +73,7 @@ in_addr_t get_source_address() {
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET) {
-            if (strcmp(ifa->ifa_name, "lo") == 0) continue; /// c'est pas bon
+            if (strcmp(ifa->ifa_name, "lo") == 0) continue; // TODO: Lorenzo check
             struct sockaddr_in* ipv4 = (struct sockaddr_in*)ifa->ifa_addr;
             source_address = ipv4->sin_addr.s_addr;
             break;

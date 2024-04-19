@@ -3,9 +3,8 @@
 ## todo
 
 - [ ] multithreading
+- [ ] better udp + version detection
 - [ ] parsing tester
-- [ ] better help menu
-- [ ] `--usage`
 - [ ] `pcap_loop` -> `pcap_dispatch`
 - [ ] consistent usage of `error`, `g_error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
 
@@ -33,17 +32,24 @@
 
 ## bonus
 
+### ez 
+
+- [x] Reverse DNS
+- [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
 - [x] `--no-randomize`
 - [x] `--no-ping`
-- [ ] DNS
-- [x] Reverse DNS
-- [ ] SCAN_TCP Connect
-- [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
-- [ ] Version detection
-- [ ] OS detection
-- [ ] Flag to go over the IDS/Firewall
-- [ ] Being able to hide the source address. (IP spoofing? ez)
-- [ ] Flag for n most common ports instead of just 1-1024
+- [ ] `--top-ports`
+- [ ] `-sT` SCAN_CONNECT (even no sudo)
+- [ ] `-sW` SCAN_WINDOW
+
+### wtf
+
+- [ ] `--version-detection` Version detection
+- [ ] `-O` `--os` OS detection
+- [ ] `--spoof-address` (hide source address)
+- [ ] `--decoy`
+- [ ] `--fragment-packets`
+- [ ] other flags to go over the IDS/Firewall (FIREWALL/IDS EVASION AND SPOOFING section)
 
 ## push check
 
@@ -53,15 +59,7 @@
 - [ ] consistent typedef names (PascalCase or t_snake_case)
 - [ ] remove unused libraries
 - [ ] remove `garbage` folder (and maybe `hosts`?)
-
-## tests
-
-- [ ] `./ft_nmap --help`
-- [ ] `sudo ./ft_nmap 8.8.8.8 --threads 70 --ports 70-90 --scans SYN`
-- [ ] `sudo ./ft_nmap 8.8.8.8 --threads 200 --ports 75-85`
-- [ ] `sudo ./ft_nmap scanme.nmap.org -p 68,123,22`
-- [ ] `sudo ./ft_nmap scanme.nmap.org -p 22,68,123,481 --verbose -sU,XMAS,A,X -sUDP`
-- [ ] faire un script qui fait 1000 ports x 6 scans sur nmap et compare avec le notre pour plusieurs hostnames
+- [ ] `help` corresponds to actual flags
 
 ## resources
 
