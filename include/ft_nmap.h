@@ -88,15 +88,7 @@ static const option valid_opt[] = {
     {0,                0,    NULL,           false}
 };
 
-typedef enum {
-    PORT_UNDEFINED,
-    PORT_OPEN,
-    PORT_CLOSED,
-    PORT_FILTERED,
-    PORT_UNFILTERED,
-    PORT_OPEN_FILTERED,
-    PORT_UNEXPECTED
-} __attribute__((packed)) port_state;
+typedef enum { PORT_UNDEFINED, PORT_OPEN, PORT_CLOSED, PORT_FILTERED, PORT_UNFILTERED, PORT_OPEN_FILTERED, PORT_UNEXPECTED } __attribute__((packed)) port_state;
 
 typedef struct {
     char str[14];
@@ -148,10 +140,10 @@ static const port_state default_port_state[SCAN_MAX] = {
 
 static const char scans_str[][5] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP"};
 
-struct t_nmap;
+struct t_thread_info;
 
 typedef struct {
-    struct t_nmap* nmap;
+    struct t_thread_info* th_info;
     pcap_t* handle;
 } t_capture_args;
 
@@ -161,7 +153,7 @@ typedef struct {
     uint16_t undefined_count[SCAN_MAX];
 } t_host;
 
-typedef struct {
+typedef struct t_thread_info {
     struct t_nmap* nmap;
     int t_index;
     int h_index;
@@ -214,13 +206,13 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
 // pcap.c
-void set_filter(t_nmap* nmap);
+void set_filter(t_thread_info* th_info);
 void init_pcap(t_nmap* nmap);
-void unset_filters(t_nmap* nmap);
+void unset_filters(t_nmap* nmap, int t_index);
 
 // ping.c
-void send_ping(t_nmap* nmap);
-void handle_echo_reply(t_nmap* nmap, uint8_t* reply_packet);
+void send_ping(t_thread_info* th_info);
+void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet);
 
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
@@ -230,7 +222,7 @@ void set_port(t_nmap* nmap, uint16_t port);
 void print_payload(const u_char* payload, int size_payload);
 
 // print_scan_report.c
-void print_scan_report(t_nmap* nmap);
+void print_scan_report(t_thread_info* th_info);
 
 // random.c
 uint32_t random_u32_range(uint32_t a, uint32_t b);
@@ -245,7 +237,7 @@ void set_signals();
 // utils.c
 void error(char* message);
 void g_error(char* message, int status);
-bool hostname_to_ip(t_nmap* nmap);
+bool hostname_to_ip(t_thread_info* th_info);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
 void panic(const char* format, ...);

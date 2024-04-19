@@ -13,7 +13,7 @@ static uint16_t calculate_checksum(uint16_t* packet, int length) {
     return (uint16_t)~sum;
 }
 
-void send_ping(t_nmap* nmap) {
+void send_ping(t_thread_info* th_info) {
     struct icmphdr icmphdr = {
         .type = ICMP_ECHO,
         .code = 0,
@@ -34,21 +34,14 @@ void send_ping(t_nmap* nmap) {
     icmphdr.checksum = calculate_checksum((uint16_t*)packet, icmp_packet_size);
     memcpy(packet, &icmphdr, ICMP_HDR_SIZE);
 
-    int bytes_sent = sendto(
-        nmap->icmp_fd,
-        packet,
-        icmp_packet_size,
-        0,
-        (struct sockaddr*)&nmap->hostaddr,
-        sizeof(struct sockaddr_in)
-    );
+    int bytes_sent = sendto(th_info->nmap->icmp_fd, packet, icmp_packet_size, 0, (struct sockaddr*)&th_info->hostaddr, sizeof(struct sockaddr_in));
     if (bytes_sent < 0) error("Sending ping failed");
 }
 
-void handle_echo_reply(t_nmap* nmap, uint8_t* reply_packet) {
+void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet) {
     struct timeval now;
 
     gettimeofday(&now, NULL);
-    nmap->latency = timeval_subtract(*(struct timeval*)reply_packet, now);
-    nmap->hostname_up_count++;
+    th_info->latency = timeval_subtract(*(struct timeval*)reply_packet, now);
+    th_info->nmap->hostname_up_count++; // TODO: mutex
 }

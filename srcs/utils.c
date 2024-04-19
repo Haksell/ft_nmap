@@ -1,6 +1,9 @@
 #include "ft_nmap.h"
 
-extern pcap_t *handle_net, *handle_lo;
+extern pcap_t* handle_lo[MAX_HOSTNAMES];
+extern pcap_t* handle_net[MAX_HOSTNAMES];
+
+// TODO: cleanup.c
 
 void error(char* message) {
     // TODO: use panic
@@ -25,13 +28,13 @@ void panic(const char* format, ...) {
     exit(EXIT_FAILURE);
 }
 
-bool hostname_to_ip(t_nmap* nmap) {
+bool hostname_to_ip(t_thread_info* th_info) {
     struct addrinfo hints = {
         .ai_family = AF_INET,
         .ai_flags = AI_CANONNAME,
     };
     struct addrinfo* res = NULL;
-    char* hostname = nmap->hosts[nmap->h_index].name;
+    char* hostname = th_info->nmap->hosts[th_info->h_index].name;
 
     int status = getaddrinfo(hostname, NULL, &hints, &res);
     if (status != 0 || res == NULL) {
@@ -42,7 +45,7 @@ bool hostname_to_ip(t_nmap* nmap) {
         g_error("getaddrinfo failed", status);
     }
 
-    if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, nmap->hostip, INET_ADDRSTRLEN) == NULL) {
+    if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, th_info->hostip, INET_ADDRSTRLEN) == NULL) {
         freeaddrinfo(res);
         error("inet_ntop failed");
     }
@@ -121,20 +124,12 @@ static float get_elapsed_time(t_nmap* nmap) {
     return elapsed_time.tv_sec + elapsed_time.tv_usec / 1000000.0;
 }
 
-void print_stats(t_nmap* nmap) {
-    printf(
-        "\nNmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n",
-        nmap->hostname_count,
-        nmap->hostname_up_count,
-        get_elapsed_time(nmap)
-    );
-}
+void print_stats(t_nmap* nmap) { printf("\nNmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n", nmap->hostname_count, nmap->hostname_up_count, get_elapsed_time(nmap)); }
 
-void cleanup(t_nmap* nmap
-) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
+void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);
-    if (handle_net) pcap_close(handle_net);
-    if (handle_lo) pcap_close(handle_lo);
+    if (handle_net[0]) pcap_close(handle_net[0]);
+    if (handle_lo[0]) pcap_close(handle_lo[0]);
     if (nmap->tcp_fd > 2) close(nmap->tcp_fd);
     if (nmap->udp_fd > 2) close(nmap->udp_fd);
     if (nmap->icmp_fd > 2) close(nmap->icmp_fd);

@@ -7,6 +7,7 @@
 - [ ] parsing tester
 - [ ] `pcap_loop` -> `pcap_dispatch`
 - [ ] consistent usage of `error`, `g_error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
+- [ ] fix defines with 999
 
 ## mandatory
 
@@ -32,7 +33,7 @@
 
 ## bonus
 
-### ez 
+### ez
 
 - [x] Reverse DNS
 - [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)

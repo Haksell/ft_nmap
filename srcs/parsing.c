@@ -39,8 +39,7 @@ static void parse_ports(char* value, t_nmap* nmap) {
             *hyphen = '\0';
             int left = atoi_check(value, UINT16_MAX, "port");
             int right = atoi_check(hyphen + 1, UINT16_MAX, "port");
-            if (left > right)
-                panic("Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
+            if (left > right) panic("Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
             for (int i = left; i <= right; ++i) set_port(nmap, i);
         } else set_port(nmap, atoi_check(value, UINT16_MAX, "port"));
 
@@ -141,12 +140,7 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, t_nmap* n
         for (int j = i + 1; valid_opt[j].opt; ++j)
             if (strncmp(opt, valid_opt[j].long_opt, len) == 0) {
                 if (!ambiguous) {
-                    fprintf(
-                        stderr,
-                        "nmap: option '--%s' is ambiguous; possibilities: '--%s'",
-                        opt,
-                        valid_opt[i].long_opt
-                    );
+                    fprintf(stderr, "nmap: option '--%s' is ambiguous; possibilities: '--%s'", opt, valid_opt[i].long_opt);
                     ambiguous = true;
                 }
                 fprintf(stderr, " '--%s'", valid_opt[j].long_opt);
@@ -184,13 +178,7 @@ static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
                     nmap->opt |= valid_opt[i].opt;
                 } else {
                     if (*(*arg + 2) == '\0') (*index)++;
-                    return handle_arg(
-                        valid_opt[i].opt,
-                        *(*arg + 2) ? *arg + 2 : *(++arg),
-                        valid_opt[i].short_opt,
-                        NULL,
-                        nmap
-                    );
+                    return handle_arg(valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt, NULL, nmap);
                 }
                 break;
             }
