@@ -37,14 +37,12 @@
 - [x] `--no-ping`
 - [ ] DNS
 - [x] Reverse DNS
+- [ ] SCAN_TCP Connect
+- [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
 - [ ] Version detection
 - [ ] OS detection
 - [ ] Flag to go over the IDS/Firewall
 - [ ] Being able to hide the source address. (IP spoofing? ez)
-- [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
-- [ ] Additional flags...
-- [ ] Additional scans... (TCP Connect, TCP Window, TCP Maimon, SCTP INIT)
-- [ ] Different output formats (XML, grepable)
 - [ ] Flag for n most common ports instead of just 1-1024
 
 ## push check
