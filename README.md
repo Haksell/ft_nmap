@@ -2,7 +2,6 @@
 
 ## todo
 
-- [ ] fix localhost
 - [ ] multithreading
 - [ ] parsing tester
 - [ ] better help menu
@@ -13,9 +12,9 @@
 ## mandatory
 
 - [x] The executable must be named ft_nmap.
-- [ ] A help menu must be available. > Lorenzo faire un help de ouf
+- [ ] A help menu must be available.
 - [x] You must only manage a simple IPv4 (address/hostname) as parameter for your scans.
-- [ ] You must manage FQDN however you don’t have to make the DNS resolution.
+- [x] You must manage FQDN however you don’t have to make the DNS resolution.
 - [ ] It must be possible to choose the number of threads (default:0 max:250) to make the scan faster
 - [x] It must be possible to read a list of IPv4 addresses and hostname from a file. (parsing good, execution bad)
 - [x] Your program must be able to run the following scan: SYN
@@ -34,19 +33,19 @@
 
 ## bonus
 
-- [ ] DNS (a la main?)
-- [ ] Reverse DNS
+- [x] randomize ports (`--randomize`)
+- [ ] `--no-ping` `-p`
+- [ ] DNS
+- [x] Reverse DNS
 - [ ] Version detection
 - [ ] OS detection
 - [ ] Flag to go over the IDS/Firewall
 - [ ] Being able to hide the source address. (IP spoofing? ez)
 - [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
-- [ ] Randomize hosts (once CIDR is done)
 - [ ] Additional flags...
 - [ ] Additional scans... (TCP Connect, TCP Window, TCP Maimon, SCTP INIT)
 - [ ] Different output formats (XML, grepable)
 - [ ] Flag for n most common ports instead of just 1-1024
-- [ ] `-iR`
 
 ## push check
 
