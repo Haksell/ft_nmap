@@ -56,9 +56,9 @@ int main(int argc, char* argv[]) {
     pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){.nmap = &nmap, .handle = handle_lo});
     pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){.nmap = &nmap, .handle = handle_net});
 
-    if (nmap.threads == 0) send_packets(&(t_send_args){.nmap = &nmap, .thread_id = 0});
+    if (nmap.threads == 0) send_packets(&(t_nmapi){.nmap = &nmap, .thread_id = 0});
     for (int i = 0; i < nmap.threads; ++i) {
-        nmap.send_args[i] = (t_send_args){.nmap = &nmap, .thread_id = i};
+        nmap.send_args[i] = (t_nmapi){.nmap = &nmap, .thread_id = i};
         if (pthread_create(nmap.sender_threads + i, NULL, send_packets, nmap.send_args + i))
             panic("Failed to create the sender thread");
     }

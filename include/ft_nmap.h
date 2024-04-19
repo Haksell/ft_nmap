@@ -158,7 +158,7 @@ typedef struct {
 typedef struct {
     struct t_nmap* nmap;
     int thread_id;
-} t_send_args;
+} t_nmapi;
 
 typedef struct {
     char name[HOST_NAME_MAX + 1];
@@ -199,7 +199,7 @@ typedef struct t_nmap {
     bpf_u_int32 device_net;
 
     pthread_t sender_threads[MAX_HOSTNAMES];
-    t_send_args send_args[MAX_HOSTNAMES];
+    t_nmapi send_args[MAX_HOSTNAMES];
 } t_nmap;
 
 // capture_packets.c

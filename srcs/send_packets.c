@@ -58,8 +58,8 @@ static bool is_host_down(t_nmap* nmap) {
 }
 
 void* send_packets(void* args) {
-    t_nmap* nmap = ((t_send_args*)args)->nmap;
-    int thread_id = ((t_send_args*)args)->thread_id;
+    t_nmap* nmap = ((t_nmapi*)args)->nmap;
+    int thread_id = ((t_nmapi*)args)->thread_id;
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
     printf("THREAD %d\n", thread_id);
