@@ -187,12 +187,19 @@ typedef struct {
     pcap_if_t* devs;
     bpf_u_int32 device_lo;
     bpf_u_int32 device_net;
+
+    pthread_t sender_threads[MAX_HOSTNAMES];
 } t_nmap;
 
 typedef struct {
     t_nmap* nmap;
     pcap_t* handle;
 } capture_args;
+
+typedef struct {
+    t_nmap* nmap;
+    int thread_id;
+} send_args;
 
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);

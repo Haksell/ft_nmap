@@ -56,12 +56,17 @@ int main(int argc, char* argv[]) {
     pthread_t capture_thread_lo = create_capture_thread(&(capture_args){.nmap = &nmap, .handle = handle_lo});
     pthread_t capture_thread_net = create_capture_thread(&(capture_args){.nmap = &nmap, .handle = handle_net});
 
-    pthread_t sender_thread;
-    if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0) panic("Failed to create the sender thread");
+    printf("%p ooogaaa\n", &nmap);
 
+    if (nmap.threads == 0) send_packets(&(send_args){.nmap = &nmap, .thread_id = 0});
+    for (int i = 0; i < nmap.threads; ++i) {
+        if (pthread_create(nmap.sender_threads + i, NULL, send_packets, &(send_args){.nmap = &nmap, .thread_id = i}))
+            panic("Failed to create the sender thread");
+    }
+
+    for (int i = 0; i < nmap.threads; ++i) pthread_join(nmap.sender_threads[i], NULL);
     pthread_join(capture_thread_lo, NULL);
     pthread_join(capture_thread_net, NULL);
-    pthread_join(sender_thread, NULL);
 
     print_stats(&nmap);
     cleanup(&nmap);

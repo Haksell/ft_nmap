@@ -272,4 +272,5 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     set_undefined_count(nmap);
     set_scan_count(nmap);
     if (!(nmap->opt & OPT_NO_RANDOMIZE)) randomize_ports(nmap);
+    if (nmap->threads > nmap->hostname_count) nmap->threads = nmap->hostname_count;
 }
