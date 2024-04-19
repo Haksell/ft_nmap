@@ -12,7 +12,7 @@ static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_e
 }
 
 void unset_filters(t_nmap* nmap) {
-    static char filter_none[] = "src host 0.0.0.0";
+    static char filter_none[] = "icmp";
     set_device_filter(handle_lo, nmap->device_lo, filter_none);
     set_device_filter(handle_net, nmap->device_net, filter_none);
 }
