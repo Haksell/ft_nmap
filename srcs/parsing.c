@@ -127,7 +127,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
-        case OPT_THREADS: nmap->threads = atoi_check(value, UINT8_MAX, "threads"); break;
+        case OPT_THREADS: nmap->threads = atoi_check(value, MAX_HOSTNAMES, "threads"); break;
     }
     return true;
 }
