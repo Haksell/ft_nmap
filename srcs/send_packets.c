@@ -82,7 +82,7 @@ void* send_packets(void* arg) {
             // TODO: no forbidden functions
             while (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] > 0 && run) usleep(1000);
             alarm(0);
-            // TODO? unset_filters(nmap);
+            unset_filters(nmap);
 
             for (int i = 0; i < nmap->port_count; ++i) {
                 if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][i] == PORT_UNDEFINED) {

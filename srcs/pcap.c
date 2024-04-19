@@ -48,10 +48,9 @@ void init_pcap(t_nmap* nmap) {
 
     if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR)
         panic("Couldn't find all devices: %s\n", errbuf); // TODO error
-    char* dev = nmap->devs->name;
 
     handle_lo = set_handle("lo", &nmap->device_lo);
-    handle_net = set_handle(dev, &nmap->device_net);
+    handle_net = set_handle(nmap->devs->name, &nmap->device_net);
 
     unset_filters(nmap);
 }

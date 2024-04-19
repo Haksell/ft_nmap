@@ -209,6 +209,7 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 // pcap.c
 void set_filter(t_nmap* nmap);
 void init_pcap(t_nmap* nmap);
+void unset_filters(t_nmap* nmap);
 
 // ping.c
 void send_ping(t_nmap* nmap);
