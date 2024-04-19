@@ -14,43 +14,52 @@ extern pcap_t *handle_lo, *handle_net, *current_handle;
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
 #define NTP_SIZE 48
 
-static void send_packet(t_nmap* nmap, uint16_t port) {
+static void send_packet(t_thread_info* th_info, uint16_t port) {
+    t_nmap* nmap = th_info->nmap;
     uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
     size_t packet_size = sizeof(struct iphdr) +
-                         (nmap->current_scan == SCAN_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
+                         (th_info->current_scan == SCAN_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
 
-    if (port == 123 && nmap->current_scan == SCAN_UDP) {
+    if (port == 123 && th_info->current_scan == SCAN_UDP) {
         uint8_t packetntp[sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE];
         packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE;
         unsigned char payload[4][48] = {NTP1, NTP2, NTP1, NTP2}; // TODO: only 2?
         for (int i = 0; i < 4; i++) {
-            fill_packet(nmap, packetntp, port, payload[i], NTP_SIZE);
-            sendto(nmap->udp_fd, packetntp, packet_size, 0, (struct sockaddr*)&nmap->hostaddr, sizeof(nmap->hostaddr));
+            fill_packet(th_info, packetntp, port, payload[i], NTP_SIZE);
+            sendto(
+                nmap->udp_fd,
+                packetntp,
+                packet_size,
+                0,
+                (struct sockaddr*)&th_info->hostaddr,
+                sizeof(th_info->hostaddr)
+            );
         }
     } else { // tout sans payload
-        fill_packet(nmap, packet, port, NULL, 0);
+        fill_packet(th_info, packet, port, NULL, 0);
         sendto(
-            (nmap->current_scan == SCAN_UDP) ? nmap->udp_fd : nmap->tcp_fd,
+            (th_info->current_scan == SCAN_UDP) ? nmap->udp_fd : nmap->tcp_fd,
             packet,
             packet_size,
             0,
-            (struct sockaddr*)&nmap->hostaddr,
-            sizeof(nmap->hostaddr)
+            (struct sockaddr*)&th_info->hostaddr,
+            sizeof(th_info->hostaddr)
         );
     }
 }
 
-static bool is_host_down(t_nmap* nmap) {
+static bool is_host_down(t_thread_info* th_info) {
+    t_nmap* nmap = th_info->nmap;
     uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
 
     int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
     if (bytes_received < 0) {
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
-            printf("Host %s is down.\n", nmap->hosts[nmap->h_index].name);
+            printf("Host %s is down.\n", nmap->hosts[th_info->h_index].name);
             return true;
         } else error("recv failed");
     } else if (bytes_received == 0) {
-        printf("Host %s is down.\n", nmap->hosts[nmap->h_index].name);
+        printf("Host %s is down.\n", nmap->hosts[th_info->h_index].name);
         return true;
     }
 
@@ -58,44 +67,44 @@ static bool is_host_down(t_nmap* nmap) {
 }
 
 void* send_packets(void* arg) {
-    t_nmapi* nmapi = arg;
-    t_nmap* nmap = nmapi->nmap;
-    int thread_id = nmapi->thread_id;
+    t_thread_info* th_info = arg;
+    t_nmap* nmap = th_info->nmap;
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
-    printf("THREAD %d\n", thread_id);
+    printf("THREAD %d\n", th_info->t_index);
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
-    for (nmap->h_index = thread_id; nmap->h_index < nmap->hostname_count && run; nmap->h_index += step) {
+    for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run;
+         th_info->h_index += step) {
         if (!hostname_to_ip(nmap)) continue;
-        nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
+        th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
         if (!(nmap->opt & OPT_NO_PING)) {
             send_ping(nmap);
-            if (is_host_down(nmap)) continue;
+            if (is_host_down(th_info)) continue;
         }
-        current_handle = (nmap->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo : handle_net;
+        current_handle = (th_info->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo : handle_net;
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & (1 << scan)) == 0) continue;
-            nmap->current_scan = scan;
+            th_info->current_scan = scan;
 
-            nmap->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
+            th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
             set_filter(nmap);
             for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
-                if (nmap->current_scan == SCAN_UDP && port_index > 6) usleep(1000000);
+                if (th_info->current_scan == SCAN_UDP && port_index > 6) usleep(1000000);
                 send_packet(nmap, loop_port_array[port_index]);
             }
 
             alarm(1); // TODO: depends on num ports and num scans
             // TODO: no forbidden functions
-            while (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] > 0 && run) usleep(1000);
+            while (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] > 0 && run) usleep(1000);
             alarm(0);
             unset_filters(nmap);
 
             for (int i = 0; i < nmap->port_count; ++i) {
-                if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][i] == PORT_UNDEFINED) {
-                    nmap->hosts[nmap->h_index]
-                        .port_states[nmap->current_scan][i] = default_port_state[nmap->current_scan];
+                if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] == PORT_UNDEFINED) {
+                    nmap->hosts[th_info->h_index]
+                        .port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
                 }
             }
             sender_finished = true;

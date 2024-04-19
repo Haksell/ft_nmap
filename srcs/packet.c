@@ -52,9 +52,9 @@ static void set_tcp_flags(struct tcphdr* tcph, scan_type type) {
     }
 }
 
-static struct udphdr fill_udp_header(t_nmap* nmap, uint16_t port, size_t payload_size) {
+static struct udphdr fill_udp_header(t_thread_info* th_info, uint16_t port, size_t payload_size) {
     struct udphdr udphdr = {
-        .source = htons(nmap->port_source ^ port),
+        .source = htons(th_info->port_source ^ port),
         .dest = htons(port),
         .len = htons(sizeof(udphdr) + payload_size),
         .check = 0,
@@ -63,9 +63,9 @@ static struct udphdr fill_udp_header(t_nmap* nmap, uint16_t port, size_t payload
     return udphdr;
 }
 
-static struct tcphdr fill_tcp_header(t_nmap* nmap, uint16_t port) {
+static struct tcphdr fill_tcp_header(t_thread_info* th_info, uint16_t port) {
     struct tcphdr tcphdr = {
-        .source = htons(nmap->port_source), // randomize, mais que au debut
+        .source = htons(th_info->port_source), // randomize, mais que au debut
         .dest = htons(port),
         .seq = 0, // TODO! randomize peut etre
         .ack_seq = 0, // a voir apres pour ACK
@@ -81,18 +81,18 @@ static struct tcphdr fill_tcp_header(t_nmap* nmap, uint16_t port) {
         .urg_ptr = 0,
     };
 
-    set_tcp_flags(&tcphdr, nmap->current_scan);
+    set_tcp_flags(&tcphdr, th_info->current_scan);
 
     return tcphdr;
 }
 
-void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size) {
+void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size) {
     struct tcphdr tcphdr;
     struct udphdr udphdr;
-    uint16_t hdr_size = nmap->current_scan == SCAN_UDP ? sizeof(udphdr) : sizeof(tcphdr);
+    uint16_t hdr_size = th_info->current_scan == SCAN_UDP ? sizeof(udphdr) : sizeof(tcphdr);
 
-    if (nmap->current_scan == SCAN_UDP) udphdr = fill_udp_header(nmap, port, payload_size);
-    else tcphdr = fill_tcp_header(nmap, port);
+    if (th_info->current_scan == SCAN_UDP) udphdr = fill_udp_header(th_info, port, payload_size);
+    else tcphdr = fill_tcp_header(th_info, port);
 
     struct iphdr iphdr = {
         .version = 4,
@@ -102,10 +102,10 @@ void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t* payload,
         .id = htons(random_u32_range(0, UINT16_MAX)), // a verifier
         .frag_off = 0,
         .ttl = random_u32_range(33, 63),
-        .protocol = nmap->current_scan == SCAN_UDP ? IPPROTO_UDP : IPPROTO_TCP,
+        .protocol = th_info->current_scan == SCAN_UDP ? IPPROTO_UDP : IPPROTO_TCP,
         .check = 0,
         .saddr = get_source_address(), // spoof possible?
-        .daddr = nmap->hostaddr.sin_addr.s_addr,
+        .daddr = th_info->hostaddr.sin_addr.s_addr,
     };
 
     iphdr.check = calculate_checksum((uint16_t*)&iphdr, sizeof(iphdr));
@@ -118,12 +118,12 @@ void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t* payload,
         .tcp_length = htons(hdr_size + payload_size),
     };
 
-    if (nmap->current_scan == SCAN_UDP)
+    if (th_info->current_scan == SCAN_UDP)
         udphdr.check = checksum(&pseudohdr, &udphdr, sizeof(udphdr), payload, payload_size);
     else tcphdr.check = checksum(&pseudohdr, &tcphdr, sizeof(tcphdr), payload, payload_size);
 
     memcpy(packet, &iphdr, sizeof(iphdr));
-    if (nmap->current_scan == SCAN_UDP) {
+    if (th_info->current_scan == SCAN_UDP) {
         memcpy(packet + sizeof(iphdr), &udphdr, sizeof(udphdr));
         if (payload) memcpy(packet + sizeof(iphdr) + sizeof(udphdr), payload, payload_size);
     } else memcpy(packet + sizeof(iphdr), &tcphdr, sizeof(tcphdr));

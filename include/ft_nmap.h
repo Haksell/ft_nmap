@@ -156,18 +156,14 @@ typedef struct {
 } t_capture_args;
 
 typedef struct {
-    struct t_nmap* nmap;
-    int thread_id;
-} t_nmapi;
-
-typedef struct {
     char name[HOST_NAME_MAX + 1];
     port_state port_states[SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[SCAN_MAX];
 } t_host;
 
 typedef struct {
-    
+    struct t_nmap* nmap;
+    int t_index;
     int h_index;
     uint16_t port_source; // ???
     uint8_t current_scan;
@@ -175,7 +171,7 @@ typedef struct {
     struct sockaddr_in hostaddr;
     char hostip[INET_ADDRSTRLEN + 1];
     pthread_t thread_id;
-} t_thread;
+} t_thread_info;
 
 typedef struct t_nmap {
     int tcp_fd;
@@ -185,7 +181,7 @@ typedef struct t_nmap {
     int hostname_count;
     int hostname_up_count; // mutex
 
-    t_thread threads[MAX_HOSTNAMES];
+    t_thread_info threads[MAX_HOSTNAMES];
     t_host hosts[MAX_HOSTNAMES];
 
     uint32_t opt;
@@ -203,8 +199,6 @@ typedef struct t_nmap {
     pcap_if_t* devs;
     bpf_u_int32 device_lo;
     bpf_u_int32 device_net;
-
-    t_nmapi send_args[MAX_HOSTNAMES];
 } t_nmap;
 
 // capture_packets.c
@@ -214,7 +208,7 @@ void* capture_packets(__attribute__((unused)) void* arg);
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
 // packet.c
-void fill_packet(t_nmap* nmap, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size);
+void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size);
 
 // parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
