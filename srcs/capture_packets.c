@@ -8,8 +8,10 @@ extern pcap_t* current_handle;
 #define UDP_FILTERED 0b0010011000000110
 
 static void set_port_state(t_nmap* nmap, port_state port_state, uint16_t port) {
-    if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][nmap->port_dictionary[port]] == PORT_UNDEFINED) {
-        nmap->hosts[nmap->h_index].port_states[nmap->current_scan][nmap->port_dictionary[port]] = port_state;
+    uint16_t port_index = nmap->port_dictionary[port];
+    if (port_index == MAX_PORTS) return;
+    if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][port_index] == PORT_UNDEFINED) {
+        nmap->hosts[nmap->h_index].port_states[nmap->current_scan][port_index] = port_state;
         --nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan];
         if (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] == 0) pcap_breakloop(current_handle);
     }
@@ -38,11 +40,12 @@ static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip)
             struct tcphdr* tcp = (struct tcphdr*)(original_packet);
             original_port = ntohs(tcp->th_dport);
         }
+        printf("%d\n", original_port);
 
         port_state port_state = nmap->current_scan == SCAN_UDP
-                                    ? (mask & UDP_FILTERED               ? PORT_FILTERED
-                                       : mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
-                                                                         : PORT_UNEXPECTED)
+                                    ? (mask & UDP_FILTERED                ? PORT_FILTERED
+                                       : +mask & (1 << ICMP_PORT_UNREACH) ? (printf("yeaaah\n"), PORT_CLOSED)
+                                                                          : PORT_UNEXPECTED)
                                     : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
         set_port_state(nmap, port_state, original_port);
@@ -81,7 +84,6 @@ static void handle_tcp(t_nmap* nmap, const u_char* packet, const struct ip* ip, 
 static void handle_udp(t_nmap* nmap, const u_char* packet, /* const struct ip* ip*/ int size_ip) {
     const struct udphdr* udp = (struct udphdr*)(packet + SIZE_ETHERNET + size_ip);
 
-    printf("%d miao %d\n", ntohs(udp->uh_dport), nmap->port_source);
     if ((ntohs(udp->uh_dport) ^ ntohs(udp->uh_sport)) != nmap->port_source) return;
 
     if (nmap->opt & OPT_VERBOSE) {

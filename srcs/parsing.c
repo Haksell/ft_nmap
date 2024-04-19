@@ -224,6 +224,8 @@ static void set_port_mappings(t_nmap* nmap) {
             nmap->port_array[port_index] = port;
             nmap->port_dictionary[port] = port_index;
             ++port_index;
+        } else {
+            nmap->port_dictionary[port] = MAX_PORTS;
         }
     }
 }
