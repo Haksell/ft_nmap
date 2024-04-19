@@ -1,4 +1,5 @@
 #include "ft_nmap.h"
+#include <netinet/in.h>
 
 extern pcap_t *handle_lo, *handle_net, *current_handle;
 
@@ -20,20 +21,16 @@ void unset_filters(t_nmap* nmap) {
 void set_filter(t_nmap* nmap) {
     char filter_exp[256] = {0};
 
-    sprintf(
-        filter_exp,
-        "icmp or (%s and src host %s)",
-        nmap->current_scan == SCAN_UDP ? "udp" : "tcp",
-        nmap->hostip
-    );
+    if (nmap->current_scan == SCAN_UDP) sprintf(filter_exp, "icmp or (udp and src host %s)", nmap->hostip);
+    else sprintf(filter_exp, "icmp or (tcp and src host %s and dst port %d)", nmap->hostip, nmap->port_source);
+
     set_device_filter(current_handle, current_handle == handle_lo ? nmap->device_lo : nmap->device_net, filter_exp);
 }
 
 static pcap_t* set_handle(char* dev, bpf_u_int32* device) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    bpf_u_int32 _;
-    if (pcap_lookupnet(dev, device, &_, errbuf) == PCAP_ERROR)
+    if (pcap_lookupnet(dev, device, &(bpf_u_int32){0}, errbuf) == PCAP_ERROR)
         panic("Couldn't get netmask for device %s: %s\n", dev, errbuf);
 
     pcap_t* handle = pcap_open_live(dev, SNAP_LEN, 1, 1, errbuf);
