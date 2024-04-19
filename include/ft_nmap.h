@@ -148,7 +148,17 @@ static const port_state default_port_state[SCAN_MAX] = {
 
 static const char scans_str[][5] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP"};
 
-// TODO: host struct with name, port_states, undefined_count...
+struct t_nmap;
+
+typedef struct {
+    struct t_nmap* nmap;
+    pcap_t* handle;
+} t_capture_args;
+
+typedef struct {
+    struct t_nmap* nmap;
+    int thread_id;
+} t_send_args;
 
 typedef struct {
     char name[HOST_NAME_MAX + 1];
@@ -156,7 +166,7 @@ typedef struct {
     uint16_t undefined_count[SCAN_MAX];
 } t_host;
 
-typedef struct {
+typedef struct t_nmap {
     int tcp_fd;
     int udp_fd;
     int icmp_fd;
@@ -189,17 +199,8 @@ typedef struct {
     bpf_u_int32 device_net;
 
     pthread_t sender_threads[MAX_HOSTNAMES];
+    t_send_args send_args[MAX_HOSTNAMES];
 } t_nmap;
-
-typedef struct {
-    t_nmap* nmap;
-    pcap_t* handle;
-} t_capture_args;
-
-typedef struct {
-    t_nmap* nmap;
-    int thread_id;
-} t_send_args;
 
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);

@@ -58,7 +58,8 @@ int main(int argc, char* argv[]) {
 
     if (nmap.threads == 0) send_packets(&(t_send_args){.nmap = &nmap, .thread_id = 0});
     for (int i = 0; i < nmap.threads; ++i) {
-        if (pthread_create(nmap.sender_threads + i, NULL, send_packets, &(t_send_args){.nmap = &nmap, .thread_id = i}))
+        nmap.send_args[i] = (t_send_args){.nmap = &nmap, .thread_id = i};
+        if (pthread_create(nmap.sender_threads + i, NULL, send_packets, nmap.send_args + i))
             panic("Failed to create the sender thread");
     }
 
