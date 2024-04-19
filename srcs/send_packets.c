@@ -60,8 +60,8 @@ void* send_packets(void* arg) {
     t_nmap* nmap = th_info->nmap;
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
-    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_lo[0]});
-    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_net[0]});
+    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_lo[th_info->t_index]});
+    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_net[th_info->t_index]});
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
     for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run; th_info->h_index += step) {
@@ -71,7 +71,7 @@ void* send_packets(void* arg) {
             send_ping(th_info);
             if (is_host_down(th_info)) continue;
         }
-        current_handle[0] = (th_info->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo[0] : handle_net[0];
+        current_handle[th_info->t_index] = (th_info->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo[th_info->t_index] : handle_net[th_info->t_index];
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & (1 << scan)) == 0) continue;

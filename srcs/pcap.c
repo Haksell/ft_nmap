@@ -24,7 +24,7 @@ void set_filter(t_thread_info* th_info) {
     if (th_info->current_scan == SCAN_UDP) sprintf(filter_exp, "icmp or (udp and src host %s)", th_info->hostip);
     else sprintf(filter_exp, "icmp or (tcp and src host %s and dst port %d)", th_info->hostip, th_info->port_source);
 
-    set_device_filter(current_handle[0], current_handle[0] == handle_lo[0] ? th_info->nmap->device_lo : th_info->nmap->device_net, filter_exp);
+    set_device_filter(current_handle[th_info->t_index], current_handle[th_info->t_index] == handle_lo[th_info->t_index] ? th_info->nmap->device_lo : th_info->nmap->device_net, filter_exp);
 }
 
 static pcap_t* set_handle(char* dev) {
@@ -50,9 +50,7 @@ void init_pcap(t_nmap* nmap) {
     lookup_net("lo", &nmap->device_lo);
     lookup_net(nmap->devs->name, &nmap->device_net);
 
-    int num_handles = nmap->num_threads == 0 ? 1 : nmap->num_threads;
-
-    for (int i = 0; i < num_handles; ++i) {
+    for (int i = 0; i < nmap->num_handles; ++i) {
         handle_lo[i] = set_handle("lo");
         handle_net[i] = set_handle(nmap->devs->name);
         unset_filters(nmap, i);

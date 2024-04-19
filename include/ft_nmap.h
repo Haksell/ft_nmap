@@ -185,6 +185,7 @@ typedef struct t_nmap {
     uint8_t scans; // TODO: maybe uint16_t if WINDOW + CONNECT
     uint8_t scan_count;
     uint8_t num_threads;
+    uint8_t num_handles;
 
     struct timeval start_time;
 

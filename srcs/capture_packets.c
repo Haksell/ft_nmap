@@ -14,7 +14,7 @@ static void set_port_state(t_thread_info* th_info, port_state port_state, uint16
     if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] == PORT_UNDEFINED) {
         nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] = port_state;
         --nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan];
-        if (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0) pcap_breakloop(current_handle[0]);
+        if (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0) pcap_breakloop(current_handle[th_info->t_index]);
     }
 }
 
