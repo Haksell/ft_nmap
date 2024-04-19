@@ -39,7 +39,7 @@ static void init(t_nmap* nmap) {
     }
 }
 
-static pthread_t create_capture_thread(capture_args* args) {
+static pthread_t create_capture_thread(t_capture_args* args) {
     pthread_t thread_id;
     if (pthread_create(&thread_id, NULL, capture_packets, args)) panic("Failed to create the capture thread");
     return thread_id;
@@ -53,12 +53,12 @@ int main(int argc, char* argv[]) {
     set_signals();
     init_pcap(&nmap);
 
-    pthread_t capture_thread_lo = create_capture_thread(&(capture_args){.nmap = &nmap, .handle = handle_lo});
-    pthread_t capture_thread_net = create_capture_thread(&(capture_args){.nmap = &nmap, .handle = handle_net});
+    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){.nmap = &nmap, .handle = handle_lo});
+    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){.nmap = &nmap, .handle = handle_net});
 
-    if (nmap.threads == 0) send_packets(&(send_args){.nmap = &nmap, .thread_id = 0});
+    if (nmap.threads == 0) send_packets(&(t_send_args){.nmap = &nmap, .thread_id = 0});
     for (int i = 0; i < nmap.threads; ++i) {
-        if (pthread_create(nmap.sender_threads + i, NULL, send_packets, &(send_args){.nmap = &nmap, .thread_id = i}))
+        if (pthread_create(nmap.sender_threads + i, NULL, send_packets, &(t_send_args){.nmap = &nmap, .thread_id = i}))
             panic("Failed to create the sender thread");
     }
 

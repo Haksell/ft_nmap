@@ -194,12 +194,12 @@ typedef struct {
 typedef struct {
     t_nmap* nmap;
     pcap_t* handle;
-} capture_args;
+} t_capture_args;
 
 typedef struct {
     t_nmap* nmap;
     int thread_id;
-} send_args;
+} t_send_args;
 
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);

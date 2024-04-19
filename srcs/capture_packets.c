@@ -114,8 +114,8 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
 }
 
 void* capture_packets(void* args) {
-    t_nmap* nmap = ((capture_args*)args)->nmap;
-    pcap_t* handle = ((capture_args*)args)->handle;
+    t_nmap* nmap = ((t_capture_args*)args)->nmap;
+    pcap_t* handle = ((t_capture_args*)args)->handle;
     while (run) {
         int ret = pcap_loop(handle, -1, got_packet, (void*)nmap);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
