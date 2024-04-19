@@ -182,7 +182,7 @@ static void print_port_states(t_nmap* nmap) {
 void print_scan_report(t_nmap* nmap) {
     printf("\nNmap scan report for %s (%s)\n", nmap->hosts[nmap->h_index].name, nmap->hostip);
     double uptime = nmap->latency.tv_sec + nmap->latency.tv_usec / 1000000.0;
-    printf("Host is up (%.2gs latency).\n", uptime);
+    printf("Host is up (%.2fms latency).\n", uptime * 1000);
 
     char host[NI_MAXHOST];
     if (ip_to_hostname(nmap->hostaddr.sin_addr, host, sizeof(host)) && strcmp(nmap->hosts[nmap->h_index].name, host))

@@ -1,15 +1,16 @@
 #include "ft_nmap.h"
 
 extern volatile sig_atomic_t run;
-extern pcap_t* handle;
+extern pcap_t *handle_net, *handle_lo, *current_handle;
 
 void handle_sigint(__attribute__((unused)) int sig) {
     run = false;
-    if (handle) pcap_breakloop(handle);
+    if (handle_net) pcap_breakloop(handle_net);
+    if (handle_lo) pcap_breakloop(handle_lo);
 }
 
 static void handle_sigalrm(__attribute__((unused)) int sig) {
-    if (handle) pcap_breakloop(handle);
+    if (current_handle) pcap_breakloop(current_handle);
 }
 
 void set_signals() {

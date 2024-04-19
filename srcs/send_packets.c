@@ -4,6 +4,7 @@
 
 extern sig_atomic_t run;
 extern sig_atomic_t sender_finished;
+extern pcap_t *handle_lo, *handle_net, *current_handle;
 
 #define NTP1                                                                                                           \
     "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" \
@@ -64,6 +65,7 @@ void* send_packets(void* arg) {
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};
         send_ping(nmap);
         if (is_host_down(nmap)) continue;
+        current_handle = (nmap->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo : handle_net;
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & (1 << scan)) == 0) continue;
@@ -80,6 +82,7 @@ void* send_packets(void* arg) {
             // TODO: no forbidden functions
             while (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] > 0 && run) usleep(1000);
             alarm(0);
+            // TODO? unset_filters(nmap);
 
             for (int i = 0; i < nmap->port_count; ++i) {
                 if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][i] == PORT_UNDEFINED) {

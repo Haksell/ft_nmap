@@ -2,7 +2,7 @@
 
 extern sig_atomic_t run;
 extern sig_atomic_t sender_finished;
-extern pcap_t* handle;
+extern pcap_t* current_handle;
 
 #define TCP_FILTERED 0b0010011000001110
 #define UDP_FILTERED 0b0010011000000110
@@ -11,7 +11,7 @@ static void set_port_state(t_nmap* nmap, port_state port_state, uint16_t port) {
     if (nmap->hosts[nmap->h_index].port_states[nmap->current_scan][nmap->port_dictionary[port]] == PORT_UNDEFINED) {
         nmap->hosts[nmap->h_index].port_states[nmap->current_scan][nmap->port_dictionary[port]] = port_state;
         --nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan];
-        if (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] == 0) pcap_breakloop(handle);
+        if (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] == 0) pcap_breakloop(current_handle);
     }
 }
 
@@ -111,10 +111,11 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
     else if (ip->ip_p == IPPROTO_UDP) handle_udp(nmap, packet, size_ip);
 }
 
-void* capture_packets(void* arg) {
-    t_nmap* nmap = (t_nmap*)arg;
+void* capture_packets(void* args) {
+    t_nmap* nmap = ((capture_args*)args)->nmap;
+    pcap_t* handle = ((capture_args*)args)->handle;
     while (run) {
-        int ret = pcap_loop(handle, -1, got_packet, arg);
+        int ret = pcap_loop(handle, -1, got_packet, (void*)nmap);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] = 0;
         while (run && !sender_finished) usleep(1000);

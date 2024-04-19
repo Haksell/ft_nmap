@@ -2,6 +2,7 @@
 
 // TODO: bring back to root if it is only header file? (stp Lorenzo)
 
+#include "pcap/pcap.h"
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <errno.h>
@@ -184,8 +185,14 @@ typedef struct {
     uint16_t port_source;
 
     pcap_if_t* devs;
-    bpf_u_int32 net_device;
+    bpf_u_int32 device_lo;
+    bpf_u_int32 device_net;
 } t_nmap;
+
+typedef struct {
+    t_nmap* nmap;
+    pcap_t* handle;
+} capture_args;
 
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);

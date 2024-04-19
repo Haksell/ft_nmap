@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-extern pcap_t* handle;
+extern pcap_t* handle_net, *handle_lo;
 
 void error(char* message) {
     // TODO: use panic
@@ -133,7 +133,8 @@ void print_stats(t_nmap* nmap) {
 void cleanup(t_nmap* nmap
 ) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);
-    if (handle) pcap_close(handle);
+    if (handle_net) pcap_close(handle_net);
+    if (handle_lo) pcap_close(handle_lo);
     if (nmap->tcp_fd > 2) close(nmap->tcp_fd);
     if (nmap->udp_fd > 2) close(nmap->udp_fd);
     if (nmap->icmp_fd > 2) close(nmap->icmp_fd);

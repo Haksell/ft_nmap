@@ -1,8 +1,11 @@
 #include "ft_nmap.h"
+#include "pcap/pcap.h"
 
 volatile sig_atomic_t run = true;
 volatile sig_atomic_t sender_finished = false;
-pcap_t* handle = NULL;
+pcap_t* handle_lo = NULL;
+pcap_t* handle_net = NULL;
+pcap_t* current_handle = NULL;
 
 static void init(t_nmap* nmap) {
     if (geteuid() != 0) {
@@ -45,8 +48,12 @@ int main(int argc, char* argv[]) {
     init_pcap(&nmap);
 
     pthread_t capture_thread, sender_thread;
-    if (pthread_create(&capture_thread, NULL, capture_packets, &nmap) != 0)
-        panic("Failed to create the capture thread");
+    capture_args args_lo = {.nmap = &nmap, .handle = handle_lo};
+    capture_args args_net = {.nmap = &nmap, .handle = handle_net};
+    if (pthread_create(&capture_thread, NULL, capture_packets, &args_lo))
+        panic("Failed to create the capture lo thread");
+    if (pthread_create(&capture_thread, NULL, capture_packets, &args_net))
+        panic("Failed to create the capture lo thread");
     if (pthread_create(&sender_thread, NULL, send_packets, &nmap) != 0) panic("Failed to create the sender thread");
     pthread_join(capture_thread, NULL);
     pthread_join(sender_thread, NULL);
