@@ -57,14 +57,15 @@ static bool is_host_down(t_nmap* nmap) {
     return false;
 }
 
-void* send_packets(void* args) {
-    t_nmap* nmap = ((t_nmapi*)args)->nmap;
-    int thread_id = ((t_nmapi*)args)->thread_id;
+void* send_packets(void* arg) {
+    t_nmapi* nmapi = arg;
+    t_nmap* nmap = nmapi->nmap;
+    int thread_id = nmapi->thread_id;
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
     printf("THREAD %d\n", thread_id);
 
-    int step = nmap->threads == 0 ? 1 : nmap->threads;
+    int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
     for (nmap->h_index = thread_id; nmap->h_index < nmap->hostname_count && run; nmap->h_index += step) {
         if (!hostname_to_ip(nmap)) continue;
         nmap->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(nmap->hostip)};

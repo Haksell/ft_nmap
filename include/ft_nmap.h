@@ -166,17 +166,27 @@ typedef struct {
     uint16_t undefined_count[SCAN_MAX];
 } t_host;
 
+typedef struct {
+    
+    int h_index;
+    uint16_t port_source; // ???
+    uint8_t current_scan;
+    struct timeval latency;
+    struct sockaddr_in hostaddr;
+    char hostip[INET_ADDRSTRLEN + 1];
+    pthread_t thread_id;
+} t_thread;
+
 typedef struct t_nmap {
     int tcp_fd;
     int udp_fd;
     int icmp_fd;
 
     int hostname_count;
-    int hostname_up_count;
-    int h_index;
+    int hostname_up_count; // mutex
+
+    t_thread threads[MAX_HOSTNAMES];
     t_host hosts[MAX_HOSTNAMES];
-    char hostip[INET_ADDRSTRLEN + 1]; // one for each hostname
-    struct sockaddr_in hostaddr;
 
     uint32_t opt;
     uint16_t port_count;
@@ -184,21 +194,16 @@ typedef struct t_nmap {
     uint16_t port_array[MAX_PORTS];
     uint16_t random_port_array[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
-    uint8_t scans; // TODO: maybe uint16_t
+    uint8_t scans; // TODO: maybe uint16_t if WINDOW + CONNECT
     uint8_t scan_count;
-    uint8_t current_scan;
-    uint8_t threads;
+    uint8_t num_threads;
 
     struct timeval start_time;
-    struct timeval latency;
-
-    uint16_t port_source;
 
     pcap_if_t* devs;
     bpf_u_int32 device_lo;
     bpf_u_int32 device_net;
 
-    pthread_t sender_threads[MAX_HOSTNAMES];
     t_nmapi send_args[MAX_HOSTNAMES];
 } t_nmap;
 

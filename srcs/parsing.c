@@ -127,7 +127,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
-        case OPT_THREADS: nmap->threads = atoi_check(value, MAX_HOSTNAMES, "threads"); break;
+        case OPT_THREADS: nmap->num_threads = atoi_check(value, MAX_HOSTNAMES, "threads"); break;
     }
     return true;
 }
@@ -272,5 +272,5 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     set_undefined_count(nmap);
     set_scan_count(nmap);
     if (!(nmap->opt & OPT_NO_RANDOMIZE)) randomize_ports(nmap);
-    if (nmap->threads > nmap->hostname_count) nmap->threads = nmap->hostname_count;
+    if (nmap->num_threads > nmap->hostname_count) nmap->num_threads = nmap->hostname_count;
 }
