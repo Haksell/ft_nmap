@@ -81,7 +81,8 @@ static void handle_tcp(t_nmap* nmap, const u_char* packet, const struct ip* ip, 
 static void handle_udp(t_nmap* nmap, const u_char* packet, /* const struct ip* ip*/ int size_ip) {
     const struct udphdr* udp = (struct udphdr*)(packet + SIZE_ETHERNET + size_ip);
 
-    if (ntohs(udp->uh_dport) != nmap->port_source) return;
+    printf("%d miao %d\n", ntohs(udp->uh_dport), nmap->port_source);
+    if ((ntohs(udp->uh_dport) ^ ntohs(udp->uh_sport)) != nmap->port_source) return;
 
     if (nmap->opt & OPT_VERBOSE) {
         printf(

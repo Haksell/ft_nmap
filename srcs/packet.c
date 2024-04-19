@@ -54,7 +54,7 @@ static void set_tcp_flags(struct tcphdr* tcph, scan_type type) {
 
 static struct udphdr fill_udp_header(t_nmap* nmap, uint16_t port, size_t payload_size) {
     struct udphdr udphdr = {
-        .source = htons(nmap->port_source),
+        .source = htons(nmap->port_source ^ port),
         .dest = htons(port),
         .len = htons(sizeof(udphdr) + payload_size),
         .check = 0,

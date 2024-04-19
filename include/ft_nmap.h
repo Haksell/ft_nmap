@@ -1,7 +1,5 @@
 #pragma once
 
-// TODO: bring back to root if it is only header file? (stp Lorenzo)
-
 #include "pcap/pcap.h"
 #include <arpa/inet.h>
 #include <ctype.h>

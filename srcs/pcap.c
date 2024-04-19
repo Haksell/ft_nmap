@@ -18,14 +18,13 @@ void unset_filters(t_nmap* nmap) {
 }
 
 void set_filter(t_nmap* nmap) {
-    char filter_exp[128] = {0};
+    char filter_exp[256] = {0};
 
     sprintf(
         filter_exp,
-        "(icmp) or (%s and src host %s and dst port %d)",
+        "icmp or (%s and src host %s)",
         nmap->current_scan == SCAN_UDP ? "udp" : "tcp",
-        nmap->hostip,
-        nmap->port_source
+        nmap->hostip
     );
     set_device_filter(current_handle, current_handle == handle_lo ? nmap->device_lo : nmap->device_net, filter_exp);
 }
