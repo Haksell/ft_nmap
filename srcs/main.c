@@ -56,8 +56,6 @@ int main(int argc, char* argv[]) {
     pthread_t capture_thread_lo = create_capture_thread(&(capture_args){.nmap = &nmap, .handle = handle_lo});
     pthread_t capture_thread_net = create_capture_thread(&(capture_args){.nmap = &nmap, .handle = handle_net});
 
-    printf("%p ooogaaa\n", &nmap);
-
     if (nmap.threads == 0) send_packets(&(send_args){.nmap = &nmap, .thread_id = 0});
     for (int i = 0; i < nmap.threads; ++i) {
         if (pthread_create(nmap.sender_threads + i, NULL, send_packets, &(send_args){.nmap = &nmap, .thread_id = i}))
