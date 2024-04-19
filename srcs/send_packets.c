@@ -80,7 +80,7 @@ void* send_packets(void* arg) {
                 send_packet(nmap, loop_port_array[port_index]);
             }
 
-            alarm(nmap->scan_count);
+            alarm(1);
             // TODO: no forbidden functions
             while (nmap->hosts[nmap->h_index].undefined_count[nmap->current_scan] > 0 && run) usleep(1000);
             alarm(0);

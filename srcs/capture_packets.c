@@ -40,11 +40,10 @@ static void handle_icmp(t_nmap* nmap, const u_char* packet, const struct ip* ip)
             struct tcphdr* tcp = (struct tcphdr*)(original_packet);
             original_port = ntohs(tcp->th_dport);
         }
-        printf("%d\n", original_port);
 
         port_state port_state = nmap->current_scan == SCAN_UDP
                                     ? (mask & UDP_FILTERED                ? PORT_FILTERED
-                                       : +mask & (1 << ICMP_PORT_UNREACH) ? (printf("yeaaah\n"), PORT_CLOSED)
+                                       : +mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
                                                                           : PORT_UNEXPECTED)
                                     : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
