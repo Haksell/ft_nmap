@@ -117,8 +117,8 @@ static const t_port_state_info port_state_info[] = {
     {STR_PORT_OPEN,          GREEN,   sizeof(STR_PORT_OPEN) - 1         },
     {STR_PORT_CLOSED,        RED,     sizeof(STR_PORT_CLOSED) - 1       },
     {STR_PORT_FILTERED,      YELLOW,  sizeof(STR_PORT_FILTERED) - 1     },
-    {STR_PORT_UNFILTERED,    BLUE,    sizeof(STR_PORT_UNFILTERED) - 1   },
-    {STR_PORT_OPEN_FILTERED, MAGENTA, sizeof(STR_PORT_OPEN_FILTERED) - 1},
+    {STR_PORT_UNFILTERED,    MAGENTA, sizeof(STR_PORT_UNFILTERED) - 1   },
+    {STR_PORT_OPEN_FILTERED, BLUE,    sizeof(STR_PORT_OPEN_FILTERED) - 1},
     {STR_PORT_UNEXPECTED,    WHITE,   sizeof(STR_PORT_UNEXPECTED) - 1   },
 };
 
