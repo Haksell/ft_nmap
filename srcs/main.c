@@ -46,9 +46,9 @@ int main(int argc, char* argv[]) {
     set_signals();
     init_pcap(&nmap);
 
-    if (nmap.num_threads == 0) send_packets(&(t_thread_info){.nmap = &nmap, .thread_id = 0});
+    if (nmap.num_threads == 0) send_packets(&(t_thread_info){.nmap = &nmap, .t_index = 0});
     for (int i = 0; i < nmap.num_threads; ++i) {
-        nmap.threads[i] = (t_thread_info){.nmap = &nmap, .thread_id = i};
+        nmap.threads[i] = (t_thread_info){.nmap = &nmap, .t_index = i};
         if (pthread_create(&nmap.threads[i].thread_id, NULL, send_packets, nmap.threads + i)) panic("Failed to create the sender thread");
     }
 
