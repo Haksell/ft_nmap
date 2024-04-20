@@ -112,10 +112,11 @@ void* capture_packets(void* args) {
     while (run && !sender_finished[th_info->t_index]) {
         int ret = pcap_loop(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
-        if (ret == PCAP_ERROR_BREAK) continue;
-        th_info->nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] = 0;
-        while (run && !hostname_finished[th_info->t_index]) usleep(1000);
-        hostname_finished[th_info->t_index] = false;
+        // TODO: check this very sensitive code
+        // if (ret == PCAP_ERROR_BREAK) continue;
+        // th_info->nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] = 0;
+        // while (run && !hostname_finished[th_info->t_index]) usleep(1000);
+        // hostname_finished[th_info->t_index] = false;
     }
     return NULL;
 }

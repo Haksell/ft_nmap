@@ -21,8 +21,8 @@ void unset_filters(t_nmap* nmap, int t_index) {
 void set_filter(t_thread_info* th_info) {
     char filter_exp[256] = {0};
 
-    if (th_info->current_scan == SCAN_UDP) sprintf(filter_exp, "icmp or (udp and src host %s)", th_info->hostip);
-    else sprintf(filter_exp, "icmp or (tcp and src host %s and dst port %d)", th_info->hostip, th_info->port_source);
+    if (th_info->current_scan == SCAN_UDP) sprintf(filter_exp, "(src host %s) and (icmp or udp)", th_info->hostip);
+    else sprintf(filter_exp, "(src host %s) and (icmp or (tcp and dst port %d))", th_info->hostip, th_info->port_source);
 
     set_device_filter(current_handle[th_info->t_index], current_handle[th_info->t_index] == handle_lo[th_info->t_index] ? th_info->nmap->device_lo : th_info->nmap->device_net, filter_exp);
 }
