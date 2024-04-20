@@ -151,15 +151,16 @@ typedef struct {
     char name[HOST_NAME_MAX + 1];
     port_state port_states[SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[SCAN_MAX];
+    bool is_up;
 } t_host;
 
 typedef struct t_thread_info {
     struct t_nmap* nmap;
     int t_index;
+    uint64_t latency;
     int h_index;
     uint16_t port_source; // ???
     uint8_t current_scan;
-    struct timeval latency;
     struct sockaddr_in hostaddr;
     char hostip[INET_ADDRSTRLEN + 1];
     pthread_t thread_id;
@@ -171,12 +172,9 @@ typedef struct t_nmap {
     int icmp_fd;
 
     int hostname_count;
-    int hostname_up_count; // mutex
     int hostname_scanned_count; // mutex
 
     pthread_mutex_t mutex_print_report;
-    pthread_mutex_t mutex_up_count;
-    pthread_mutex_t mutex_scanned_count;
 
     t_thread_info threads[MAX_HOSTNAMES];
     t_host hosts[MAX_HOSTNAMES];
@@ -202,6 +200,9 @@ typedef struct t_nmap {
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);
 
+// final_credits.c
+void final_credits(t_nmap* nmap);
+
 // info.c
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
@@ -212,7 +213,7 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
 // pcap.c
-void set_filter(t_thread_info* th_info);
+void set_filter(t_thread_info* th_info, bool ping);
 void init_pcap(t_nmap* nmap);
 void unset_filters(t_nmap* nmap, int t_index);
 
@@ -249,7 +250,6 @@ in_addr_t get_source_address();
 void panic(const char* format, ...);
 struct timeval timeval_subtract(struct timeval start, struct timeval end);
 void get_start_time(t_nmap* nmap);
-void print_stats(t_nmap* nmap);
 void cleanup(t_nmap* nmap);
 
 // verbose.c

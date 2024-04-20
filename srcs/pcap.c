@@ -7,22 +7,24 @@ extern pcap_t* current_handle[MAX_HOSTNAMES];
 
 static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_exp) {
     struct bpf_program fp;
+
     if (pcap_compile(handle, &fp, filter_exp, 0, device) == PCAP_ERROR) panic("Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
     if (pcap_setfilter(handle, &fp) == PCAP_ERROR) panic("Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
     pcap_freecode(&fp);
 }
 
 void unset_filters(t_nmap* nmap, int t_index) {
-    static char filter_none[] = "icmp";
+    static char filter_none[] = "not ip";
     set_device_filter(handle_lo[t_index], nmap->device_lo, filter_none);
     set_device_filter(handle_net[t_index], nmap->device_net, filter_none);
 }
 
-void set_filter(t_thread_info* th_info) {
+void set_filter(t_thread_info* th_info, bool ping) {
     char filter_exp[256] = {0};
 
-    if (th_info->current_scan == SCAN_UDP) sprintf(filter_exp, "(src host %s) and (icmp or udp)", th_info->hostip);
-    else sprintf(filter_exp, "(src host %s) and (icmp or (tcp and dst port %d))", th_info->hostip, th_info->port_source);
+    if (ping) sprintf(filter_exp, "icmp and src %s", th_info->hostip);
+    else if (th_info->current_scan == SCAN_UDP) sprintf(filter_exp, "(src host %s and udp) or (icmp and src %s)", th_info->hostip, th_info->hostip);
+    else sprintf(filter_exp, "(src host %s and tcp and dst port %d) or (icmp and src %s)", th_info->hostip, th_info->port_source, th_info->hostip);
 
     set_device_filter(current_handle[th_info->t_index], current_handle[th_info->t_index] == handle_lo[th_info->t_index] ? th_info->nmap->device_lo : th_info->nmap->device_net, filter_exp);
 }

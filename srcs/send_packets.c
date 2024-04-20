@@ -30,7 +30,7 @@ static void send_packet(t_thread_info* th_info, uint16_t port) {
     }
 }
 
-static bool is_host_down(t_thread_info* th_info) {
+static bool is_host_down(t_thread_info* th_info) { // TODO: use the brain
     t_nmap* nmap = th_info->nmap;
     uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
 
@@ -66,19 +66,23 @@ void* send_packets(void* arg) {
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
     for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run; th_info->h_index += step) {
         if (!hostname_to_ip(th_info)) continue;
+        th_info->latency = 0.0;
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
+        current_handle[th_info->t_index] = (th_info->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo[th_info->t_index] : handle_net[th_info->t_index];
         if (!(nmap->opt & OPT_NO_PING)) {
+            // TODO: check latency localhost
+            set_filter(th_info, true);
             send_ping(th_info);
             if (is_host_down(th_info)) continue;
+            unset_filters(nmap, th_info->t_index);
         }
-        current_handle[th_info->t_index] = (th_info->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo[th_info->t_index] : handle_net[th_info->t_index];
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & (1 << scan)) == 0) continue;
             th_info->current_scan = scan;
 
             th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
-            set_filter(th_info);
+            set_filter(th_info, false);
             for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
                 if (th_info->current_scan == SCAN_UDP && port_index > 6) usleep(1000000);
                 send_packet(th_info, loop_port_array[port_index]);
@@ -86,7 +90,7 @@ void* send_packets(void* arg) {
 
             // TODO: clean this timeout
             int i = 0;
-            while (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] > 0 && run && i++ < 1000) usleep(1000);
+            while (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] > 0 && run && i++ < 100) usleep(10000);
 
             unset_filters(nmap, th_info->t_index);
 

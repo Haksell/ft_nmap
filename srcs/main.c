@@ -37,20 +37,16 @@ static void init(t_nmap* nmap) {
         if (!(nmap->opt & OPT_NO_RANDOMIZE)) print_ports(nmap, "    Random ports", nmap->random_port_array);
         print_scans(nmap->scans);
     }
+
+    set_signals();
+    init_pcap(nmap);
+    pthread_mutex_init(&nmap->mutex_print_report, NULL);
 }
 
 int main(int argc, char* argv[]) {
     t_nmap nmap = {0};
-
     verify_arguments(argc, argv, &nmap);
     init(&nmap);
-    set_signals();
-    init_pcap(&nmap);
-
-    // TODO: init_mutexes
-    pthread_mutex_init(&nmap.mutex_print_report, NULL);
-    pthread_mutex_init(&nmap.mutex_up_count, NULL);
-    pthread_mutex_init(&nmap.mutex_scanned_count, NULL);
 
     if (nmap.num_threads == 0) send_packets(&(t_thread_info){.nmap = &nmap, .t_index = 0});
     for (int i = 0; i < nmap.num_threads; ++i) {
@@ -61,8 +57,7 @@ int main(int argc, char* argv[]) {
     // maybe detach instead
     for (int i = 0; i < nmap.num_threads; ++i) pthread_join(nmap.threads[i].thread_id, NULL);
 
-    // TODO close mutex's
-    print_stats(&nmap);
+    final_credits(&nmap);
     cleanup(&nmap);
     return EXIT_SUCCESS;
 }

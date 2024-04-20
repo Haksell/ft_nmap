@@ -3,8 +3,8 @@ Vagrant.configure("2") do |config|
   
   config.vm.provider "virtualbox" do |vb|
     # TODO: remettre x2
-    vb.memory = 4096
-    vb.cpus = 4
+    vb.memory = 10240
+    vb.cpus = 10
   end
 
   config.vm.provision "shell", inline: <<-SHELL

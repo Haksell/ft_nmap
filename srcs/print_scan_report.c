@@ -146,11 +146,7 @@ void print_scan_report(t_thread_info* th_info) {
     t_nmap* nmap = th_info->nmap;
     pthread_mutex_lock(&nmap->mutex_print_report);
     printf("\nnmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
-    if (!(nmap->opt & OPT_NO_PING)) {
-        // TODO: uptime_ms directly in structure
-        double uptime_ms = th_info->latency.tv_sec * 1000.0 + th_info->latency.tv_usec / 1000.0;
-        printf("Host is up (%.2fms latency).\n", uptime_ms);
-    }
+    if (th_info->latency != 0) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
 
     char host[NI_MAXHOST];
     if (ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) && strcmp(nmap->hosts[th_info->h_index].name, host)) printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);

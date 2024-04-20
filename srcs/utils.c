@@ -87,6 +87,7 @@ in_addr_t get_source_address() {
     return source_address; // a verifier lorenzo
 }
 
+// TODO: use uint64_t directly and remove this function
 struct timeval timeval_subtract(struct timeval start, struct timeval end) {
     struct timeval result = {
         .tv_sec = end.tv_sec - start.tv_sec,
@@ -116,19 +117,8 @@ void get_start_time(t_nmap* nmap) {
     }
 }
 
-static float get_elapsed_time(t_nmap* nmap) {
-    struct timeval end_time;
-    gettimeofday(&end_time, NULL);
-
-    struct timeval elapsed_time = timeval_subtract(nmap->start_time, end_time);
-    return elapsed_time.tv_sec + elapsed_time.tv_usec / 1000000.0;
-}
-
-void print_stats(t_nmap* nmap) {
-    printf("\nnmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n", nmap->hostname_count, nmap->hostname_up_count, get_elapsed_time(nmap)); // TODO: fix nmap done: 35 IP addresses (478 hosts up) scanned in 3.00 seconds
-}
-
 void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
+    // TODO close mutex's
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     for (int i = 0; i < nmap->num_handles; ++i) {
         if (handle_net[i]) pcap_close(handle_net[i]);
