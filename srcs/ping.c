@@ -43,5 +43,7 @@ void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet) {
 
     gettimeofday(&now, NULL);
     th_info->latency = timeval_subtract(*(struct timeval*)reply_packet, now);
-    th_info->nmap->hostname_up_count++; // TODO: mutex
+    pthread_mutex_lock(&th_info->nmap->mutex_up_count);
+    th_info->nmap->hostname_up_count++;
+    pthread_mutex_unlock(&th_info->nmap->mutex_up_count);
 }

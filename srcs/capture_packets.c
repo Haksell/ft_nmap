@@ -1,7 +1,8 @@
 #include "ft_nmap.h"
 
 extern sig_atomic_t run;
-extern sig_atomic_t sender_finished;
+extern sig_atomic_t hostname_finished[MAX_HOSTNAMES];
+extern sig_atomic_t sender_finished[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];
 
 #define TCP_FILTERED 0b0010011000001110
@@ -104,12 +105,12 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
 void* capture_packets(void* args) {
     t_thread_info* th_info = ((t_capture_args*)args)->th_info;
     pcap_t* handle = ((t_capture_args*)args)->handle;
-    while (run) {
+    while (run && !sender_finished[th_info->t_index]) {
         int ret = pcap_loop(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         th_info->nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] = 0;
-        while (run && !sender_finished) usleep(1000);
-        sender_finished = false;
+        while (run && !hostname_finished[th_info->t_index]) usleep(1000);
+        hostname_finished[th_info->t_index] = false;
     }
     return NULL;
 }

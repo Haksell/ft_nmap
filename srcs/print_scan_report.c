@@ -143,8 +143,8 @@ static void print_port_states(t_thread_info* th_info) {
 }
 
 void print_scan_report(t_thread_info* th_info) {
-    // TODO: print mutex
     t_nmap* nmap = th_info->nmap;
+    pthread_mutex_lock(&nmap->mutex_print_report);
     printf("\nNmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
     if (!(nmap->opt & OPT_NO_PING)) {
         // TODO: uptime_ms directly in structure
@@ -156,4 +156,5 @@ void print_scan_report(t_thread_info* th_info) {
     if (ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) && strcmp(nmap->hosts[th_info->h_index].name, host)) printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
 
     print_port_states(th_info);
+    pthread_mutex_unlock(&nmap->mutex_print_report);
 }

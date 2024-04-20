@@ -172,6 +172,11 @@ typedef struct t_nmap {
 
     int hostname_count;
     int hostname_up_count; // mutex
+    int hostname_scanned_count; // mutex
+
+    pthread_mutex_t mutex_print_report;
+    pthread_mutex_t mutex_up_count;
+    pthread_mutex_t mutex_scanned_count;
 
     t_thread_info threads[MAX_HOSTNAMES];
     t_host hosts[MAX_HOSTNAMES];
