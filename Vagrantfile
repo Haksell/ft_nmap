@@ -2,7 +2,6 @@ Vagrant.configure("2") do |config|
   config.vm.box = "debian/bullseye64"
   
   config.vm.provider "virtualbox" do |vb|
-    # TODO: remettre x2
     vb.memory = 10240
     vb.cpus = 10
   end

@@ -157,7 +157,7 @@ typedef struct {
 typedef struct t_thread_info {
     struct t_nmap* nmap;
     int t_index;
-    uint64_t latency;
+    uint32_t latency;
     int h_index;
     uint16_t port_source; // ???
     uint8_t current_scan;
@@ -171,11 +171,9 @@ typedef struct t_nmap {
     int udp_fd;
     int icmp_fd;
 
-    int hostname_count;
-    int hostname_scanned_count; // mutex
-
     pthread_mutex_t mutex_print_report;
 
+    int hostname_count;
     t_thread_info threads[MAX_HOSTNAMES];
     t_host hosts[MAX_HOSTNAMES];
 
@@ -189,8 +187,7 @@ typedef struct t_nmap {
     uint8_t scan_count;
     uint8_t num_threads;
     uint8_t num_handles;
-
-    struct timeval start_time;
+    uint32_t start_time;
 
     pcap_if_t* devs;
     bpf_u_int32 device_lo;
@@ -199,9 +196,6 @@ typedef struct t_nmap {
 
 // capture_packets.c
 void* capture_packets(__attribute__((unused)) void* arg);
-
-// final_credits.c
-void final_credits(t_nmap* nmap);
 
 // info.c
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
@@ -249,8 +243,9 @@ bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
 void panic(const char* format, ...);
 struct timeval timeval_subtract(struct timeval start, struct timeval end);
-void get_start_time(t_nmap* nmap);
+void print_start_time(t_nmap* nmap);
 void cleanup(t_nmap* nmap);
+uint32_t get_microseconds();
 
 // verbose.c
 void print_hostnames(t_nmap* nmap);

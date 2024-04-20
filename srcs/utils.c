@@ -102,19 +102,13 @@ struct timeval timeval_subtract(struct timeval start, struct timeval end) {
     return result;
 }
 
-void get_start_time(t_nmap* nmap) {
-    gettimeofday(&nmap->start_time, NULL);
-    struct tm* tm = localtime(&nmap->start_time.tv_sec);
+void print_start_time(t_nmap* nmap) {
+    nmap->start_time = get_microseconds();
+    struct tm* tm = localtime((time_t*)&nmap->start_time);
 
     char timestamp[32];
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
-
     printf("Starting nmap %s at %s\n", VERSION, timestamp);
-
-    if (nmap->hostname_count == 0) {
-        fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
-        // Pourquoi on exit plus ? Et qu'est-ce que ca fait dans cette fonction ?
-    }
 }
 
 void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
@@ -127,4 +121,10 @@ void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur
     if (nmap->tcp_fd > 2) close(nmap->tcp_fd);
     if (nmap->udp_fd > 2) close(nmap->udp_fd);
     if (nmap->icmp_fd > 2) close(nmap->icmp_fd);
+}
+
+uint32_t get_microseconds() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec * 1000000 + tv.tv_usec;
 }
