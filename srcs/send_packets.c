@@ -1,6 +1,4 @@
 #include "ft_nmap.h"
-#include <stdint.h>
-#include <sys/types.h>
 
 extern sig_atomic_t run;
 extern sig_atomic_t sender_finished;
@@ -84,10 +82,10 @@ void* send_packets(void* arg) {
                 send_packet(th_info, loop_port_array[port_index]);
             }
 
-            alarm(1); // TODO: depends on num ports and num scans
-            // TODO: no forbidden functions
-            while (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] > 0 && run) usleep(1000);
-            alarm(0);
+            // TODO: clean this timeout
+            int i = 0;
+            while (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] > 0 && run && i++ < 1000) usleep(1000);
+
             unset_filters(nmap, th_info->t_index);
 
             for (int i = 0; i < nmap->port_count; ++i) {
