@@ -42,7 +42,10 @@ static void init(t_nmap* nmap) {
 
     set_signals();
     init_pcap(nmap);
+
     pthread_mutex_init(&nmap->mutex_print_report, NULL);
+    pthread_mutex_init(&nmap->mutex_undefined_count, NULL);
+    pthread_mutex_init(&nmap->mutex_hostname_finished, NULL);
 }
 
 static void final_credits(t_nmap* nmap) {

@@ -90,8 +90,13 @@ void* send_packets(void* arg) {
             }
 
             // TODO: clean this timeout
-            int i = 0;
-            while (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] > 0 && run && i++ < 100) usleep(10000);
+            for (int i = 0; i < 100 && run; ++i) {
+                pthread_mutex_lock(&nmap->mutex_undefined_count);
+                bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
+                pthread_mutex_unlock(&nmap->mutex_undefined_count);
+                if (zero) break;
+                usleep(10000);
+            }
 
             unset_filters(nmap, th_info->t_index);
 
@@ -100,7 +105,9 @@ void* send_packets(void* arg) {
                     nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
                 }
             }
+            pthread_mutex_lock(&nmap->mutex_hostname_finished);
             hostname_finished[th_info->t_index] = true;
+            pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }
         if (run) print_scan_report(th_info);
     }

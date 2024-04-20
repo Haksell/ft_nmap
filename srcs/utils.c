@@ -104,7 +104,8 @@ struct timeval timeval_subtract(struct timeval start, struct timeval end) {
 
 void print_start_time(t_nmap* nmap) {
     nmap->start_time = get_microseconds();
-    struct tm* tm = localtime((time_t*)&nmap->start_time);
+    time_t epoch_secs = nmap->start_time / 1000000;
+    struct tm* tm = localtime(&epoch_secs);
 
     char timestamp[32];
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
@@ -123,7 +124,7 @@ void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur
     if (nmap->icmp_fd > 2) close(nmap->icmp_fd);
 }
 
-uint32_t get_microseconds() {
+uint64_t get_microseconds() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000 + tv.tv_usec;

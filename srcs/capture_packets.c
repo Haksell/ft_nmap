@@ -14,8 +14,12 @@ static void set_port_state(t_thread_info* th_info, port_state port_state, uint16
     if (port_index == MAX_PORTS) return;
     if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] == PORT_UNDEFINED) {
         nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] = port_state;
+
+        pthread_mutex_lock(&nmap->mutex_undefined_count);
         --nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan];
-        if (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0) pcap_breakloop(current_handle[th_info->t_index]);
+        bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
+        pthread_mutex_unlock(&nmap->mutex_undefined_count);
+        if (zero) pcap_breakloop(current_handle[th_info->t_index]);
     }
 }
 
@@ -104,15 +108,14 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
 
 void* capture_packets(void* args) {
     t_thread_info* th_info = ((t_capture_args*)args)->th_info;
+    t_nmap* nmap = th_info->nmap;
     pcap_t* handle = ((t_capture_args*)args)->handle;
     while (run && !sender_finished[th_info->t_index]) {
         int ret = pcap_loop(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         // TODO: check this very sensitive code
+        unset_filters(nmap, th_info->t_index);
         if (sender_finished[th_info->t_index]) break;
-        th_info->nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] = 0;
-        while (run && !hostname_finished[th_info->t_index]) usleep(1000);
-        hostname_finished[th_info->t_index] = false;
     }
     return NULL;
 }
