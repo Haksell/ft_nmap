@@ -8,9 +8,9 @@ HEADERS := $(wildcard $(INCLUDE_DIR)/*.h)
 SRCS := $(wildcard $(PATH_SRCS)/*.c)
 OBJS := $(SRCS:$(PATH_SRCS)/%.c=$(PATH_OBJS)/%.o)
 
-# CC := cc -std=gnu17 -Wall -Wextra -Werror -I$(INCLUDE_DIR)
+CC := cc -std=gnu17 -Wall -Wextra -Werror -I$(INCLUDE_DIR)
 # CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=thread -I$(INCLUDE_DIR)
-CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=address,undefined,leak -I$(INCLUDE_DIR)
+# CC := cc -std=gnu17 -Wall -Wextra -Werror -g3 -fsanitize=address,undefined,leak -I$(INCLUDE_DIR)
 
 RESET := \033[0m
 RED := \033[1m\033[31m

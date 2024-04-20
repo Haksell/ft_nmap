@@ -54,6 +54,12 @@ static pthread_t create_capture_thread(t_capture_args* args) {
     return thread_id;
 }
 
+/*   func mutex,
+mutex on
+func
+mut
+*/
+
 void* send_packets(void* arg) {
     t_thread_info* th_info = arg;
     t_nmap* nmap = th_info->nmap;
@@ -80,7 +86,7 @@ void* send_packets(void* arg) {
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & 1 << scan) == 0) continue;
-            th_info->current_scan = scan;
+            th_info->current_scan = scan; // mutex
 
             th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
             set_filter(th_info, false);
@@ -89,7 +95,7 @@ void* send_packets(void* arg) {
                 send_packet(th_info, loop_port_array[port_index]);
             }
 
-            // TODO: clean this timeout
+            // TODO: clean this timeout with poll?
             for (int i = 0; i < 100 && run; ++i) {
                 pthread_mutex_lock(&nmap->mutex_undefined_count);
                 bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
@@ -105,7 +111,7 @@ void* send_packets(void* arg) {
                     nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
                 }
             }
-            pthread_mutex_lock(&nmap->mutex_hostname_finished);
+            pthread_mutex_lock(&nmap->mutex_hostname_finished); // TODO ON VERRA
             hostname_finished[th_info->t_index] = true;
             pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }

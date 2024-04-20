@@ -90,6 +90,11 @@ static void handle_udp(t_thread_info* th_info, const u_char* packet, /* const st
     set_port_state(th_info, PORT_OPEN, ntohs(udp->uh_sport));
 }
 
+// int _h_index()
+// {
+
+// }
+
 static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_pkthdr* header, const u_char* packet) {
     t_thread_info* th_info = (t_thread_info*)args;
 
@@ -110,12 +115,12 @@ void* capture_packets(void* args) {
     t_thread_info* th_info = ((t_capture_args*)args)->th_info;
     t_nmap* nmap = th_info->nmap;
     pcap_t* handle = ((t_capture_args*)args)->handle;
-    while (run && !sender_finished[th_info->t_index]) {
+    while (run) {
         int ret = pcap_loop(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         // TODO: check this very sensitive code
+        if (ret == PCAP_ERROR_BREAK && !sender_finished[th_info->t_index]) break;
         unset_filters(nmap, th_info->t_index);
-        if (sender_finished[th_info->t_index]) break;
     }
     return NULL;
 }
