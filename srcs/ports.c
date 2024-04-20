@@ -22,7 +22,7 @@ void set_port(t_nmap* nmap, uint16_t port) {
         fprintf(
             stderr,
             "WARNING: Duplicate port number(s) specified.  "
-            "Are you alert enough to be using Nmap?  "
+            "Are you alert enough to be using nmap?  "
             "Have some coffee or Jolt(tm).\n"
         );
     }

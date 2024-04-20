@@ -61,7 +61,7 @@ void* send_packets(void* arg) {
 
     // TODO: very important
     pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_lo[th_info->t_index]});
-    // pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_net[th_info->t_index]});
+    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_net[th_info->t_index]});
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
     for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run; th_info->h_index += step) {
@@ -95,14 +95,14 @@ void* send_packets(void* arg) {
                     nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
                 }
             }
-            if (th_info->h_index + step >= nmap->hostname_count) {
-                printf("miao\n"), sender_finished[th_info->t_index] = true;
-            }
             hostname_finished[th_info->t_index] = true;
         }
         if (run) print_scan_report(th_info);
     }
+    sender_finished[th_info->t_index] = true;
+    pcap_breakloop(handle_lo[th_info->t_index]);
+    pcap_breakloop(handle_net[th_info->t_index]);
     pthread_join(capture_thread_lo, NULL);
-    // pthread_join(capture_thread_net, NULL);
+    pthread_join(capture_thread_net, NULL);
     return NULL;
 }

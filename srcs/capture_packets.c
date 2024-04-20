@@ -1,4 +1,5 @@
 #include "ft_nmap.h"
+#include "pcap/pcap.h"
 
 extern sig_atomic_t run;
 extern sig_atomic_t hostname_finished[MAX_HOSTNAMES];
@@ -102,12 +103,16 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
     else if (ip->ip_p == IPPROTO_UDP) handle_udp(th_info, packet, size_ip);
 }
 
+extern pcap_t* handle_lo[MAX_HOSTNAMES];
+extern pcap_t* handle_net[MAX_HOSTNAMES];
+
 void* capture_packets(void* args) {
     t_thread_info* th_info = ((t_capture_args*)args)->th_info;
     pcap_t* handle = ((t_capture_args*)args)->handle;
     while (run && !sender_finished[th_info->t_index]) {
         int ret = pcap_loop(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
+        if (ret == PCAP_ERROR_BREAK) continue;
         th_info->nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] = 0;
         while (run && !hostname_finished[th_info->t_index]) usleep(1000);
         hostname_finished[th_info->t_index] = false;

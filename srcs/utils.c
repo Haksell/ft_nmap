@@ -108,7 +108,7 @@ void get_start_time(t_nmap* nmap) {
     char timestamp[32];
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
 
-    printf("Starting Nmap %s at %s\n", VERSION, timestamp);
+    printf("Starting nmap %s at %s\n", VERSION, timestamp);
 
     if (nmap->hostname_count == 0) {
         fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
@@ -124,7 +124,9 @@ static float get_elapsed_time(t_nmap* nmap) {
     return elapsed_time.tv_sec + elapsed_time.tv_usec / 1000000.0;
 }
 
-void print_stats(t_nmap* nmap) { printf("\nNmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n", nmap->hostname_count, nmap->hostname_up_count, get_elapsed_time(nmap)); }
+void print_stats(t_nmap* nmap) {
+    printf("\nnmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n", nmap->hostname_count, nmap->hostname_up_count, get_elapsed_time(nmap)); // TODO: fix nmap done: 35 IP addresses (478 hosts up) scanned in 3.00 seconds
+}
 
 void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
     if (nmap->devs) pcap_freealldevs(nmap->devs);

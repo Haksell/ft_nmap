@@ -145,7 +145,7 @@ static void print_port_states(t_thread_info* th_info) {
 void print_scan_report(t_thread_info* th_info) {
     t_nmap* nmap = th_info->nmap;
     pthread_mutex_lock(&nmap->mutex_print_report);
-    printf("\nNmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
+    printf("\nnmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
     if (!(nmap->opt & OPT_NO_PING)) {
         // TODO: uptime_ms directly in structure
         double uptime_ms = th_info->latency.tv_sec * 1000.0 + th_info->latency.tv_usec / 1000.0;
