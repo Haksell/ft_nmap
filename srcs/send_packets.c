@@ -68,8 +68,9 @@ void* send_packets(void* arg) {
         if (!hostname_to_ip(th_info)) continue;
         th_info->latency = 0.0;
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
-        current_handle[th_info->t_index] = (th_info->hostaddr.sin_addr.s_addr & 255) == 127 ? handle_lo[th_info->t_index] : handle_net[th_info->t_index];
-        if (!(nmap->opt & OPT_NO_PING)) {
+        bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
+        current_handle[th_info->t_index] = is_localhost ? handle_lo[th_info->t_index] : handle_net[th_info->t_index];
+        if (!(nmap->opt & OPT_NO_PING) && !is_localhost) {
             // TODO: check latency localhost
             set_filter(th_info, true);
             send_ping(th_info);
@@ -78,7 +79,7 @@ void* send_packets(void* arg) {
         }
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
-            if ((nmap->scans & (1 << scan)) == 0) continue;
+            if ((nmap->scans & 1 << scan) == 0) continue;
             th_info->current_scan = scan;
 
             th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);

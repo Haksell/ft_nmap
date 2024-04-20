@@ -48,7 +48,6 @@ static void init(t_nmap* nmap) {
 static void final_credits(t_nmap* nmap) {
     int hosts_up = 0;
     for (int i = 0; i < nmap->hostname_count; ++i) hosts_up += nmap->hosts[i].is_up;
-    printf("%d\n", get_microseconds());
     printf("\nnmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n", nmap->hostname_count, hosts_up, (get_microseconds() - nmap->start_time) / 1000000.0);
 }
 
