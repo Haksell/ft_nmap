@@ -2,6 +2,7 @@
 
 #include "pcap/pcap.h"
 #include <arpa/inet.h>
+#include <bits/pthreadtypes.h>
 #include <ctype.h>
 #include <errno.h>
 #include <ifaddrs.h>
@@ -197,6 +198,7 @@ typedef struct t_nmap {
     pthread_mutex_t mutex_undefined_count;
     pthread_mutex_t mutex_hostname_finished;
     pthread_mutex_t mutex_unset_filters;
+    pthread_mutex_t* mutexes[6]; // only used to free the mutexes
 } t_nmap;
 
 // capture_packets.c
@@ -240,16 +242,17 @@ void* send_packets(void* arg);
 void handle_sigint(int sig);
 void set_signals();
 
-// utils.c
+// cleanup.c
+void cleanup(t_nmap* nmap);
 void error(char* message);
-void g_error(char* message, int status);
+void panic(const char* format, ...);
+
+// utils.c
 bool hostname_to_ip(t_thread_info* th_info);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
-void panic(const char* format, ...);
 struct timeval timeval_subtract(struct timeval start, struct timeval end);
 void print_start_time(t_nmap* nmap);
-void cleanup(t_nmap* nmap);
 uint64_t get_microseconds();
 
 // verbose.c

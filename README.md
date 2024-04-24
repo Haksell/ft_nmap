@@ -1,10 +1,5 @@
 # ft_nmap
 
-## todo
-
-- [ ] consistent usage of `error`, `g_error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
-- [ ] better udp + version detection
-
 ## mandatory
 
 - [x] The executable must be named ft_nmap.
@@ -41,7 +36,8 @@
 
 ### wtf
 
-- [ ] `--version-detection` Version detection
+- [ ] `--version-detection` Version detection UDP (Lorenzo)
+- [ ] `--version-detection` Version detection TCP (???)
 - [ ] `-O` `--os` OS detection
 - [ ] `--spoof-address` (hide source address)
 - [ ] `--decoy`

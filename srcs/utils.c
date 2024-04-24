@@ -1,32 +1,5 @@
 #include "ft_nmap.h"
 
-extern pcap_t* handle_lo[MAX_HOSTNAMES];
-extern pcap_t* handle_net[MAX_HOSTNAMES];
-
-// TODO: cleanup.c
-
-void error(char* message) {
-    // TODO: use panic
-    fprintf(stderr, "nmap: %s: %s\n", message, strerror(errno));
-    exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
-}
-
-void g_error(char* message, int status) {
-    // TODO: use panic
-    fprintf(stderr, "nmap: %s: %s\n", message, gai_strerror(status));
-    // exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
-}
-
-void panic(const char* format, ...) {
-    // TODO: free everything
-    // TODO: write "ft_nmap: " directly here
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-    exit(EXIT_FAILURE);
-}
-
 bool hostname_to_ip(t_thread_info* th_info) {
     struct addrinfo hints = {
         .ai_family = AF_INET,
@@ -115,18 +88,6 @@ void print_start_time(t_nmap* nmap) {
     char timestamp[32];
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
     printf("Starting nmap %s at %s\n", VERSION, timestamp);
-}
-
-void cleanup(t_nmap* nmap) { // a utiliser dans la function exit en cas d'erreur + ajouter eventuellement autres choses qui vont etre free
-    // TODO close mutex's
-    if (nmap->devs) pcap_freealldevs(nmap->devs);
-    for (int i = 0; i < nmap->num_handles; ++i) {
-        if (handle_net[i]) pcap_close(handle_net[i]);
-        if (handle_lo[i]) pcap_close(handle_lo[i]);
-    }
-    if (nmap->tcp_fd > 2) close(nmap->tcp_fd);
-    if (nmap->udp_fd > 2) close(nmap->udp_fd);
-    if (nmap->icmp_fd > 2) close(nmap->icmp_fd);
 }
 
 uint64_t get_microseconds() {

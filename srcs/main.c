@@ -11,10 +11,18 @@ pcap_t* handle_lo[MAX_HOSTNAMES];
 pcap_t* handle_net[MAX_HOSTNAMES];
 pcap_t* current_handle[MAX_HOSTNAMES];
 
+static void init_mutex(t_nmap* nmap, pthread_mutex_t* mutex) {
+    static int mutex_initialized = 0;
+
+    if (pthread_mutex_init(mutex, NULL) == -1) error("failed to initialize mutex");
+    nmap->mutexes[mutex_initialized] = mutex;
+    ++mutex_initialized;
+}
+
 static void init(t_nmap* nmap) {
     if (geteuid() != 0) {
-        fprintf(stderr, "This program requires root privileges for raw socket creation.\n");
-        exit(EXIT_FAILURE);
+        // TODO: connect
+        panic("This program requires root privileges for raw socket creation.\n");
     }
 
     nmap->source_address = get_source_address();
@@ -22,9 +30,9 @@ static void init(t_nmap* nmap) {
     nmap->tcp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
     if (nmap->tcp_fd < 0) error("TCP socket creation failed");
     nmap->udp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
-    if (nmap->udp_fd < 0) error("UDP socket creation failed"); // look next comment
+    if (nmap->udp_fd < 0) error("UDP socket creation failed");
     nmap->icmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (nmap->icmp_fd < 0) error("ICMP socket creation failed"); // open fd leaks -> error -> exit -> cleanup
+    if (nmap->icmp_fd < 0) error("ICMP socket creation failed");
 
     if (setsockopt(nmap->tcp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
     if (setsockopt(nmap->udp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0) error("setsockopt IP_HDRINCL failed");
@@ -46,11 +54,11 @@ static void init(t_nmap* nmap) {
     set_signals();
     init_pcap(nmap);
 
-    pthread_mutex_init(&nmap->mutex_print_report, NULL);
-    pthread_mutex_init(&nmap->mutex_undefined_count, NULL);
-    pthread_mutex_init(&nmap->mutex_hostname_finished, NULL);
-    pthread_mutex_init(&nmap->mutex_unset_filters, NULL);
-    pthread_mutex_init(&mutex_run, NULL);
+    init_mutex(nmap, &nmap->mutex_print_report);
+    init_mutex(nmap, &nmap->mutex_undefined_count);
+    init_mutex(nmap, &nmap->mutex_hostname_finished);
+    init_mutex(nmap, &nmap->mutex_unset_filters);
+    init_mutex(nmap, &mutex_run);
 }
 
 static void final_credits(t_nmap* nmap) {

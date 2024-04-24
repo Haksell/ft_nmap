@@ -55,12 +55,6 @@ static pthread_t create_capture_thread(t_capture_args* args) {
     return thread_id;
 }
 
-/*   func mutex,
-mutex on
-func
-mut
-*/
-
 void* send_packets(void* arg) {
     t_thread_info* th_info = arg;
     t_nmap* nmap = th_info->nmap;
@@ -89,7 +83,7 @@ void* send_packets(void* arg) {
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & 1 << scan) == 0) continue;
             pthread_mutex_lock(&mutex_run);
-            th_info->current_scan = scan; // mutex
+            th_info->current_scan = scan;
             pthread_mutex_unlock(&mutex_run);
             th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
             set_filter(th_info, false);
