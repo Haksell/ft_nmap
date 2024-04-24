@@ -2,7 +2,7 @@
 
 ## todo
 
-- [ ] consistent usage of `error`, `g_error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
+- [ ] consistent usage of `error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
 - [ ] better udp + version detection
 
 ## mandatory
