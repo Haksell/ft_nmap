@@ -42,7 +42,7 @@
 #define RESET "\x1b[0m"
 
 #define EXIT_ARGS 0xff
-#define VERSION "0.4.2"
+#define VERSION "7.95"
 
 #define MAX_PORTS 1024
 #define MAX_HOSTNAMES 250
