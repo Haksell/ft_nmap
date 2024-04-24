@@ -64,6 +64,7 @@ mut
 void* send_packets(void* arg) {
     t_thread_info* th_info = arg;
     t_nmap* nmap = th_info->nmap;
+    const int wait_operations = 10 + (nmap->port_count / 50);
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
     // TODO: very important
@@ -97,7 +98,7 @@ void* send_packets(void* arg) {
                 send_packet(th_info, loop_port_array[port_index]);
             }
 
-            for (int i = 0; i < 10 + (nmap->port_count / 50) && run; ++i) {
+            for (int i = 0; i < wait_operations && run; ++i) {
                 pthread_mutex_lock(&nmap->mutex_undefined_count);
                 bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
                 pthread_mutex_unlock(&nmap->mutex_undefined_count);
