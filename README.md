@@ -2,7 +2,6 @@
 
 ## todo
 
-- [ ] `pcap_loop` -> `pcap_dispatch`
 - [ ] consistent usage of `error`, `g_error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
 - [ ] better udp + version detection
 
