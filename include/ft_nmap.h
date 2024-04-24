@@ -191,6 +191,8 @@ typedef struct t_nmap {
     bpf_u_int32 device_lo;
     bpf_u_int32 device_net;
 
+    in_addr_t source_address;
+
     pthread_mutex_t mutex_print_report;
     pthread_mutex_t mutex_undefined_count;
     pthread_mutex_t mutex_hostname_finished;

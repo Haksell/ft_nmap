@@ -11,12 +11,13 @@ pcap_t* handle_lo[MAX_HOSTNAMES];
 pcap_t* handle_net[MAX_HOSTNAMES];
 pcap_t* current_handle[MAX_HOSTNAMES];
 
-
 static void init(t_nmap* nmap) {
     if (geteuid() != 0) {
         fprintf(stderr, "This program requires root privileges for raw socket creation.\n");
         exit(EXIT_FAILURE);
     }
+
+    nmap->source_address = get_source_address();
 
     nmap->tcp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
     if (nmap->tcp_fd < 0) error("TCP socket creation failed");

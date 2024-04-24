@@ -104,7 +104,7 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t
         .ttl = random_u32_range(33, 63),
         .protocol = th_info->current_scan == SCAN_UDP ? IPPROTO_UDP : IPPROTO_TCP,
         .check = 0,
-        .saddr = get_source_address(), // spoof possible?
+        .saddr = th_info->nmap->source_address, // spoof possible?
         .daddr = th_info->hostaddr.sin_addr.s_addr,
     };
 
