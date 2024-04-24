@@ -14,7 +14,7 @@ void error(char* message) {
 void g_error(char* message, int status) {
     // TODO: use panic
     fprintf(stderr, "nmap: %s: %s\n", message, gai_strerror(status));
-    exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
+    // exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
 }
 
 void panic(const char* format, ...) {
@@ -38,12 +38,16 @@ bool hostname_to_ip(t_thread_info* th_info) {
     int status;
     for (size_t i = 0; i < 10; ++i) {
         status = getaddrinfo(hostname, NULL, &hints, &res);
-        if (status == 0) break;
-        usleep(10000);
-    }
-    if (status != 0 || res == NULL) {
-        fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
-        return false;
+        if (status == 0 && res != NULL) break;
+        if (status == EAI_AGAIN) {
+            sleep(1); // ???
+        } else if (status == EAI_NONAME) {
+            fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
+            return false;
+        } else {
+            fprintf(stderr, "\nnmap: getaddrinfo failed: %s\n", gai_strerror(status));
+            return false;
+        }
     }
 
     if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, th_info->hostip, INET_ADDRSTRLEN) == NULL) {
