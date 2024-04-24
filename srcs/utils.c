@@ -39,7 +39,7 @@ bool hostname_to_ip(t_thread_info* th_info) {
     for (size_t i = 0; i < 10; ++i) {
         status = getaddrinfo(hostname, NULL, &hints, &res);
         if (status == 0 && res != NULL) break;
-        if (status == EAI_AGAIN) {
+        if (status == EAI_AGAIN || status == EAI_SYSTEM) {
             sleep(1); // ???
         } else if (status == EAI_NONAME) {
             fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
