@@ -1,14 +1,16 @@
 #include "ft_nmap.h"
 #include "pcap/pcap.h"
+#include <bits/pthreadtypes.h>
 
 volatile sig_atomic_t run = true;
-
+pthread_mutex_t mutex_run;
 // TODO: t_thread_globals
 volatile sig_atomic_t sender_finished[MAX_HOSTNAMES];
 volatile sig_atomic_t hostname_finished[MAX_HOSTNAMES];
 pcap_t* handle_lo[MAX_HOSTNAMES];
 pcap_t* handle_net[MAX_HOSTNAMES];
 pcap_t* current_handle[MAX_HOSTNAMES];
+
 
 static void init(t_nmap* nmap) {
     if (geteuid() != 0) {
@@ -46,6 +48,8 @@ static void init(t_nmap* nmap) {
     pthread_mutex_init(&nmap->mutex_print_report, NULL);
     pthread_mutex_init(&nmap->mutex_undefined_count, NULL);
     pthread_mutex_init(&nmap->mutex_hostname_finished, NULL);
+    pthread_mutex_init(&nmap->mutex_unset_filters, NULL);
+    pthread_mutex_init(&mutex_run, NULL);
 }
 
 static void final_credits(t_nmap* nmap) {

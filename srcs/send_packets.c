@@ -6,6 +6,7 @@ extern sig_atomic_t sender_finished[MAX_HOSTNAMES];
 extern pcap_t* handle_lo[MAX_HOSTNAMES];
 extern pcap_t* handle_net[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];
+extern pthread_mutex_t mutex_run;
 
 #define NTP1 "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc5O#Kq\xb1R\xf3"
 #define NTP2 "\xd9\x00\x0a\xfa\x00\x00\x00\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
@@ -86,8 +87,9 @@ void* send_packets(void* arg) {
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & 1 << scan) == 0) continue;
+            pthread_mutex_lock(&mutex_run);
             th_info->current_scan = scan; // mutex
-
+            pthread_mutex_unlock(&mutex_run);
             th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
             set_filter(th_info, false);
             for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
@@ -117,7 +119,10 @@ void* send_packets(void* arg) {
         }
         if (run) print_scan_report(th_info);
     }
+    pthread_mutex_lock(&mutex_run);
     sender_finished[th_info->t_index] = true;
+    pthread_mutex_unlock(&mutex_run);
+
     pcap_breakloop(handle_lo[th_info->t_index]);
     pcap_breakloop(handle_net[th_info->t_index]);
     pthread_join(capture_thread_lo, NULL);

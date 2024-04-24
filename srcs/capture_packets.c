@@ -1,6 +1,10 @@
 #include "ft_nmap.h"
+#include <bits/pthreadtypes.h>
+#include <pthread.h>
 
 extern sig_atomic_t run;
+extern pthread_mutex_t mutex_run;
+
 extern sig_atomic_t hostname_finished[MAX_HOSTNAMES];
 extern sig_atomic_t sender_finished[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];
@@ -64,6 +68,7 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
     }
 
     port_state port_state;
+    pthread_mutex_lock(&mutex_run);
     switch (th_info->current_scan) {
         case SCAN_SYN: port_state = tcp->th_flags == (TH_SYN | TH_ACK) ? PORT_OPEN : tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
         case SCAN_ACK: port_state = tcp->th_flags & TH_RST ? PORT_UNFILTERED : PORT_UNEXPECTED; break;
@@ -71,6 +76,7 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
         case SCAN_FIN:
         case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
     }
+    pthread_mutex_unlock(&mutex_run);
 
     set_port_state(th_info, port_state, ntohs(tcp->th_sport));
 
@@ -105,7 +111,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         return;
     }
 
-    th_info->nmap->hosts[th_info->h_index].is_up = true;
+    // th_info->nmap->hosts[th_info->h_index].is_up = true;
     if (ip->ip_p == IPPROTO_ICMP) handle_icmp(th_info, packet, ip);
     else if (ip->ip_p == IPPROTO_TCP) handle_tcp(th_info, packet, ip, size_ip);
     else if (ip->ip_p == IPPROTO_UDP) handle_udp(th_info, packet, size_ip);
@@ -115,11 +121,16 @@ void* capture_packets(void* args) {
     t_thread_info* th_info = ((t_capture_args*)args)->th_info;
     t_nmap* nmap = th_info->nmap;
     pcap_t* handle = ((t_capture_args*)args)->handle;
-    while (run) {
+    while (true) {
         int ret = pcap_loop(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         // TODO: check this very sensitive code
-        if (ret == PCAP_ERROR_BREAK && !sender_finished[th_info->t_index]) break;
+        if (ret == PCAP_ERROR_BREAK) {
+            pthread_mutex_lock(&mutex_run);
+            bool should_break = (sender_finished[th_info->t_index] || !run);
+            pthread_mutex_unlock(&mutex_run);
+            if (should_break) break;
+        }
         unset_filters(nmap, th_info->t_index);
     }
     return NULL;

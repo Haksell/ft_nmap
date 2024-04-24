@@ -194,6 +194,7 @@ typedef struct t_nmap {
     pthread_mutex_t mutex_print_report;
     pthread_mutex_t mutex_undefined_count;
     pthread_mutex_t mutex_hostname_finished;
+    pthread_mutex_t mutex_unset_filters;
 } t_nmap;
 
 // capture_packets.c
