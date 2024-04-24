@@ -1,10 +1,11 @@
 #include "ft_nmap.h"
+#include <pthread.h>
 
 extern pcap_t* handle_lo[MAX_HOSTNAMES];
 extern pcap_t* handle_net[MAX_HOSTNAMES];
 
 void cleanup(t_nmap* nmap) {
-    // TODO close mutex's
+    for (int i = 0; nmap->mutexes[i]; ++i) pthread_mutex_destroy(nmap->mutexes[i]);
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     for (int i = 0; i < nmap->num_handles; ++i) {
         if (handle_net[i]) pcap_close(handle_net[i]);

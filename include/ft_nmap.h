@@ -2,6 +2,7 @@
 
 #include "pcap/pcap.h"
 #include <arpa/inet.h>
+#include <bits/pthreadtypes.h>
 #include <ctype.h>
 #include <errno.h>
 #include <ifaddrs.h>
@@ -197,6 +198,7 @@ typedef struct t_nmap {
     pthread_mutex_t mutex_undefined_count;
     pthread_mutex_t mutex_hostname_finished;
     pthread_mutex_t mutex_unset_filters;
+    pthread_mutex_t* mutexes[6]; // only used to free the mutexes
 } t_nmap;
 
 // capture_packets.c

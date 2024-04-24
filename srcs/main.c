@@ -11,6 +11,14 @@ pcap_t* handle_lo[MAX_HOSTNAMES];
 pcap_t* handle_net[MAX_HOSTNAMES];
 pcap_t* current_handle[MAX_HOSTNAMES];
 
+static void init_mutex(t_nmap* nmap, pthread_mutex_t* mutex) {
+    static int mutex_initialized = 0;
+
+    if (pthread_mutex_init(mutex, NULL) == -1) error("failed to initialize mutex");
+    nmap->mutexes[mutex_initialized] = mutex;
+    ++mutex_initialized;
+}
+
 static void init(t_nmap* nmap) {
     if (geteuid() != 0) {
         fprintf(stderr, "This program requires root privileges for raw socket creation.\n");
@@ -46,11 +54,11 @@ static void init(t_nmap* nmap) {
     set_signals();
     init_pcap(nmap);
 
-    pthread_mutex_init(&nmap->mutex_print_report, NULL);
-    pthread_mutex_init(&nmap->mutex_undefined_count, NULL);
-    pthread_mutex_init(&nmap->mutex_hostname_finished, NULL);
-    pthread_mutex_init(&nmap->mutex_unset_filters, NULL);
-    pthread_mutex_init(&mutex_run, NULL);
+    init_mutex(nmap, &nmap->mutex_print_report);
+    init_mutex(nmap, &nmap->mutex_undefined_count);
+    init_mutex(nmap, &nmap->mutex_hostname_finished);
+    init_mutex(nmap, &nmap->mutex_unset_filters);
+    init_mutex(nmap, &mutex_run);
 }
 
 static void final_credits(t_nmap* nmap) {
