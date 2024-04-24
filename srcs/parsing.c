@@ -73,7 +73,7 @@ static void parse_scan(char* value, uint8_t* scans) {
 static void add_hostname(t_nmap* nmap, char* hostname) {
     if (hostname[0] == '\0') return;
     if (nmap->hostname_count == MAX_HOSTNAMES) {
-        fprintf(stderr, "nmap: too many hostnames `%s'\n", hostname);
+        fprintf(stderr, "nmap: too many hostnames\n");
         args_error();
     }
     strncpy(nmap->hosts[nmap->hostname_count].name, hostname, HOST_NAME_MAX);

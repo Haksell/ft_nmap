@@ -18,7 +18,8 @@ typedef struct {
 static void get_service_name(uint16_t port, const char* proto, char buffer[MAX_SERVICE_LEN + 1]) {
     struct servent* service = getservbyport(htons(port), proto);
     char* service_name = service ? service->s_name : "unknown";
-    strncpy(buffer, service_name, MAX_SERVICE_LEN - 1);
+    strncpy(buffer, service_name, MAX_SERVICE_LEN);
+    buffer[MAX_SERVICE_LEN] = '\0';
 }
 
 static void copy_port_state_combination(t_thread_info* th_info, port_state combination[SCAN_MAX], int port_index) {

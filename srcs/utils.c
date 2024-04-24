@@ -13,8 +13,7 @@ void error(char* message) {
 
 void g_error(char* message, int status) {
     // TODO: use panic
-    if (status != EAI_NONAME) fprintf(stderr, "nmap: %s: %s\n", message, gai_strerror(status));
-    else fprintf(stderr, "nmap: %s\n", "unknown host");
+    fprintf(stderr, "nmap: %s: %s\n", message, gai_strerror(status));
     exit(EXIT_FAILURE); // TODO creer un exit personalisé qui appelle cleanup()
 }
 
@@ -39,7 +38,7 @@ bool hostname_to_ip(t_thread_info* th_info) {
     int status = getaddrinfo(hostname, NULL, &hints, &res);
     if (status != 0 || res == NULL) {
         if (status == EAI_NONAME || status == EAI_AGAIN) {
-            fprintf(stderr, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
+            fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
             return false;
         }
         g_error("getaddrinfo failed", status);
