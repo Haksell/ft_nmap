@@ -16,7 +16,7 @@ def read_file(filename):
 
 
 reports24 = read_file("24NEWNEW")
-reports250 = read_file("250RELOADED")
+reports250 = read_file("norandomise250")
 
 print("hosts in 24, not 250", set(reports24) - set(reports250))
 print("hosts in 250, not 24", set(reports250) - set(reports24))
@@ -25,6 +25,10 @@ count = 0
 for k in shared_keys:
     v24 = reports24[k]
     v250 = reports250[k]
+    if v24[0].startswith("Host"):
+        v24.pop(0)
+    if v250[0].startswith("Host"):
+        v250.pop(0)
     if v24[0].startswith("rDNS"):
         v24.pop(0)
     if v250[0].startswith("rDNS"):
