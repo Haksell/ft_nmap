@@ -121,14 +121,12 @@ static void print_line(t_thread_info* th_info, t_paddings* paddings, bool hide_c
     printf("\n");
 }
 
-static void gotta_go_fast(t_thread_info* th_info, t_paddings* paddings, int hide_count, port_state* common_port_state_combination) {
+static void gotta_go_fast(t_thread_info* th_info, t_paddings* paddings, int hide_count, port_state* common_port_state_combination, char* host) {
     t_nmap* nmap = th_info->nmap;
 
     printf("\nnmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
     if (th_info->latency != 0) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
-
-    char host[NI_MAXHOST];
-    if (ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) && strcmp(nmap->hosts[th_info->h_index].name, host)) printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
+    if (host[0] != '\0') printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
 
     print_line(th_info, paddings, hide_count, common_port_state_combination, HEADER_LINE, HEADER_LINE, "SERVICE", "SERVICE");
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
@@ -148,12 +146,17 @@ static void gotta_go_fast(t_thread_info* th_info, t_paddings* paddings, int hide
 }
 
 void print_scan_report(t_thread_info* th_info) {
+    t_nmap* nmap = th_info->nmap;
+
     port_state common_port_state_combination[SCAN_MAX];
     int hide_count = find_most_common_port_state_combination(th_info, common_port_state_combination);
     t_paddings paddings = compute_paddings(th_info, hide_count, common_port_state_combination);
 
-    pthread_mutex_lock(&th_info->nmap->mutex_print_report);
-    gotta_go_fast(th_info, &paddings, hide_count, common_port_state_combination);
+    char host[NI_MAXHOST];
+    if (!ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) || strcmp(nmap->hosts[th_info->h_index].name, host) == 0) host[0] = '\0';
+
+    pthread_mutex_lock(&nmap->mutex_print_report);
+    gotta_go_fast(th_info, &paddings, hide_count, common_port_state_combination, host);
     printf(RESET);
-    pthread_mutex_unlock(&th_info->nmap->mutex_print_report);
+    pthread_mutex_unlock(&nmap->mutex_print_report);
 }
