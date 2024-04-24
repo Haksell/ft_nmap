@@ -1,4 +1,5 @@
 #include "ft_nmap.h"
+#include "pcap/pcap.h"
 #include <bits/pthreadtypes.h>
 #include <pthread.h>
 
@@ -122,7 +123,7 @@ void* capture_packets(void* args) {
     t_nmap* nmap = th_info->nmap;
     pcap_t* handle = ((t_capture_args*)args)->handle;
     while (true) {
-        int ret = pcap_loop(handle, -1, got_packet, (void*)th_info);
+        int ret = pcap_dispatch(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         // TODO: check this very sensitive code
         if (ret == PCAP_ERROR_BREAK) {
@@ -130,8 +131,8 @@ void* capture_packets(void* args) {
             bool should_break = (sender_finished[th_info->t_index] || !run);
             pthread_mutex_unlock(&mutex_run);
             if (should_break) break;
+            unset_filters(nmap, th_info->t_index);
         }
-        unset_filters(nmap, th_info->t_index);
     }
     return NULL;
 }
