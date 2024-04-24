@@ -16,7 +16,7 @@ def read_file(filename):
 
 
 reports24 = read_file("24NEWNEW")
-reports250 = read_file("250NEW")
+reports250 = read_file("250RELOADED")
 
 print("hosts in 24, not 250", set(reports24) - set(reports250))
 print("hosts in 250, not 24", set(reports250) - set(reports24))

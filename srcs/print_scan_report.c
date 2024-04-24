@@ -3,7 +3,7 @@
 
 #define SEPARATOR " | "
 #define MAX_SERVICE_LEN 32
-#define HIDE_LIMIT 25 // TODO: Lorenzo flag?
+#define HIDE_LIMIT 25
 #define HEADER_LINE (-1)
 #define HIDE_LINE (-2)
 
