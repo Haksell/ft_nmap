@@ -35,13 +35,15 @@ bool hostname_to_ip(t_thread_info* th_info) {
     struct addrinfo* res = NULL;
     char* hostname = th_info->nmap->hosts[th_info->h_index].name;
 
-    int status = getaddrinfo(hostname, NULL, &hints, &res);
+    int status;
+    for (size_t i = 0; i < 10; ++i) {
+        status = getaddrinfo(hostname, NULL, &hints, &res);
+        if (status == 0) break;
+        usleep(10000);
+    }
     if (status != 0 || res == NULL) {
-        if (status == EAI_NONAME || status == EAI_AGAIN) {
-            fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
-            return false;
-        }
-        g_error("getaddrinfo failed", status);
+        fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
+        return false;
     }
 
     if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, th_info->hostip, INET_ADDRSTRLEN) == NULL) {

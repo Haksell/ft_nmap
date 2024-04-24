@@ -97,13 +97,12 @@ void* send_packets(void* arg) {
                 send_packet(th_info, loop_port_array[port_index]);
             }
 
-            // TODO: clean this timeout with poll?
-            for (int i = 0; i < 100 && run; ++i) {
+            for (int i = 0; i < 20 && run; ++i) {
                 pthread_mutex_lock(&nmap->mutex_undefined_count);
                 bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
                 pthread_mutex_unlock(&nmap->mutex_undefined_count);
                 if (zero) break;
-                usleep(10000);
+                usleep(50000);
             }
 
             unset_filters(nmap, th_info->t_index);

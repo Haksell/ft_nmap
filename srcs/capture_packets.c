@@ -111,7 +111,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         return;
     }
 
-    // th_info->nmap->hosts[th_info->h_index].is_up = true;
+    th_info->nmap->hosts[th_info->h_index].is_up = true;
     if (ip->ip_p == IPPROTO_ICMP) handle_icmp(th_info, packet, ip);
     else if (ip->ip_p == IPPROTO_TCP) handle_tcp(th_info, packet, ip, size_ip);
     else if (ip->ip_p == IPPROTO_UDP) handle_udp(th_info, packet, size_ip);
