@@ -2,12 +2,9 @@
 
 ## todo
 
-- [ ] multithreading
-- [ ] better udp + version detection
-- [ ] parsing tester
 - [ ] `pcap_loop` -> `pcap_dispatch`
 - [ ] consistent usage of `error`, `g_error`, `args_error`, `panic`, `exit` and `fprintf(stderr)`
-- [ ] fix defines with 999
+- [ ] better udp + version detection
 
 ## mandatory
 
@@ -15,7 +12,7 @@
 - [ ] A help menu must be available.
 - [x] You must only manage a simple IPv4 (address/hostname) as parameter for your scans.
 - [x] You must manage FQDN however you don’t have to make the DNS resolution.
-- [ ] It must be possible to choose the number of threads (default:0 max:250) to make the scan faster
+- [x] It must be possible to choose the number of threads (default:0 max:250) to make the scan faster
 - [x] It must be possible to read a list of IPv4 addresses and hostname from a file. (parsing good, execution bad)
 - [x] Your program must be able to run the following scan: SYN
 - [x] Your program must be able to run the following scan: NULL
@@ -61,19 +58,3 @@
 - [ ] remove unused libraries
 - [ ] remove `garbage` folder (and maybe `hosts`?)
 - [ ] `help` corresponds to actual flags
-
-## resources
-
-- https://learngitbranching.js.org/
-- https://en.wikipedia.org/wiki/Transmission_Control_Protocol
-- https://en.wikipedia.org/wiki/User_Datagram_Protocol
-- https://nmap.org/book/toc.html
-- https://nmap.org/book/man.html
-- https://nmap.org/phrack54-09.txt
-- https://www.it-connect.fr/les-scans-de-port-via-tcp-syn-connect-et-fin/
-- https://www.it-connect.fr/les-scans-de-port-via-tcp-xmas-null-et-ack/
-- https://www.it-connect.fr/technique-de-scan-de-port-udp/
-- https://www.tcpdump.org/manpages/pcap.3pcap.html
-- https://www.tcpdump.org/pcap.html
-- http://yuba.stanford.edu/~casado/pcap/section1.html
-- https://www.devdungeon.com/content/using-libpcap-c
