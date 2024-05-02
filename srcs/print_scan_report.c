@@ -107,7 +107,7 @@ static void print_line(t_thread_info* th_info, t_paddings* paddings, bool hide_c
     if (!paddings->two_columns) printf(" %-*s", has_udp ? paddings->udp_service : paddings->tcp_service, has_udp ? udp_service : tcp_service);
     printf(nmap->scan_count >= 2 ? SEPARATOR : " ");
 
-    for (int scan_type = 0; scan_type < SCAN_UDP; ++scan_type) {
+    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) { // TODO: pour Axel verifie stp si j'ai pas cassé un truc en mettant SCAN_MAX Instead of SCAN_UDP
         if (nmap->scans & (1 << scan_type)) {
             print_scan_cell(th_info, paddings, scan_type, port_index, port, common_port_state_combination);
         }

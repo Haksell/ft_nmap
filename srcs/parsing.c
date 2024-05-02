@@ -47,7 +47,7 @@ static void parse_ports(char* value, t_nmap* nmap) {
     }
 }
 
-static void parse_scan(char* value, uint8_t* scans) {
+static void parse_scan(char* value, uint16_t* scans) {
     char* end = strchr(value, '\0');
     char* comma = end;
 

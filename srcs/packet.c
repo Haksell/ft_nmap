@@ -41,6 +41,7 @@ static void set_tcp_flags(struct tcphdr* tcph, scan_type type) {
     switch (type) {
         case SCAN_SYN: tcph->syn = 1; break;
         case SCAN_NULL: break;
+		case SCAN_WINDOW:
         case SCAN_ACK: tcph->ack = 1; break;
         case SCAN_FIN: tcph->fin = 1; break;
         case SCAN_XMAS:

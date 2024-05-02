@@ -122,6 +122,8 @@ typedef enum {
     SCAN_NULL,
     SCAN_XMAS,
     SCAN_UDP,
+	SCAN_WINDOW,
+	SCAN_CONNECT,
     SCAN_MAX,
 } scan_type;
 
@@ -137,9 +139,11 @@ static const port_state default_port_state[SCAN_MAX] = {
     PORT_OPEN_FILTERED,
     PORT_OPEN_FILTERED,
     PORT_OPEN_FILTERED,
+	PORT_FILTERED,
+	PORT_CLOSED,
 };
 
-static const char scans_str[][5] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP"};
+static const char scans_str[][7] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP", "WINDOW", "CONNECT"};
 
 struct t_thread_info;
 
@@ -182,7 +186,7 @@ typedef struct t_nmap {
     uint16_t port_array[MAX_PORTS];
     uint16_t random_port_array[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
-    uint8_t scans; // TODO: maybe uint16_t if WINDOW + CONNECT
+    uint16_t scans;
     uint8_t scan_count;
     uint8_t num_threads;
     uint8_t num_handles;
