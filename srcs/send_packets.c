@@ -12,12 +12,29 @@ extern pthread_mutex_t mutex_run;
 #define NTP2 "\xd9\x00\x0a\xfa\x00\x00\x00\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
 #define NTP_SIZE 48
 
+static void connect_scan(t_thread_info* th_info, uint16_t port) {
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (fd < 0) error("Connect socket creation failed");
+
+    struct timeval tv = {.tv_usec = 50000}; // 100ms à voir || latency + 100ms ??
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0) perror("setsockopt SO_RCVTIMEO failed");
+    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv) < 0) perror("setsockopt SO_SNDTIMEO failed");
+
+    struct sockaddr_in target = {.sin_family = AF_INET, .sin_port = htons(port), .sin_addr = th_info->hostaddr.sin_addr};
+
+    if (connect(fd, (struct sockaddr*)&target, sizeof(target)) == 0) set_port_state(th_info, PORT_OPEN, port);
+    else set_port_state(th_info, PORT_CLOSED, port);
+    close(fd);
+}
+
 static void send_packet(t_thread_info* th_info, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
     uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
     size_t packet_size = sizeof(struct iphdr) + (th_info->current_scan == SCAN_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
 
-    if (port == 123 && th_info->current_scan == SCAN_UDP) {
+    if (th_info->current_scan == SCAN_CONNECT) {
+        connect_scan(th_info, port);
+    } else if (port == 123 && th_info->current_scan == SCAN_UDP) {
         uint8_t packetntp[sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE];
         packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE;
         unsigned char payload[4][48] = {NTP1, NTP2, NTP1, NTP2}; // TODO: only 2?

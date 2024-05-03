@@ -143,7 +143,7 @@ static const port_state default_port_state[SCAN_MAX] = {
 	PORT_CLOSED,
 };
 
-static const char scans_str[][7] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP", "WINDOW", "CONNECT"};
+static const char scans_str[][7] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP", "WIN", "CONN"};
 
 struct t_thread_info;
 
@@ -206,6 +206,7 @@ typedef struct t_nmap {
 } t_nmap;
 
 // capture_packets.c
+void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port);
 void* capture_packets(__attribute__((unused)) void* arg);
 
 // info.c

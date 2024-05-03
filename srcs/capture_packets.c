@@ -13,7 +13,7 @@ extern pcap_t* current_handle[MAX_HOSTNAMES];
 #define TCP_FILTERED 0b0010011000001110
 #define UDP_FILTERED 0b0010011000000110
 
-static void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port) {
+void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
     uint16_t port_index = nmap->port_dictionary[port];
     if (port_index == MAX_PORTS) return;
@@ -77,6 +77,7 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
         case SCAN_FIN:
         case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
 		case SCAN_WINDOW: port_state = tcp->th_flags & TH_RST ? tcp->th_win ? PORT_OPEN : PORT_CLOSED : PORT_UNEXPECTED; break;
+		case SCAN_CONNECT: break; // TODO: Axel: on ne veut pas que pcap lis le connect(), donc faudra plutot le faire en amont pour efficience
     }
     pthread_mutex_unlock(&mutex_run);
 

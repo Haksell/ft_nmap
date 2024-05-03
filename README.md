@@ -30,9 +30,12 @@
 - [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
 - [x] `--no-randomize`
 - [x] `--no-ping`
-- [ ] `--top-ports`
-- [ ] `-sT` SCAN_CONNECT (even no sudo)
-- [ ] `-sW` SCAN_WINDOW
+- [ ] `--top-ports` -> Axel: python script to find the top ports with the % file. On avait déjà fait I think
+- [x] `-sT` SCAN_CONNECT
+- [ ] no sudo for SCAN_CONNECT
+- [ ] no pcap for SCAN_CONNECT, a reflechir ensemble
+- [ ] Axel: si tu veux `-sT` faudra changer un peu le parsing. Sinon on garde `-sC` comme maintenant.
+- [x] `-sW` SCAN_WINDOW
 
 ### wtf
 
