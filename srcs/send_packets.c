@@ -8,10 +8,6 @@ extern pcap_t* handle_net[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];
 extern pthread_mutex_t mutex_run;
 
-#define NTP1 "\xe3\x00\x04\xfa\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc5O#Kq\xb1R\xf3"
-#define NTP2 "\xd9\x00\x0a\xfa\x00\x00\x00\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6\xf1^\xdbx\x00\x00\x00"
-#define NTP_SIZE 48
-
 static void connect_scan(t_thread_info* th_info, uint16_t port) {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) error("Connect socket creation failed");
@@ -27,6 +23,79 @@ static void connect_scan(t_thread_info* th_info, uint16_t port) {
     close(fd);
 }
 
+static bool find_port(const char* line, uint16_t _port) {
+    char port[6] = {0};
+    sprintf(port, "%d", _port);
+    const char* match = strstr(line, port);
+    size_t end = strlen(port);
+
+    while (match) {
+        if ((match == line || *(match - 1) == ' ' || *(match - 1) == ',') && (match[end] == ',' || match[end] == ' ' || match[end] == '\n' || match[end] == '\0')) {
+            return true;
+        }
+        match = strstr(match + 1, port);
+    }
+    return false;
+}
+
+static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t port) {
+    FILE* file;
+    char line[2048];
+    char prev_line[2048];
+    char prev_prev_line[2048];
+    bool found_payload = false;
+
+    file = fopen("nmap-service-probes", "r");
+    if (file == NULL) {
+        error("Failed to open nmap-service-probes file");
+    }
+
+    while (fgets(line, sizeof(line), file)) {
+		if (strstr(line, "ports") != NULL && strstr(prev_prev_line, "Probe UDP") != NULL && find_port(line, port)) {
+            // printf("%s", line);
+            // printf("prev_line: %s\n", prev_line);
+            // printf("prev_prev_line: %s\n", prev_prev_line);
+            found_payload = true;
+            break;
+        }
+        strcpy(prev_prev_line, prev_line);
+        strcpy(prev_line, line);
+    }
+
+    if (!found_payload) return;
+
+    char* ptr = strchr(prev_prev_line, '|') + 1;
+    int i = 0;
+    while (*ptr) {
+        if (*ptr == '|') break;
+        if (*ptr == '\\') {
+            if (*(ptr + 1) == 'x') {
+                unsigned int value;
+                sscanf(ptr + 2, "%02x", &value);
+                payload[i++] = (char)value;
+                ptr += 4;
+            } else {
+                ptr++;
+                switch (*ptr) {
+                    case '0': payload[i++] = '\0'; break;
+                    case 'r': payload[i++] = '\r'; break;
+                    case 'n': payload[i++] = '\n'; break;
+                    case 't': payload[i++] = '\t'; break;
+                    case 's': payload[i++] = ' '; break;
+                    default: payload[i++] = *ptr; break;
+                }
+                ptr++;
+            }
+        } else {
+            memcpy(payload + (i++), ptr, 1);
+            ptr++;
+        }
+    }
+	*payload_size = i;
+
+    fclose(file);
+}
+
 static void send_packet(t_thread_info* th_info, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
     uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
@@ -34,15 +103,19 @@ static void send_packet(t_thread_info* th_info, uint16_t port) {
 
     if (th_info->current_scan == SCAN_CONNECT) {
         connect_scan(th_info, port);
-    } else if (port == 123 && th_info->current_scan == SCAN_UDP) {
-        uint8_t packetntp[sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE];
-        packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + NTP_SIZE;
-        unsigned char payload[4][48] = {NTP1, NTP2, NTP1, NTP2}; // TODO: only 2?
-        for (int i = 0; i < 4; i++) {
-            fill_packet(th_info, packetntp, port, payload[i], NTP_SIZE);
-            sendto(nmap->udp_fd, packetntp, packet_size, 0, (struct sockaddr*)&th_info->hostaddr, sizeof(th_info->hostaddr));
-        }
-    } else { // tout sans payload
+    } else if (th_info->current_scan == SCAN_UDP) {
+        uint8_t payload[1000] = {0};
+        size_t payload_size = 0;
+        get_service_payload(payload, &payload_size, port);
+
+        packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size;
+        uint8_t packetntp[packet_size];
+
+        // printf("payload_size: %zu\n", payload_size);
+        // printf("payload: %s\n", payload);
+        fill_packet(th_info, packetntp, port, payload, payload_size);
+        sendto(nmap->udp_fd, packetntp, packet_size, 0, (struct sockaddr*)&th_info->hostaddr, sizeof(th_info->hostaddr));
+    } else {
         fill_packet(th_info, packet, port, NULL, 0);
         sendto((th_info->current_scan == SCAN_UDP) ? nmap->udp_fd : nmap->tcp_fd, packet, packet_size, 0, (struct sockaddr*)&th_info->hostaddr, sizeof(th_info->hostaddr));
     }

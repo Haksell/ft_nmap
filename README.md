@@ -36,6 +36,7 @@
 - [ ] no pcap for SCAN_CONNECT, a reflechir ensemble
 - [ ] Axel: si tu veux `-sT` faudra changer un peu le parsing. Sinon on garde `-sC` comme maintenant.
 - [x] `-sW` SCAN_WINDOW
+- [x] UDP payload
 
 ### wtf
 
