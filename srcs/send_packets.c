@@ -66,8 +66,7 @@ static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t
 
     char* ptr = strchr(prev_prev_line, '|') + 1;
     int i = 0;
-    while (*ptr) {
-        if (*ptr == '|') break;
+    while (*ptr && *ptr != '|') {
         if (*ptr == '\\') {
             if (*(ptr + 1) == 'x') {
                 unsigned int value;
@@ -87,7 +86,7 @@ static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t
                 ptr++;
             }
         } else {
-            memcpy(payload + (i++), ptr, 1);
+			payload[i++] = *ptr;
             ptr++;
         }
     }
