@@ -46,7 +46,6 @@ static bool find_port(const char* line, uint16_t _port) {
 }
 
 static size_t get_udp_payload(uint16_t port, uint8_t* payload, size_t payload_max_size) {
-    return 0; // TODO
     FILE* file = fopen("nmap-service-probes", "r");
     if (!file) error("Failed to open nmap-service-probes file");
 

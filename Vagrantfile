@@ -22,6 +22,7 @@ Vagrant.configure("2") do |config|
     make -j
     make install
     cp nmap-services /etc/services
+    cp nmap-service-probes /vagrant
     cd ..
     rm -rf nmap-*
 

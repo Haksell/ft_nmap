@@ -1,5 +1,13 @@
 # ft_nmap
 
+## fix today
+
+- [ ] `t_thread_globals`
+- [ ] fix broadcast bug
+- [ ] UDP file
+- [ ] connect timeout
+- [ ] retransmissions
+
 ## mandatory
 
 - [x] The executable must be named ft_nmap.
@@ -27,7 +35,7 @@
 ### ez
 
 - [x] Reverse DNS
-- [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
+- [x] CIDR ranges
 - [x] `--no-randomize`
 - [x] `--no-ping`
 - [x] `--top-ports`
