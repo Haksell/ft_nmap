@@ -32,7 +32,7 @@
 - [x] `--no-ping`
 - [x] `--top-ports`
 - [x] `-sW` SCAN_WINDOW
-- [ ] `-sC` SCAN_CONNECT (always same result as -sS)
+- [ ] `-sC` SCAN_CONNECT (fix timeout, should always be same result as -sS)
 - [ ] no sudo for SCAN_CONNECT
 - [ ] no pcap for SCAN_CONNECT, a reflechir ensemble
 - [ ] UDP version detection (push nmap-service-probes)
