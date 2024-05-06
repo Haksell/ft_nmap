@@ -4,6 +4,11 @@
 
 extern bool run;
 
+static void set_port_and_host_state(t_thread_info* th_info, port_state port_state, uint16_t port) {
+    th_info->nmap->hosts[th_info->h_index].is_up = true;
+    set_port_state(th_info, port_state, port);
+}
+
 static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int start, int end) {
     t_nmap* nmap = th_info->nmap;
     fd_set fd_read, fd_all;
@@ -34,8 +39,7 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
         fds[port_index - start] = fd;
 
         if (connect(fd, (struct sockaddr*)&targets[port_index - start], sizeof(target)) == -1 && errno != EINPROGRESS) {
-            nmap->hosts[th_info->h_index].is_up = true;
-            set_port_state(th_info, PORT_CLOSED, port);
+            set_port_and_host_state(th_info, PORT_CLOSED, port);
         } else {
             FD_SET(fd, &fd_all);
             if (fd > max_fd) {
@@ -62,11 +66,9 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
                 getsockopt(fds[port_index - start], SOL_SOCKET, SO_ERROR, &so_error, &len);
 
                 if (so_error == 0) {
-                    nmap->hosts[th_info->h_index].is_up = true;
-                    set_port_state(th_info, PORT_OPEN, loop_port_array[port_index]);
+                    set_port_and_host_state(th_info, PORT_OPEN, loop_port_array[port_index]);
                 } else if (so_error == ECONNREFUSED) {
-                    nmap->hosts[th_info->h_index].is_up = true;
-                    set_port_state(th_info, PORT_CLOSED, loop_port_array[port_index]);
+                    set_port_and_host_state(th_info, PORT_CLOSED, loop_port_array[port_index]);
                 }
 
                 FD_CLR(fds[port_index - start], &fd_all);
