@@ -102,7 +102,7 @@ static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
     char* slash = strchr(hostname, '/');
     if (slash) {
         *slash = '\0';
-        int cidr = atoi_check(slash + 1, 24, 30, "CIDR");
+        int cidr = atoi_check(slash + 1, 24, 30, "CIDR"); // TODO: max=32 when broadcast bug fixed
         int shift = 32 - cidr;
         char hostip[INET_ADDRSTRLEN + 1];
         if (hostname_to_ip(hostname, hostip)) {
