@@ -9,14 +9,13 @@ extern pcap_t* handle_net[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];
 extern pthread_mutex_t mutex_run;
 
-static void set_non_blocking(int sock) {
-    int flags = fcntl(sock, F_GETFL, 0);
-    if (flags == -1) {
-        error("fcntl F_GETFL failed");
-        return;
-    }
-    if (fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1) {
-        error("fcntl F_SETFL failed");
+static void set_defaults(t_thread_info* th_info) {
+    t_nmap* nmap = th_info->nmap;
+    for (int i = 0; i < nmap->port_count; ++i) {
+        if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] == PORT_UNDEFINED) {
+            nmap->hosts[th_info->h_index]
+                .port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
+        }
     }
 }
 
@@ -38,34 +37,38 @@ static void connect_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
             continue;
         }
 
-        set_non_blocking(fd);
+        int flags = fcntl(fd, F_GETFL, 0);
+        if (flags == -1) {
+            error("fcntl F_GETFL failed");
+            return;
+        }
+        if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+            error("fcntl F_SETFL failed");
+        }
 
         struct sockaddr_in target = {
             .sin_family = AF_INET,
             .sin_port = htons(port),
             .sin_addr = th_info->hostaddr.sin_addr};
-        targets[port_index] = target; // Save target
-        fds[port_index] = fd; // Save file descriptor
+        targets[port_index] = target;
+        fds[port_index] = fd;
 
-        connect(fd, (struct sockaddr*)&targets[port_index], sizeof(target));
-        // printf("connect port=%d res=%d errno=%d\n", port, res, errno);
-
-        FD_SET(fd, &fd_all);
-        if (fd > max_fd) {
-            max_fd = fd;
+        if (connect(fd, (struct sockaddr*)&targets[port_index], sizeof(target)) == -1 && errno != EINPROGRESS) {
+            th_info->nmap->hosts[th_info->h_index].is_up = true;
+            set_port_state(th_info, PORT_CLOSED, port);
+        } else {
+            FD_SET(fd, &fd_all);
+            if (fd > max_fd) {
+                max_fd = fd;
+            }
         }
     }
 
     for (int j = 0; j < 10 && run; ++j) {
         fd_read = fd_all;
-        struct timeval tv = {.tv_sec = 0, .tv_usec = 300000};
-        int res = select(max_fd + 1, NULL, &fd_read, NULL, &tv);
+        struct timeval tv = {.tv_sec = 0, .tv_usec = 200000};
 
-        if (res < 0) {
-            printf("%d\n", errno);
-            error("select failed");
-            return;
-        }
+        if (select(max_fd + 1, NULL, &fd_read, NULL, &tv) < 0) error("select failed");
 
         for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
             if (fds[port_index] > 0 && FD_ISSET(fds[port_index], &fd_read)) {
@@ -73,7 +76,6 @@ static void connect_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
                 socklen_t len = sizeof so_error;
 
                 getsockopt(fds[port_index], SOL_SOCKET, SO_ERROR, &so_error, &len);
-                printf("port_index=%d port=%d so_error=%d\n", port_index, loop_port_array[port_index], so_error);
 
                 if (so_error == 0) {
                     th_info->nmap->hosts[th_info->h_index].is_up = true;
@@ -89,15 +91,7 @@ static void connect_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
             }
         }
     }
-
-    // TODO: set default function
-    for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
-        if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] == PORT_UNDEFINED) {
-            nmap->hosts[th_info->h_index]
-                .port_states[th_info->current_scan][port_index] = default_port_state[th_info->current_scan];
-        }
-        close(fds[port_index]);
-    }
+    set_defaults(th_info);
 }
 
 static bool find_port(const char* line, uint16_t _port) {
@@ -271,14 +265,8 @@ void* send_packets(void* arg) {
             }
 
             unset_filters(nmap, th_info->t_index);
-
-            for (int i = 0; i < nmap->port_count; ++i) {
-                if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] == PORT_UNDEFINED) {
-                    nmap->hosts[th_info->h_index]
-                        .port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
-                }
-            }
-            pthread_mutex_lock(&nmap->mutex_hostname_finished); // TODO ON VERRA
+            set_defaults(th_info);
+            pthread_mutex_lock(&nmap->mutex_hostname_finished);
             hostname_finished[th_info->t_index] = true;
             pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }
