@@ -137,6 +137,7 @@ void* send_packets(void* arg) {
     ){.th_info = th_info, .handle = handle_net[th_info->t_index]});
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
+
     for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run;
          th_info->h_index += step) {
         if (!hostname_to_ip(th_info->nmap->hosts[th_info->h_index].name, th_info->hostip)) continue;
@@ -166,17 +167,23 @@ void* send_packets(void* arg) {
 
             th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
             set_filter(th_info, false);
-            for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
-                if (th_info->current_scan == SCAN_UDP && port_index > 6) usleep(1000000);
-                send_packet(th_info, loop_port_array[port_index]);
-            }
 
-            for (int i = 0; i < wait_operations && run; ++i) {
-                pthread_mutex_lock(&nmap->mutex_undefined_count);
-                bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
-                pthread_mutex_unlock(&nmap->mutex_undefined_count);
-                if (zero) break;
-                usleep(50000);
+            // TODO: --transmissions flag
+            for (int transmission = 0; transmission < 2; ++transmission) {
+                for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
+                    if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] != PORT_UNDEFINED)
+                        continue;
+                    if (th_info->current_scan == SCAN_UDP && (port_index > 6 || transmission > 0)) usleep(1000000);
+                    send_packet(th_info, loop_port_array[port_index]);
+                }
+
+                for (int i = 0; i < wait_operations && run; ++i) {
+                    pthread_mutex_lock(&nmap->mutex_undefined_count);
+                    bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
+                    pthread_mutex_unlock(&nmap->mutex_undefined_count);
+                    if (zero) break;
+                    usleep(50000);
+                }
             }
 
             unset_filters(nmap, th_info->t_index);
