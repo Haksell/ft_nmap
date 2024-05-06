@@ -23,15 +23,16 @@ bool hostname_to_ip(t_thread_info* th_info) {
         }
     }
 
-    if (inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, th_info->hostip, INET_ADDRSTRLEN) == NULL) {
+    if (!inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, th_info->hostip, INET_ADDRSTRLEN)) {
         freeaddrinfo(res);
         error("inet_ntop failed");
     }
 
-    if (res->ai_canonname) {
-        strncpy(hostname, res->ai_canonname, HOST_NAME_MAX);
-        hostname[HOST_NAME_MAX] = '\0';
-    }
+    // TODO: uncomment if this code is really useful
+    // if (res->ai_canonname) {
+    //     strncpy(hostname, res->ai_canonname, HOST_NAME_MAX);
+    //     hostname[HOST_NAME_MAX] = '\0';
+    // }
 
     freeaddrinfo(res);
     return true;
