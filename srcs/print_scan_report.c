@@ -111,13 +111,12 @@ static void print_scan_cell(
 static void print_line(
     t_thread_info* th_info,
     t_paddings* paddings,
-    bool hide_count,
     port_state common_port_state_combination[SCAN_MAX],
     int port_index
 ) {
-    if (port_index >= 0 && hide_count && same_port_combination(th_info, common_port_state_combination, port_index))
-        return;
-    int port = port_index < 0 ? port_index : th_info->nmap->port_array[port_index];
+    t_nmap* nmap = th_info->nmap;
+    int port = port_index < 0 ? port_index : nmap->port_array[port_index];
+    bool has_udp = (nmap->scans >> SCAN_UDP) & 1;
 
     char tcp_service[MAX_SERVICE_LEN + 1];
     char udp_service[MAX_SERVICE_LEN + 1];
@@ -130,9 +129,6 @@ static void print_line(
         get_service_name(port, "tcp", tcp_service);
         get_service_name(port, "udp", udp_service);
     }
-
-    t_nmap* nmap = th_info->nmap;
-    bool has_udp = (nmap->scans >> SCAN_UDP) & 1;
 
     if (port == HEADER_LINE) printf("%-*s", paddings->port, "PORT");
     else if (port == HIDE_LINE) printf("%-*s", paddings->port, "...");
@@ -170,13 +166,15 @@ static void gotta_go_fast(
     if (th_info->latency != 0) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
     if (host[0] != '\0') printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
 
-    print_line(th_info, paddings, hide_count, common_port_state_combination, HEADER_LINE);
+    print_line(th_info, paddings, common_port_state_combination, HEADER_LINE);
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
-        print_line(th_info, paddings, hide_count, common_port_state_combination, port_index);
+        if (!hide_count || !same_port_combination(th_info, common_port_state_combination, port_index)) {
+            print_line(th_info, paddings, common_port_state_combination, port_index);
+        }
     }
 
     if (hide_count) {
-        print_line(th_info, paddings, hide_count, common_port_state_combination, HIDE_LINE);
+        print_line(th_info, paddings, common_port_state_combination, HIDE_LINE);
         printf("Not shown: %d ports\n", hide_count);
     }
 }
