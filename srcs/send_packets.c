@@ -178,7 +178,6 @@ void* send_packets(void* arg) {
         bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
         current_handle[th_info->t_index] = is_localhost ? handle_lo[th_info->t_index] : handle_net[th_info->t_index];
         if (!(nmap->opt & OPT_NO_PING) && !is_localhost) {
-            // TODO: check latency localhost
             set_filter(th_info, true);
             send_ping(th_info);
             if (is_host_down(th_info)) continue;
