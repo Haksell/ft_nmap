@@ -6,7 +6,7 @@ static void args_error() {
     exit(EXIT_ARGS);
 }
 
-static int atoi_check(char* s, int max, char* opt_name, bool accept_zero) {
+static int atoi_check(char* s, int min, int max, char* opt_name) {
     if (!s[0]) panic("nmap: empty %s value\n", opt_name);
 
     for (int i = 0; s[i]; ++i) {
@@ -23,7 +23,7 @@ static int atoi_check(char* s, int max, char* opt_name, bool accept_zero) {
         n = n * 10 + s[i] - '0';
     }
 
-    if (n == 0 && !accept_zero) panic("nmap: %s value too small: `%s'\n", opt_name, s);
+    if (n < min) panic("nmap: %s value too small: `%s'\n", opt_name, s);
     return n;
 }
 
@@ -49,16 +49,16 @@ static void parse_ports(char* value, t_nmap* nmap) {
         if (comma) *comma = '\0';
 
         char* hyphen = strchr(value, '-');
-        if (value == hyphen || hyphen == end - 1) atoi_check(value, UINT16_MAX, "port", true);
+        if (value == hyphen || hyphen == end - 1) atoi_check(value, 0, UINT16_MAX, "port");
 
         if (hyphen) {
             *hyphen = '\0';
-            int left = atoi_check(value, UINT16_MAX, "port", true);
-            int right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
+            int left = atoi_check(value, 0, UINT16_MAX, "port");
+            int right = atoi_check(hyphen + 1, 0, UINT16_MAX, "port");
             if (left > right)
                 panic("Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
             for (int i = left; i <= right; ++i) set_port(nmap, i);
-        } else set_port(nmap, atoi_check(value, UINT16_MAX, "port", true));
+        } else set_port(nmap, atoi_check(value, 0, UINT16_MAX, "port"));
 
         value = comma + 1;
     }
@@ -88,7 +88,6 @@ static void parse_scan(char* value, uint16_t* scans) {
 }
 
 static void add_hostname(t_nmap* nmap, char* hostname) {
-    if (hostname[0] == '\0') return;
     if (nmap->hostname_count == MAX_HOSTNAMES) {
         fprintf(stderr, "nmap: too many hostnames\n");
         args_error();
@@ -96,6 +95,31 @@ static void add_hostname(t_nmap* nmap, char* hostname) {
     strncpy(nmap->hosts[nmap->hostname_count].name, hostname, HOST_NAME_MAX);
     nmap->hosts[nmap->hostname_count].name[HOST_NAME_MAX] = '\0';
     nmap->hostname_count++;
+}
+
+static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
+    if (hostname[0] == '\0') return;
+    char* slash = strchr(hostname, '/');
+    if (slash) {
+        *slash = '\0';
+        int cidr = atoi_check(slash + 1, 24, 30, "CIDR");
+        int shift = 32 - cidr;
+        char hostip[INET_ADDRSTRLEN + 1];
+        if (hostname_to_ip(hostname, hostip)) {
+            char* last_part = strrchr(hostip, '.') + 1;
+            int last_val = atoi_check(last_part, 0, 255, "CIDR IP");
+            int start_range = last_val >> shift << shift;
+            int end_range = start_range + (1 << shift);
+            // TODO: no +1 -1
+            for (int i = start_range + 1; i < end_range - 1; ++i) {
+                if (i == last_val) add_hostname(nmap, hostname);
+                else {
+                    sprintf(last_part, "%d", i);
+                    add_hostname(nmap, hostip);
+                }
+            }
+        }
+    } else add_hostname(nmap, hostname);
 }
 
 static void parse_file(char* filename, t_nmap* nmap) {
@@ -110,7 +134,7 @@ static void parse_file(char* filename, t_nmap* nmap) {
         for (size_t i = 0; i < bytesRead; ++i) {
             if (isspace(buffer[i])) {
                 hostname[hostname_idx] = '\0';
-                add_hostname(nmap, hostname);
+                add_hostname_or_cidr(nmap, hostname);
                 hostname_idx = 0;
             } else {
                 if (hostname_idx == HOST_NAME_MAX) {
@@ -128,7 +152,7 @@ static void parse_file(char* filename, t_nmap* nmap) {
     fclose(file);
     if (read_failed) panic("nmap: failed to read hosts file \"%s\": %s\n", filename, strerror(errno));
     hostname[hostname_idx] = '\0';
-    add_hostname(nmap, hostname);
+    add_hostname_or_cidr(nmap, hostname);
 }
 
 static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_nmap* nmap) {
@@ -143,10 +167,8 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
-        case OPT_THREADS: nmap->num_threads = atoi_check(value, MAX_HOSTNAMES, "threads", true); break;
-        case OPT_TOP_PORTS:
-            nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, MAX_PORTS, "top-ports", false));
-            break;
+        case OPT_THREADS: nmap->num_threads = atoi_check(value, 0, MAX_HOSTNAMES, "threads"); break;
+        case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, 1, MAX_PORTS, "top-ports")); break;
     }
     return true;
 }
@@ -284,12 +306,12 @@ static void randomize_ports(t_nmap* nmap) {
 void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0) {
-            for (int j = i + 1; j < argc; ++j) add_hostname(nmap, argv[j]);
+            for (int j = i + 1; j < argc; ++j) add_hostname_or_cidr(nmap, argv[j]);
             break;
         } else if (argv[i][0] == '-' && argv[i][1]) {
             if (!is_valid_opt(&argv[i], &i, nmap)) handle_unrecognized_opt(argv[i]);
         } else {
-            add_hostname(nmap, argv[i]);
+            add_hostname_or_cidr(nmap, argv[i]);
         }
     }
 

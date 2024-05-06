@@ -133,11 +133,9 @@ static bool is_host_down(t_thread_info* th_info) { // TODO: use the brain
     int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
     if (bytes_received < 0) {
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
-            printf("Host %s is down.\n", nmap->hosts[th_info->h_index].name);
             return true;
         } else error("recv failed");
     } else if (bytes_received == 0) {
-        printf("Host %s is down.\n", nmap->hosts[th_info->h_index].name);
         return true;
     }
 
@@ -165,7 +163,7 @@ void* send_packets(void* arg) {
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
     for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run;
          th_info->h_index += step) {
-        if (!hostname_to_ip(th_info)) continue;
+        if (!hostname_to_ip(th_info->nmap->hosts[th_info->h_index].name, th_info->hostip)) continue;
         th_info->latency = 0.0;
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
         bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
@@ -173,7 +171,10 @@ void* send_packets(void* arg) {
         if (!(nmap->opt & OPT_NO_PING) && !is_localhost) {
             set_filter(th_info, true);
             send_ping(th_info);
-            if (is_host_down(th_info)) continue;
+            if (is_host_down(th_info)) {
+                printf("\nHost %s is down.\n", nmap->hosts[th_info->h_index].name);
+                continue;
+            }
             unset_filters(nmap, th_info->t_index);
         }
 
@@ -209,7 +210,7 @@ void* send_packets(void* arg) {
             hostname_finished[th_info->t_index] = true;
             pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }
-        if (run) print_scan_report(th_info);
+        if (run && nmap->hosts[th_info->h_index].is_up) print_scan_report(th_info);
     }
     pthread_mutex_lock(&mutex_run);
     sender_finished[th_info->t_index] = true;

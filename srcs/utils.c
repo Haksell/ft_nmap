@@ -1,12 +1,11 @@
 #include "ft_nmap.h"
 
-bool hostname_to_ip(t_thread_info* th_info) {
+bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]) {
     struct addrinfo hints = {
         .ai_family = AF_INET,
-        .ai_flags = AI_CANONNAME,
+        // TODO: .ai_flags = AI_CANONNAME,
     };
     struct addrinfo* res = NULL;
-    char* hostname = th_info->nmap->hosts[th_info->h_index].name;
 
     int status;
     for (size_t i = 0; i < 10; ++i) {
@@ -23,13 +22,14 @@ bool hostname_to_ip(t_thread_info* th_info) {
         }
     }
 
-    if (!inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, th_info->hostip, INET_ADDRSTRLEN)) {
+    if (!inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, hostip, INET_ADDRSTRLEN)) {
         freeaddrinfo(res);
         error("inet_ntop failed");
     }
 
-    // TODO: uncomment if this code is really useful
+    // TODO: uncomment this code if it is actually useful
     // if (res->ai_canonname) {
+    //     // printf("CANONNAME | %s -> %s !!!\n", hostname, res->ai_canonname);
     //     strncpy(hostname, res->ai_canonname, HOST_NAME_MAX);
     //     hostname[HOST_NAME_MAX] = '\0';
     // }
