@@ -52,7 +52,11 @@ static void handle_icmp(t_thread_info* th_info, const u_char* packet, const stru
             original_port = ntohs(tcp->th_dport);
         }
 
-        port_state port_state = th_info->current_scan == SCAN_UDP ? (mask & UDP_FILTERED ? PORT_FILTERED : +mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED : PORT_UNEXPECTED) : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
+        port_state port_state = th_info->current_scan == SCAN_UDP
+                                    ? (mask & UDP_FILTERED                ? PORT_FILTERED
+                                       : +mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
+                                                                          : PORT_UNEXPECTED)
+                                    : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
         set_port_state(th_info, port_state, original_port);
     }
@@ -71,20 +75,29 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
     port_state port_state;
     pthread_mutex_lock(&mutex_run);
     switch (th_info->current_scan) {
-        case SCAN_SYN: port_state = tcp->th_flags == (TH_SYN | TH_ACK) ? PORT_OPEN : tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
+        case SCAN_SYN:
+            port_state = tcp->th_flags == (TH_SYN | TH_ACK) ? PORT_OPEN
+                         : tcp->th_flags & TH_RST           ? PORT_CLOSED
+                                                            : PORT_UNEXPECTED;
+            break;
         case SCAN_ACK: port_state = tcp->th_flags & TH_RST ? PORT_UNFILTERED : PORT_UNEXPECTED; break;
         case SCAN_NULL:
         case SCAN_FIN:
         case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
-		case SCAN_WINDOW: port_state = tcp->th_flags & TH_RST ? tcp->th_win ? PORT_OPEN : PORT_CLOSED : PORT_UNEXPECTED; break;
-		case SCAN_CONNECT: break; // TODO: Axel: on ne veut pas que pcap lis le connect(), donc faudra plutot le faire en amont pour efficience
+        case SCAN_WINDOW:
+            port_state = tcp->th_flags & TH_RST ? tcp->th_win ? PORT_OPEN : PORT_CLOSED : PORT_UNEXPECTED;
+            break;
+        case SCAN_CONNECT:
+            break; // TODO: Axel: on ne veut pas que pcap lis le connect(), donc faudra plutot le faire en amont pour
+                   // efficience
     }
     pthread_mutex_unlock(&mutex_run);
 
     set_port_state(th_info, port_state, ntohs(tcp->th_sport));
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-    if (size_payload > 0 && nmap->opt & OPT_VERBOSE) print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
+    if (size_payload > 0 && nmap->opt & OPT_VERBOSE)
+        print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
 static void handle_udp(t_thread_info* th_info, const u_char* packet, /* const struct ip* ip*/ int size_ip) {
@@ -93,7 +106,12 @@ static void handle_udp(t_thread_info* th_info, const u_char* packet, /* const st
     if ((ntohs(udp->uh_dport) ^ ntohs(udp->uh_sport)) != th_info->port_source) return;
 
     if (th_info->nmap->opt & OPT_VERBOSE) {
-        printf("UDP src port: %d dest port: %d length: %d\n", ntohs(udp->uh_sport), ntohs(udp->uh_dport), ntohs(udp->uh_ulen));
+        printf(
+            "UDP src port: %d dest port: %d length: %d\n",
+            ntohs(udp->uh_sport),
+            ntohs(udp->uh_dport),
+            ntohs(udp->uh_ulen)
+        );
     }
 
     set_port_state(th_info, PORT_OPEN, ntohs(udp->uh_sport));

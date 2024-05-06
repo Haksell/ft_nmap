@@ -65,8 +65,9 @@ typedef enum {
     OPT_PORTS = 1 << 4,
     OPT_SCAN = 1 << 5,
     OPT_THREADS = 1 << 6,
-    OPT_VERSION = 1 << 7,
-    OPT_VERBOSE = 1 << 8,
+    OPT_TOP_PORTS = 1 << 7,
+    OPT_VERSION = 1 << 8,
+    OPT_VERBOSE = 1 << 9,
 } option_value;
 
 typedef struct {
@@ -84,12 +85,21 @@ static const option valid_opt[] = {
     {OPT_PORTS,        'p',  "ports",        true },
     {OPT_SCAN,         's',  "scans",        true },
     {OPT_THREADS,      't',  "threads",      true },
+    {OPT_TOP_PORTS,    '\0', "top-ports",    true },
     {OPT_VERBOSE,      'v',  "verbose",      false},
     {OPT_VERSION,      'V',  "version",      false},
     {0,                0,    NULL,           false}
 };
 
-typedef enum { PORT_UNDEFINED, PORT_OPEN, PORT_CLOSED, PORT_FILTERED, PORT_UNFILTERED, PORT_OPEN_FILTERED, PORT_UNEXPECTED } __attribute__((packed)) port_state;
+typedef enum {
+    PORT_UNDEFINED,
+    PORT_OPEN,
+    PORT_CLOSED,
+    PORT_FILTERED,
+    PORT_UNFILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_UNEXPECTED
+} __attribute__((packed)) port_state;
 
 typedef struct {
     char str[14];
@@ -191,6 +201,7 @@ typedef struct t_nmap {
     uint8_t num_threads;
     uint8_t num_handles;
     uint64_t start_time;
+    uint16_t top_ports;
 
     pcap_if_t* devs;
     bpf_u_int32 device_lo;

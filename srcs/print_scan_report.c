@@ -37,7 +37,8 @@ static bool same_port_combination(t_thread_info* th_info, port_state combination
     return true;
 }
 
-static t_paddings compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_state_combination[SCAN_MAX]) {
+static t_paddings
+compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_state_combination[SCAN_MAX]) {
     t_nmap* nmap = th_info->nmap;
     t_paddings paddings = {
         .port = 4,
@@ -89,12 +90,36 @@ static int find_most_common_port_state_combination(t_thread_info* th_info, port_
     return counter >= HIDE_LIMIT && 2 * counter > port_count ? counter : 0;
 }
 
-static void print_scan_cell(t_thread_info* th_info, t_paddings* paddings, scan_type scan_type, int port_index, int port, port_state common_port_state_combination[SCAN_MAX]) {
-    port_state port_state = port == HEADER_LINE ? PORT_UNDEFINED : port == HIDE_LINE ? common_port_state_combination[scan_type] : th_info->nmap->hosts[th_info->h_index].port_states[scan_type][port_index];
-    printf("%s%-*s " WHITE, port == HEADER_LINE ? WHITE : port_state_info[port_state].color, paddings->port_states[scan_type], port == HEADER_LINE ? scans_str[scan_type] : port_state_info[port_state].str);
+static void print_scan_cell(
+    t_thread_info* th_info,
+    t_paddings* paddings,
+    scan_type scan_type,
+    int port_index,
+    int port,
+    port_state common_port_state_combination[SCAN_MAX]
+) {
+    port_state port_state = port == HEADER_LINE ? PORT_UNDEFINED
+                            : port == HIDE_LINE
+                                ? common_port_state_combination[scan_type]
+                                : th_info->nmap->hosts[th_info->h_index].port_states[scan_type][port_index];
+    printf(
+        "%s%-*s " WHITE,
+        port == HEADER_LINE ? WHITE : port_state_info[port_state].color,
+        paddings->port_states[scan_type],
+        port == HEADER_LINE ? scans_str[scan_type] : port_state_info[port_state].str
+    );
 }
 
-static void print_line(t_thread_info* th_info, t_paddings* paddings, bool hide_count, port_state common_port_state_combination[SCAN_MAX], int port_index, int port, char* tcp_service, char* udp_service) {
+static void print_line(
+    t_thread_info* th_info,
+    t_paddings* paddings,
+    bool hide_count,
+    port_state common_port_state_combination[SCAN_MAX],
+    int port_index,
+    int port,
+    char* tcp_service,
+    char* udp_service
+) {
     if (port >= 0 && hide_count && same_port_combination(th_info, common_port_state_combination, port_index)) return;
 
     t_nmap* nmap = th_info->nmap;
@@ -104,11 +129,12 @@ static void print_line(t_thread_info* th_info, t_paddings* paddings, bool hide_c
     else if (port == HIDE_LINE) printf("%-*s", paddings->port, "...");
     else printf("%-*d", paddings->port, port);
 
-    if (!paddings->two_columns) printf(" %-*s", has_udp ? paddings->udp_service : paddings->tcp_service, has_udp ? udp_service : tcp_service);
+    if (!paddings->two_columns)
+        printf(" %-*s", has_udp ? paddings->udp_service : paddings->tcp_service, has_udp ? udp_service : tcp_service);
     printf(nmap->scan_count >= 2 ? SEPARATOR : " ");
 
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-		if (scan_type == SCAN_UDP) continue;
+        if (scan_type == SCAN_UDP) continue;
         if (nmap->scans & (1 << scan_type)) {
             print_scan_cell(th_info, paddings, scan_type, port_index, port, common_port_state_combination);
         }
@@ -122,14 +148,29 @@ static void print_line(t_thread_info* th_info, t_paddings* paddings, bool hide_c
     printf("\n");
 }
 
-static void gotta_go_fast(t_thread_info* th_info, t_paddings* paddings, int hide_count, port_state* common_port_state_combination, char* host) {
+static void gotta_go_fast(
+    t_thread_info* th_info,
+    t_paddings* paddings,
+    int hide_count,
+    port_state* common_port_state_combination,
+    char* host
+) {
     t_nmap* nmap = th_info->nmap;
 
     printf("\nnmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
     if (th_info->latency != 0) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
     if (host[0] != '\0') printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
 
-    print_line(th_info, paddings, hide_count, common_port_state_combination, HEADER_LINE, HEADER_LINE, "SERVICE", "SERVICE");
+    print_line(
+        th_info,
+        paddings,
+        hide_count,
+        common_port_state_combination,
+        HEADER_LINE,
+        HEADER_LINE,
+        "SERVICE",
+        "SERVICE"
+    );
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
         uint16_t port = nmap->port_array[port_index];
 
@@ -137,7 +178,16 @@ static void gotta_go_fast(t_thread_info* th_info, t_paddings* paddings, int hide
         char udp_service[MAX_SERVICE_LEN + 1];
         get_service_name(port, "tcp", tcp_service);
         get_service_name(port, "udp", udp_service);
-        print_line(th_info, paddings, hide_count, common_port_state_combination, port_index, port, tcp_service, udp_service);
+        print_line(
+            th_info,
+            paddings,
+            hide_count,
+            common_port_state_combination,
+            port_index,
+            port,
+            tcp_service,
+            udp_service
+        );
     }
 
     if (hide_count) {
@@ -154,7 +204,9 @@ void print_scan_report(t_thread_info* th_info) {
     t_paddings paddings = compute_paddings(th_info, hide_count, common_port_state_combination);
 
     char host[NI_MAXHOST];
-    if (!ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) || strcmp(nmap->hosts[th_info->h_index].name, host) == 0) host[0] = '\0';
+    if (!ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) ||
+        strcmp(nmap->hosts[th_info->h_index].name, host) == 0)
+        host[0] = '\0';
 
     pthread_mutex_lock(&nmap->mutex_print_report);
     gotta_go_fast(th_info, &paddings, hide_count, common_port_state_combination, host);

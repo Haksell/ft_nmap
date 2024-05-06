@@ -13,10 +13,15 @@ static void connect_scan(t_thread_info* th_info, uint16_t port) {
     if (fd < 0) error("Connect socket creation failed");
 
     struct timeval tv = {.tv_usec = 50000}; // 100ms à voir || latency + 100ms ??
-    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0) perror("setsockopt SO_RCVTIMEO failed");
-    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv) < 0) perror("setsockopt SO_SNDTIMEO failed");
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
+        perror("setsockopt SO_RCVTIMEO failed");
+    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv) < 0)
+        perror("setsockopt SO_SNDTIMEO failed");
 
-    struct sockaddr_in target = {.sin_family = AF_INET, .sin_port = htons(port), .sin_addr = th_info->hostaddr.sin_addr};
+    struct sockaddr_in target = {
+        .sin_family = AF_INET,
+        .sin_port = htons(port),
+        .sin_addr = th_info->hostaddr.sin_addr};
 
     if (connect(fd, (struct sockaddr*)&target, sizeof(target)) == 0) set_port_state(th_info, PORT_OPEN, port);
     else set_port_state(th_info, PORT_CLOSED, port);
@@ -30,7 +35,8 @@ static bool find_port(const char* line, uint16_t _port) {
     size_t end = strlen(port);
 
     while (match) {
-        if ((match == line || *(match - 1) == ' ' || *(match - 1) == ',') && (match[end] == ',' || match[end] == ' ' || match[end] == '\n' || match[end] == '\0')) {
+        if ((match == line || *(match - 1) == ' ' || *(match - 1) == ',') &&
+            (match[end] == ',' || match[end] == ' ' || match[end] == '\n' || match[end] == '\0')) {
             return true;
         }
         match = strstr(match + 1, port);
@@ -39,8 +45,9 @@ static bool find_port(const char* line, uint16_t _port) {
 }
 
 static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t port) {
+    return; // TODO
     FILE* file = fopen("nmap-service-probes", "r");
-    if (file == NULL) error("Failed to open nmap-service-probes file");
+    if (!file) error("Failed to open nmap-service-probes file");
 
     char line[2048];
     char prev_line[2048];
@@ -89,7 +96,8 @@ static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t
 static void send_packet(t_thread_info* th_info, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
     uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
-    size_t packet_size = sizeof(struct iphdr) + (th_info->current_scan == SCAN_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
+    size_t packet_size = sizeof(struct iphdr) +
+                         (th_info->current_scan == SCAN_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
 
     if (th_info->current_scan == SCAN_CONNECT) {
         connect_scan(th_info, port);
@@ -104,10 +112,24 @@ static void send_packet(t_thread_info* th_info, uint16_t port) {
         // printf("payload_size: %zu\n", payload_size);
         // printf("payload: %s\n", payload);
         fill_packet(th_info, packetntp, port, payload, payload_size);
-        sendto(nmap->udp_fd, packetntp, packet_size, 0, (struct sockaddr*)&th_info->hostaddr, sizeof(th_info->hostaddr));
+        sendto(
+            nmap->udp_fd,
+            packetntp,
+            packet_size,
+            0,
+            (struct sockaddr*)&th_info->hostaddr,
+            sizeof(th_info->hostaddr)
+        );
     } else {
         fill_packet(th_info, packet, port, NULL, 0);
-        sendto((th_info->current_scan == SCAN_UDP) ? nmap->udp_fd : nmap->tcp_fd, packet, packet_size, 0, (struct sockaddr*)&th_info->hostaddr, sizeof(th_info->hostaddr));
+        sendto(
+            (th_info->current_scan == SCAN_UDP) ? nmap->udp_fd : nmap->tcp_fd,
+            packet,
+            packet_size,
+            0,
+            (struct sockaddr*)&th_info->hostaddr,
+            sizeof(th_info->hostaddr)
+        );
     }
 }
 
@@ -142,11 +164,14 @@ void* send_packets(void* arg) {
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
     // TODO: very important
-    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_lo[th_info->t_index]});
-    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){.th_info = th_info, .handle = handle_net[th_info->t_index]});
+    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args
+    ){.th_info = th_info, .handle = handle_lo[th_info->t_index]});
+    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args
+    ){.th_info = th_info, .handle = handle_net[th_info->t_index]});
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
-    for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run; th_info->h_index += step) {
+    for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run;
+         th_info->h_index += step) {
         if (!hostname_to_ip(th_info)) continue;
         th_info->latency = 0.0;
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
@@ -184,7 +209,8 @@ void* send_packets(void* arg) {
 
             for (int i = 0; i < nmap->port_count; ++i) {
                 if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] == PORT_UNDEFINED) {
-                    nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
+                    nmap->hosts[th_info->h_index]
+                        .port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
                 }
             }
             pthread_mutex_lock(&nmap->mutex_hostname_finished); // TODO ON VERRA
