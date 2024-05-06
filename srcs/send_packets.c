@@ -44,8 +44,8 @@ static bool find_port(const char* line, uint16_t _port) {
     return false;
 }
 
-static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t port) {
-    return; // TODO
+static size_t get_udp_payload(uint16_t port, uint8_t* payload, size_t payload_max_size) {
+    return 0; // TODO
     FILE* file = fopen("nmap-service-probes", "r");
     if (!file) error("Failed to open nmap-service-probes file");
 
@@ -64,11 +64,11 @@ static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t
     }
 
     fclose(file);
-    if (!found_payload) return;
+    if (!found_payload) return 0;
 
     char* ptr = strchr(prev_prev_line, '|') + 1;
-    int i = 0;
-    while (*ptr && *ptr != '|') {
+    size_t i = 0;
+    while (i < payload_max_size && *ptr && *ptr != '|') {
         if (*ptr != '\\') {
             payload[i++] = *ptr;
             ptr++;
@@ -90,42 +90,34 @@ static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t
             ptr++;
         }
     }
-    *payload_size = i;
+    return i;
 }
 
 static void send_packet(t_thread_info* th_info, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
-    uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
-    size_t packet_size = sizeof(struct iphdr) +
-                         (th_info->current_scan == SCAN_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
 
     if (th_info->current_scan == SCAN_CONNECT) {
         connect_scan(th_info, port);
     } else if (th_info->current_scan == SCAN_UDP) {
-        uint8_t payload[1000] = {0}; // Lorenzo on est sur que c'est assez ?
-        size_t payload_size = 0;
-        get_service_payload(payload, &payload_size, port);
-
-        packet_size = sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size;
-        uint8_t packetntp[packet_size];
-
-        // printf("payload_size: %zu\n", payload_size);
-        // printf("payload: %s\n", payload);
-        fill_packet(th_info, packetntp, port, payload, payload_size);
+        uint8_t payload[1024] = {0};
+        size_t payload_size = get_udp_payload(port, payload, sizeof(payload));
+        uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size];
+        fill_packet(th_info, packet, port, payload, payload_size);
         sendto(
             nmap->udp_fd,
-            packetntp,
-            packet_size,
+            packet,
+            sizeof(packet),
             0,
             (struct sockaddr*)&th_info->hostaddr,
             sizeof(th_info->hostaddr)
         );
     } else {
+        uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
         fill_packet(th_info, packet, port, NULL, 0);
         sendto(
-            (th_info->current_scan == SCAN_UDP) ? nmap->udp_fd : nmap->tcp_fd,
+            nmap->tcp_fd,
             packet,
-            packet_size,
+            sizeof(packet),
             0,
             (struct sockaddr*)&th_info->hostaddr,
             sizeof(th_info->hostaddr)
