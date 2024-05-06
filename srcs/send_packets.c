@@ -23,6 +23,7 @@ static void connect_scan(t_thread_info* th_info, uint16_t port) {
         .sin_port = htons(port),
         .sin_addr = th_info->hostaddr.sin_addr};
 
+    // TODO: filtered state if timeout
     if (connect(fd, (struct sockaddr*)&target, sizeof(target)) == 0) set_port_state(th_info, PORT_OPEN, port);
     else set_port_state(th_info, PORT_CLOSED, port);
     close(fd);
