@@ -1,6 +1,7 @@
 #include "ft_nmap.h"
 
 #define MAX_CONCURRENT_CONNECT 512
+// TODO: fix with multithreading
 
 extern bool run;
 
