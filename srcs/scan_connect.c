@@ -5,6 +5,7 @@
 extern bool run;
 
 static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int start, int end) {
+    t_nmap* nmap = th_info->nmap;
     fd_set fd_read, fd_all;
     int max_fd = 0;
 
@@ -33,7 +34,7 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
         fds[port_index - start] = fd;
 
         if (connect(fd, (struct sockaddr*)&targets[port_index - start], sizeof(target)) == -1 && errno != EINPROGRESS) {
-            th_info->nmap->hosts[th_info->h_index].is_up = true;
+            nmap->hosts[th_info->h_index].is_up = true;
             set_port_state(th_info, PORT_CLOSED, port);
         } else {
             FD_SET(fd, &fd_all);
@@ -61,10 +62,10 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
                 getsockopt(fds[port_index - start], SOL_SOCKET, SO_ERROR, &so_error, &len);
 
                 if (so_error == 0) {
-                    th_info->nmap->hosts[th_info->h_index].is_up = true;
+                    nmap->hosts[th_info->h_index].is_up = true;
                     set_port_state(th_info, PORT_OPEN, loop_port_array[port_index]);
                 } else if (so_error == ECONNREFUSED) {
-                    th_info->nmap->hosts[th_info->h_index].is_up = true;
+                    nmap->hosts[th_info->h_index].is_up = true;
                     set_port_state(th_info, PORT_CLOSED, loop_port_array[port_index]);
                 }
 
@@ -73,12 +74,13 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
                 fds[port_index - start] = -1;
             }
         }
+        if (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0) break;
     }
     for (int port_index = start; port_index < end; ++port_index) close(fds[port_index - start]);
 }
 
 void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
-    for (int start = 0; start < th_info->nmap->port_count; start += MAX_CONCURRENT_CONNECT) {
+    for (uint16_t start = 0; start < th_info->nmap->port_count; start += MAX_CONCURRENT_CONNECT) {
         scan_connect_range(
             th_info,
             loop_port_array,
