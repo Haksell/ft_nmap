@@ -38,7 +38,7 @@
 
 ### wtf
 
-- [ ] `--detection-udp` (push nmap-service-probes)
+- [ ] `--detect-udp` (push nmap-service-probes)
 - [ ] `--detect-tcp` ???
 - [ ] `-O` `--os` OS detection
 - [ ] `--spoof-address` (hide source address)
