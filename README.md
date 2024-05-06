@@ -3,7 +3,7 @@
 ## fix today
 
 - [ ] `t_thread_globals`
-- [ ] UDP file
+- [ ] fix UDP parsing (or just create an array from Python)
 - [ ] connect timeout
 - [ ] retransmissions
 
