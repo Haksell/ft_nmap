@@ -1,11 +1,12 @@
 #include "ft_nmap.h"
+#include "top_ports.h"
 
 static void args_error() {
     fprintf(stderr, "See the output of nmap -h for a summary of options.\n");
     exit(EXIT_ARGS);
 }
 
-static int atoi_check(char* s, int max, char* opt_name) {
+static int atoi_check(char* s, int max, char* opt_name, bool accept_zero) {
     if (!s[0]) panic("nmap: empty %s value\n", opt_name);
 
     for (int i = 0; s[i]; ++i) {
@@ -21,6 +22,8 @@ static int atoi_check(char* s, int max, char* opt_name) {
         if ((n == limit && s[i] > modulo + '0') || n > limit) panic("nmap: %s value too big: `%s'\n", opt_name, s);
         n = n * 10 + s[i] - '0';
     }
+
+    if (n == 0 && !accept_zero) panic("nmap: %s value too small: `%s'\n", opt_name, s);
     return n;
 }
 
@@ -33,15 +36,16 @@ static void parse_ports(char* value, t_nmap* nmap) {
         if (comma) *comma = '\0';
 
         char* hyphen = strchr(value, '-');
-        if (value == hyphen || hyphen == end - 1) atoi_check(value, UINT16_MAX, "port");
+        if (value == hyphen || hyphen == end - 1) atoi_check(value, UINT16_MAX, "port", true);
 
         if (hyphen) {
             *hyphen = '\0';
-            int left = atoi_check(value, UINT16_MAX, "port");
-            int right = atoi_check(hyphen + 1, UINT16_MAX, "port");
-            if (left > right) panic("Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
+            int left = atoi_check(value, UINT16_MAX, "port", true);
+            int right = atoi_check(hyphen + 1, UINT16_MAX, "port", true);
+            if (left > right)
+                panic("Your port range %d-%d is backwards. Did you mean %d-%d?\nQUITTING!\n", left, right, right, left);
             for (int i = left; i <= right; ++i) set_port(nmap, i);
-        } else set_port(nmap, atoi_check(value, UINT16_MAX, "port"));
+        } else set_port(nmap, atoi_check(value, UINT16_MAX, "port", true));
 
         value = comma + 1;
     }
@@ -126,7 +130,10 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
-        case OPT_THREADS: nmap->num_threads = atoi_check(value, MAX_HOSTNAMES, "threads"); break;
+        case OPT_THREADS: nmap->num_threads = atoi_check(value, MAX_HOSTNAMES, "threads", true); break;
+        case OPT_TOP_PORTS:
+            nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, MAX_PORTS, "top-ports", false));
+            break;
     }
     return true;
 }
@@ -140,7 +147,12 @@ static bool handle_long_opt(char* opt, int i, int* index, char** argv, t_nmap* n
         for (int j = i + 1; valid_opt[j].opt; ++j)
             if (strncmp(opt, valid_opt[j].long_opt, len) == 0) {
                 if (!ambiguous) {
-                    fprintf(stderr, "nmap: option '--%s' is ambiguous; possibilities: '--%s'", opt, valid_opt[i].long_opt);
+                    fprintf(
+                        stderr,
+                        "nmap: option '--%s' is ambiguous; possibilities: '--%s'",
+                        opt,
+                        valid_opt[i].long_opt
+                    );
                     ambiguous = true;
                 }
                 fprintf(stderr, " '--%s'", valid_opt[j].long_opt);
@@ -178,7 +190,13 @@ static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
                     nmap->opt |= valid_opt[i].opt;
                 } else {
                     if (*(*arg + 2) == '\0') (*index)++;
-                    return handle_arg(valid_opt[i].opt, *(*arg + 2) ? *arg + 2 : *(++arg), valid_opt[i].short_opt, NULL, nmap);
+                    return handle_arg(
+                        valid_opt[i].opt,
+                        *(*arg + 2) ? *arg + 2 : *(++arg),
+                        valid_opt[i].short_opt,
+                        NULL,
+                        nmap
+                    );
                 }
                 break;
             }
@@ -195,14 +213,22 @@ static void handle_unrecognized_opt(char* arg) {
     args_error();
 }
 
-static void set_defaults(t_nmap* nmap) {
-    if (!(nmap->opt & OPT_PORTS)) {
+static void set_top_ports(t_nmap* nmap) {
+    bool has_tcp = nmap->scans & ~(1 << SCAN_UDP);
+    bool has_udp = nmap->scans & (1 << SCAN_UDP);
+    const uint16_t* top_ports = has_tcp && !has_udp   ? top_ports_tcp
+                                : has_udp && !has_tcp ? top_ports_udp
+                                                      : top_ports_mixed;
+    for (uint16_t i = 0; i < nmap->top_ports; ++i) set_port(nmap, top_ports[i]);
+}
+
+static void set_default_ports(t_nmap* nmap) {
+    if (nmap->port_count == 0) {
         for (int i = 0; i < 16; ++i) nmap->port_set[i] = ~0;
         nmap->port_set[0] ^= 1;
         nmap->port_set[16] = 1;
         nmap->port_count = MAX_PORTS;
     }
-    if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
 }
 
 static void set_port_mappings(t_nmap* nmap) {
@@ -253,9 +279,11 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
             add_hostname(nmap, argv[i]);
         }
     }
-    if (nmap->opt & (OPT_HELP | OPT_VERSION)) exit(EXIT_SUCCESS);
 
-    set_defaults(nmap);
+    if (nmap->opt & (OPT_HELP | OPT_VERSION)) exit(EXIT_SUCCESS);
+    if (!(nmap->opt & OPT_SCAN)) nmap->scans = ~0;
+    set_top_ports(nmap);
+    set_default_ports(nmap);
     set_port_mappings(nmap);
     set_undefined_count(nmap);
     set_scan_count(nmap);

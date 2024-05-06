@@ -30,17 +30,16 @@
 - [ ] CIDR ranges [c-syn-scan-network](https://github.com/williamchanrico/c-syn-scan-network)
 - [x] `--no-randomize`
 - [x] `--no-ping`
-- [ ] `--top-ports` -> Axel: python script to find the top ports with the % file. On avait déjà fait I think
+- [x] `--top-ports`
+- [x] `-sW` SCAN_WINDOW
 - [ ] `-sC` SCAN_CONNECT (always same result as -sS)
 - [ ] no sudo for SCAN_CONNECT
 - [ ] no pcap for SCAN_CONNECT, a reflechir ensemble
-- [x] `-sW` SCAN_WINDOW
-- [ ] UDP payload (push nmap-service-probes)
 
 ### wtf
 
-- [ ] `--version-detection` Version detection UDP (Lorenzo)
-- [ ] `--version-detection` Version detection TCP (???)
+- [ ] `--detection-udp` (push nmap-service-probes)
+- [ ] `--detect-tcp` ???
 - [ ] `-O` `--os` OS detection
 - [ ] `--spoof-address` (hide source address)
 - [ ] `--decoy`

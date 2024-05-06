@@ -7,8 +7,10 @@ extern pcap_t* current_handle[MAX_HOSTNAMES];
 static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_exp) {
     struct bpf_program fp;
 
-    if (pcap_compile(handle, &fp, filter_exp, 0, device) == PCAP_ERROR) panic("Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
-    if (pcap_setfilter(handle, &fp) == PCAP_ERROR) panic("Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
+    if (pcap_compile(handle, &fp, filter_exp, 0, device) == PCAP_ERROR)
+        panic("Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
+    if (pcap_setfilter(handle, &fp) == PCAP_ERROR)
+        panic("Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
     pcap_freecode(&fp);
 }
 
@@ -24,10 +26,23 @@ void set_filter(t_thread_info* th_info, bool ping) {
     char filter_exp[256] = {0};
 
     if (ping) sprintf(filter_exp, "icmp and src %s", th_info->hostip);
-    else if (th_info->current_scan == SCAN_UDP) sprintf(filter_exp, "(src host %s and udp) or (icmp and src %s)", th_info->hostip, th_info->hostip);
-    else sprintf(filter_exp, "(src host %s and tcp and dst port %d) or (icmp and src %s)", th_info->hostip, th_info->port_source, th_info->hostip);
+    else if (th_info->current_scan == SCAN_UDP)
+        sprintf(filter_exp, "(src host %s and udp) or (icmp and src %s)", th_info->hostip, th_info->hostip);
+    else
+        sprintf(
+            filter_exp,
+            "(src host %s and tcp and dst port %d) or (icmp and src %s)",
+            th_info->hostip,
+            th_info->port_source,
+            th_info->hostip
+        );
 
-    set_device_filter(current_handle[th_info->t_index], current_handle[th_info->t_index] == handle_lo[th_info->t_index] ? th_info->nmap->device_lo : th_info->nmap->device_net, filter_exp);
+    set_device_filter(
+        current_handle[th_info->t_index],
+        current_handle[th_info->t_index] == handle_lo[th_info->t_index] ? th_info->nmap->device_lo
+                                                                        : th_info->nmap->device_net,
+        filter_exp
+    );
 }
 
 static pcap_t* set_handle(char* dev) {
@@ -49,7 +64,8 @@ static void lookup_net(char* name, bpf_u_int32* device) {
 void init_pcap(t_nmap* nmap) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR) panic("Couldn't find all devices: %s\n", errbuf); // TODO error
+    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR)
+        panic("Couldn't find all devices: %s\n", errbuf); // TODO error
     lookup_net("lo", &nmap->device_lo);
     lookup_net(nmap->devs->name, &nmap->device_net);
 

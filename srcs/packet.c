@@ -114,7 +114,8 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t
         .tcp_length = htons(hdr_size + payload_size),
     };
 
-    if (th_info->current_scan == SCAN_UDP) udphdr.check = checksum(&pseudohdr, &udphdr, sizeof(udphdr), payload, payload_size);
+    if (th_info->current_scan == SCAN_UDP)
+        udphdr.check = checksum(&pseudohdr, &udphdr, sizeof(udphdr), payload, payload_size);
     else tcphdr.check = checksum(&pseudohdr, &tcphdr, sizeof(tcphdr), payload, payload_size);
 
     memcpy(packet, &iphdr, sizeof(iphdr));
