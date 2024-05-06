@@ -10,6 +10,8 @@ static void set_port_and_host_state(t_thread_info* th_info, port_state port_stat
     set_port_state(th_info, port_state, port);
 }
 
+// TODO: same code for UDP?
+
 static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int start, int end) {
     t_nmap* nmap = th_info->nmap;
     fd_set fd_read, fd_all;
