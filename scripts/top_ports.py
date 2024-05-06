@@ -6,7 +6,7 @@ PROTOCOLS = ["mixed", "tcp", "udp"]
 
 probabilities = {p: dict() for p in PROTOCOLS}
 
-for line in open("scripts/etc_services").readlines():
+for line in open("/etc/services").readlines():
     if fullmatch := re.fullmatch(r"[\w-]+\s+(\d+)/(tcp|udp)\s+(0.\d+).*", line.strip()):
         port, protocol, probability = fullmatch.groups()
         port = int(port)
