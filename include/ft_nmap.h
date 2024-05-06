@@ -226,7 +226,7 @@ void error(char* message);
 void panic(const char* format, ...);
 
 // info.c
-void handle_info_args(option_value new_opt, uint8_t nmap_opts);
+void handle_info_args(option_value new_opt, uint32_t nmap_opts);
 
 // packet.c
 void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size);
