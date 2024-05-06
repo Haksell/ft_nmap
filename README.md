@@ -3,9 +3,11 @@
 ## fix today
 
 - [ ] `t_thread_globals`
+- [ ] `--retransmissions` flag
 - [ ] fix UDP parsing (or just create an array from Python)
-- [ ] connect timeout
-- [ ] retransmissions
+- [ ] better connect timeout
+- [ ] UDP multiple sockets
+- [ ] no sudo for SCAN_CONNECT
 
 ## mandatory
 
@@ -39,15 +41,12 @@
 - [x] `--no-ping`
 - [x] `--top-ports`
 - [x] `-sW` SCAN_WINDOW
-- [ ] `-sC` SCAN_CONNECT (fix timeout, should always be same result as -sS)
-- [ ] no sudo for SCAN_CONNECT
-- [ ] no pcap for SCAN_CONNECT, a reflechir ensemble
-- [ ] UDP version detection (push nmap-service-probes)
+- [ ] `-sC` SCAN_CONNECT
+- [ ] UDP version detection
 
 ### wtf
 
 - [ ] TCP version detection (???)
-- [ ] `-O` `--os` OS detection
 - [ ] `--spoof-address` (hide source address)
 - [ ] `--decoy`
 - [ ] `--fragment-packets`
