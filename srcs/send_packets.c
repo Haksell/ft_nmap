@@ -142,9 +142,9 @@ static pthread_t create_capture_thread(t_capture_args* args) {
 
 static void print_host_is_down(t_thread_info* th_info) {
     t_nmap* nmap = th_info->nmap;
-    pthread_mutex_lock(&nmap->mutex_print_report);
+    pthread_mutex_lock(&nmap->mutex_print);
     printf("\nHost %s is down.\n", nmap->hosts[th_info->h_index].name);
-    pthread_mutex_unlock(&nmap->mutex_print_report);
+    pthread_mutex_unlock(&nmap->mutex_print);
 }
 
 void* send_packets(void* arg) {

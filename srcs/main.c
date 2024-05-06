@@ -55,7 +55,7 @@ static void init(t_nmap* nmap) {
     set_signals();
     init_pcap(nmap);
 
-    init_mutex(nmap, &nmap->mutex_print_report);
+    init_mutex(nmap, &nmap->mutex_print);
     init_mutex(nmap, &nmap->mutex_undefined_count);
     init_mutex(nmap, &nmap->mutex_hostname_finished);
     init_mutex(nmap, &nmap->mutex_unset_filters);

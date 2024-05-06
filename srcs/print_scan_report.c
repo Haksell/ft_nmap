@@ -191,8 +191,8 @@ void print_scan_report(t_thread_info* th_info) {
         strcmp(nmap->hosts[th_info->h_index].name, host) == 0)
         host[0] = '\0';
 
-    pthread_mutex_lock(&nmap->mutex_print_report);
+    pthread_mutex_lock(&nmap->mutex_print);
     gotta_go_fast(th_info, &paddings, hide_count, common_port_state_combination, host);
     printf(RESET);
-    pthread_mutex_unlock(&nmap->mutex_print_report);
+    pthread_mutex_unlock(&nmap->mutex_print);
 }
