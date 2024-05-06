@@ -10,19 +10,9 @@ struct pseudohdr {
 
 static uint16_t calculate_checksum(uint16_t* data, size_t length) {
     uint32_t sum = 0;
-
-    for (size_t i = 0; i < length / 2; ++i) {
-        sum += data[i];
-    }
-
-    if (length & 1) {
-        sum += ((uint8_t*)data)[length - 1] << 8;
-    }
-
-    while (sum >> 16) {
-        sum = (sum & 0xFFFF) + (sum >> 16);
-    }
-
+    for (size_t i = 0; i < length / 2; ++i) sum += data[i];
+    if (length & 1) sum += ((uint8_t*)data)[length - 1] << 8;
+    while (sum >> 16) sum = (sum & 0xFFFF) + (sum >> 16);
     return (uint16_t)~sum;
 }
 
