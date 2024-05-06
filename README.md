@@ -3,7 +3,6 @@
 ## fix today
 
 - [ ] `t_thread_globals`
-- [ ] fix broadcast bug
 - [ ] UDP file
 - [ ] connect timeout
 - [ ] retransmissions
