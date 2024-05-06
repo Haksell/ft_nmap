@@ -129,23 +129,22 @@ static void send_packet(t_thread_info* th_info, uint16_t port) {
 static bool is_host_down(t_thread_info* th_info) { // TODO: use the brain
     t_nmap* nmap = th_info->nmap;
     uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
-
     int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
-    if (bytes_received < 0) {
-        if (errno == EWOULDBLOCK || errno == EAGAIN) {
-            return true;
-        } else error("recv failed");
-    } else if (bytes_received == 0) {
-        return true;
-    }
-
-    return false;
+    if (bytes_received < 0 && errno != EWOULDBLOCK && errno != EAGAIN) error("recv failed");
+    return bytes_received <= 0;
 }
 
 static pthread_t create_capture_thread(t_capture_args* args) {
     pthread_t thread_id;
     if (pthread_create(&thread_id, NULL, capture_packets, args)) panic("Failed to create the capture thread");
     return thread_id;
+}
+
+static void print_host_is_down(t_thread_info* th_info) {
+    t_nmap* nmap = th_info->nmap;
+    pthread_mutex_lock(&nmap->mutex_print_report);
+    printf("\nHost %s is down.\n", nmap->hosts[th_info->h_index].name);
+    pthread_mutex_unlock(&nmap->mutex_print_report);
 }
 
 void* send_packets(void* arg) {
@@ -172,7 +171,7 @@ void* send_packets(void* arg) {
             set_filter(th_info, true);
             send_ping(th_info);
             if (is_host_down(th_info)) {
-                printf("\nHost %s is down.\n", nmap->hosts[th_info->h_index].name);
+                print_host_is_down(th_info);
                 continue;
             }
             unset_filters(nmap, th_info->t_index);
@@ -210,7 +209,10 @@ void* send_packets(void* arg) {
             hostname_finished[th_info->t_index] = true;
             pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }
-        if (run && nmap->hosts[th_info->h_index].is_up) print_scan_report(th_info);
+        if (run) {
+            if (nmap->hosts[th_info->h_index].is_up) print_scan_report(th_info);
+            else print_host_is_down(th_info);
+        }
     }
     pthread_mutex_lock(&mutex_run);
     sender_finished[th_info->t_index] = true;
