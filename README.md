@@ -55,3 +55,4 @@
 - [ ] remove unused libraries
 - [ ] remove `garbage` and `output` folders (and maybe `hosts`?)
 - [ ] `help` corresponds to actual flags
+- [ ] remove fsanitize from Makefile
