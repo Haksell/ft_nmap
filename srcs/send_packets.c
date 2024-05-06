@@ -209,7 +209,7 @@ void* send_packets(void* arg) {
             pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }
         if (run) {
-            if (nmap->hosts[th_info->h_index].is_up) print_scan_report(th_info);
+            if (nmap->hosts[th_info->h_index].is_up || (nmap->opt & OPT_NO_PING)) print_scan_report(th_info);
             else print_host_is_down(th_info);
         }
     }
