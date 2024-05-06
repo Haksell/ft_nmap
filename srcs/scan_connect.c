@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-#define MAX_CONCURRENT_CONNECT 256
+#define MAX_CONCURRENT_CONNECT 512
 
 extern bool run;
 
@@ -43,7 +43,7 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
         }
     }
 
-    long microseconds = 1000000 + 4000 * (end - start);
+    long microseconds = 2000000 + 8000 * (end - start);
     struct timeval tv = {.tv_sec = microseconds / 1000000, .tv_usec = microseconds % 1000000};
 
     while (run) {
