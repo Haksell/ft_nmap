@@ -1,18 +1,17 @@
 #include "ft_nmap.h"
 
-#define MAX_CONCURRENT_CONNECT 512
+#define MAX_CONCURRENT_CONNECT 256
 
 extern bool run;
 
 static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int start, int end) {
-    t_nmap* nmap = th_info->nmap;
     fd_set fd_read, fd_all;
     int max_fd = 0;
 
     FD_ZERO(&fd_all);
 
-    struct sockaddr_in targets[nmap->port_count]; // TODO: [MAX_CONCURRENT_CONNECT]
-    int fds[nmap->port_count]; // TODO: [MAX_CONCURRENT_CONNECT]
+    struct sockaddr_in targets[end - start];
+    int fds[end - start];
 
     for (int port_index = start; port_index < end && run; ++port_index) {
         int port = loop_port_array[port_index];
@@ -30,10 +29,10 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
             .sin_family = AF_INET,
             .sin_port = htons(port),
             .sin_addr = th_info->hostaddr.sin_addr};
-        targets[port_index] = target;
-        fds[port_index] = fd;
+        targets[port_index - start] = target;
+        fds[port_index - start] = fd;
 
-        if (connect(fd, (struct sockaddr*)&targets[port_index], sizeof(target)) == -1 && errno != EINPROGRESS) {
+        if (connect(fd, (struct sockaddr*)&targets[port_index - start], sizeof(target)) == -1 && errno != EINPROGRESS) {
             th_info->nmap->hosts[th_info->h_index].is_up = true;
             set_port_state(th_info, PORT_CLOSED, port);
         } else {
@@ -44,7 +43,7 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
         }
     }
 
-    long microseconds = 500000 + 100000 * (end - start) / 50;
+    long microseconds = 1000000 + 4000 * (end - start);
     struct timeval tv = {.tv_sec = microseconds / 1000000, .tv_usec = microseconds % 1000000};
 
     while (run) {
@@ -55,11 +54,11 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
         if (res == 0) break;
 
         for (int port_index = start; port_index < end; ++port_index) {
-            if (fds[port_index] > 0 && FD_ISSET(fds[port_index], &fd_read)) {
+            if (fds[port_index - start] > 0 && FD_ISSET(fds[port_index - start], &fd_read)) {
                 int so_error;
                 socklen_t len = sizeof so_error;
 
-                getsockopt(fds[port_index], SOL_SOCKET, SO_ERROR, &so_error, &len);
+                getsockopt(fds[port_index - start], SOL_SOCKET, SO_ERROR, &so_error, &len);
 
                 if (so_error == 0) {
                     th_info->nmap->hosts[th_info->h_index].is_up = true;
@@ -69,13 +68,13 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
                     set_port_state(th_info, PORT_CLOSED, loop_port_array[port_index]);
                 }
 
-                FD_CLR(fds[port_index], &fd_all);
-                close(fds[port_index]);
-                fds[port_index] = -1;
+                FD_CLR(fds[port_index - start], &fd_all);
+                close(fds[port_index - start]);
+                fds[port_index - start] = -1;
             }
         }
     }
-    for (int port_index = start; port_index < end; ++port_index) close(fds[port_index]);
+    for (int port_index = start; port_index < end; ++port_index) close(fds[port_index - start]);
 }
 
 void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
