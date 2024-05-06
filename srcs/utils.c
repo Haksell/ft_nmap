@@ -1,10 +1,7 @@
 #include "ft_nmap.h"
 
 bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]) {
-    struct addrinfo hints = {
-        .ai_family = AF_INET,
-        // TODO: .ai_flags = AI_CANONNAME,
-    };
+    struct addrinfo hints = {.ai_family = AF_INET, .ai_flags = AI_CANONNAME};
     struct addrinfo* res = NULL;
 
     int status;
@@ -27,12 +24,10 @@ bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLE
         error("inet_ntop failed");
     }
 
-    // TODO: uncomment this code if it is actually useful
-    // if (res->ai_canonname) {
-    //     // printf("CANONNAME | %s -> %s !!!\n", hostname, res->ai_canonname);
-    //     strncpy(hostname, res->ai_canonname, HOST_NAME_MAX);
-    //     hostname[HOST_NAME_MAX] = '\0';
-    // }
+    if (res->ai_canonname) {
+        strncpy(hostname, res->ai_canonname, HOST_NAME_MAX);
+        hostname[HOST_NAME_MAX] = '\0';
+    }
 
     freeaddrinfo(res);
     return true;

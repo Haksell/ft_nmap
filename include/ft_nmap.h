@@ -252,7 +252,7 @@ void print_scan_report(t_thread_info* th_info);
 uint32_t random_u32_range(uint32_t a, uint32_t b);
 
 // scan_connect.c
-void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array, int wait_operations);
+void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array);
 
 // send_packets.c
 void* send_packets(void* arg);

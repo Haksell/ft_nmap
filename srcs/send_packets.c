@@ -160,7 +160,7 @@ void* send_packets(void* arg) {
             th_info->current_scan = scan;
             pthread_mutex_unlock(&mutex_run);
             if (scan == SCAN_CONNECT) {
-                scan_connect(th_info, loop_port_array, wait_operations);
+                scan_connect(th_info, loop_port_array);
                 continue;
             }
 

@@ -4,11 +4,7 @@
 
 extern bool run;
 
-// TODO: fix too many fds
-
-static void
-scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int wait_operations, int start, int end) {
-
+static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int start, int end) {
     t_nmap* nmap = th_info->nmap;
     fd_set fd_read, fd_all;
     int max_fd = 0;
@@ -27,13 +23,8 @@ scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int wait_o
         }
 
         int flags = fcntl(fd, F_GETFL, 0);
-        if (flags == -1) {
-            error("fcntl F_GETFL failed");
-            return;
-        }
-        if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-            error("fcntl F_SETFL failed");
-        }
+        if (flags == -1) error("fcntl F_GETFL failed");
+        if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) error("fcntl F_SETFL failed");
 
         struct sockaddr_in target = {
             .sin_family = AF_INET,
@@ -53,7 +44,7 @@ scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int wait_o
         }
     }
 
-    long microseconds = 100000 * wait_operations;
+    long microseconds = 500000 + 100000 * (end - start) / 50;
     struct timeval tv = {.tv_sec = microseconds / 1000000, .tv_usec = microseconds % 1000000};
 
     while (run) {
@@ -87,12 +78,11 @@ scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int wait_o
     for (int port_index = start; port_index < end; ++port_index) close(fds[port_index]);
 }
 
-void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array, int wait_operations) {
+void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
     for (int start = 0; start < th_info->nmap->port_count; start += MAX_CONCURRENT_CONNECT) {
         scan_connect_range(
             th_info,
             loop_port_array,
-            wait_operations,
             start,
             MIN(start + MAX_CONCURRENT_CONNECT, th_info->nmap->port_count)
         );
