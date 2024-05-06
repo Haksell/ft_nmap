@@ -19,15 +19,17 @@ static void set_defaults(t_thread_info* th_info) {
     }
 }
 
-static void connect_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
+static void connect_scan(t_thread_info* th_info, uint16_t* loop_port_array, int wait_operations) {
+    // TODO: fix too many fds
+
     t_nmap* nmap = th_info->nmap;
     fd_set fd_read, fd_all;
     int max_fd = 0;
 
     FD_ZERO(&fd_all);
 
-    struct sockaddr_in targets[nmap->port_count]; // Array to store target structures
-    int fds[nmap->port_count]; // Array to store file descriptors
+    struct sockaddr_in targets[nmap->port_count];
+    int fds[nmap->port_count];
 
     for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
         int port = loop_port_array[port_index];
@@ -64,11 +66,15 @@ static void connect_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
         }
     }
 
-    for (int j = 0; j < 10 && run; ++j) {
-        fd_read = fd_all;
-        struct timeval tv = {.tv_sec = 0, .tv_usec = 200000};
+    long microseconds = 100000 * wait_operations;
+    struct timeval tv = {.tv_sec = microseconds / 1000000, .tv_usec = microseconds % 1000000};
 
-        if (select(max_fd + 1, NULL, &fd_read, NULL, &tv) < 0) error("select failed");
+    while (run) {
+        fd_read = fd_all;
+
+        int res = select(max_fd + 1, NULL, &fd_read, NULL, &tv);
+        if (res < 0) error("select failed");
+        if (res == 0) break;
 
         for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
             if (fds[port_index] > 0 && FD_ISSET(fds[port_index], &fd_read)) {
@@ -245,7 +251,7 @@ void* send_packets(void* arg) {
             th_info->current_scan = scan;
             pthread_mutex_unlock(&mutex_run);
             if (scan == SCAN_CONNECT) {
-                connect_scan(th_info, loop_port_array);
+                connect_scan(th_info, loop_port_array, wait_operations);
                 continue;
             }
 
