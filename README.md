@@ -54,5 +54,5 @@
 - [ ] check forbidden functions
 - [ ] consistent typedef names (PascalCase or t_snake_case)
 - [ ] remove unused libraries
-- [ ] remove `garbage` folder (and maybe `hosts`?)
+- [ ] remove `garbage` and `output` folders (and maybe `hosts`?)
 - [ ] `help` corresponds to actual flags
