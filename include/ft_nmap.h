@@ -122,8 +122,8 @@ typedef enum {
     SCAN_NULL,
     SCAN_XMAS,
     SCAN_UDP,
-	SCAN_WINDOW,
-	SCAN_CONNECT,
+    SCAN_WINDOW,
+    SCAN_CONNECT,
     SCAN_MAX,
 } scan_type;
 
@@ -139,8 +139,8 @@ static const port_state default_port_state[SCAN_MAX] = {
     PORT_OPEN_FILTERED,
     PORT_OPEN_FILTERED,
     PORT_OPEN_FILTERED,
-	PORT_FILTERED,
-	PORT_CLOSED,
+    PORT_FILTERED,
+    PORT_CLOSED,
 };
 
 static const char scans_str[][7] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP", "WIN", "CONN"};

@@ -40,15 +40,10 @@ static uint16_t checksum(void* pseudohdr, void* hdr, size_t hdr_size, void* payl
 static void set_tcp_flags(struct tcphdr* tcph, scan_type type) {
     switch (type) {
         case SCAN_SYN: tcph->syn = 1; break;
-        case SCAN_NULL: break;
-		case SCAN_WINDOW:
+        case SCAN_WINDOW:
         case SCAN_ACK: tcph->ack = 1; break;
         case SCAN_FIN: tcph->fin = 1; break;
-        case SCAN_XMAS:
-            tcph->fin = 1;
-            tcph->urg = 1;
-            tcph->psh = 1;
-            break;
+        case SCAN_XMAS: tcph->fin = tcph->urg = tcph->psh = 1; break;
         default: break;
     }
 }

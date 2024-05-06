@@ -31,12 +31,11 @@
 - [x] `--no-randomize`
 - [x] `--no-ping`
 - [ ] `--top-ports` -> Axel: python script to find the top ports with the % file. On avait déjà fait I think
-- [x] `-sT` SCAN_CONNECT
+- [ ] `-sC` SCAN_CONNECT (always same result as -sS)
 - [ ] no sudo for SCAN_CONNECT
 - [ ] no pcap for SCAN_CONNECT, a reflechir ensemble
-- [ ] Axel: si tu veux `-sT` faudra changer un peu le parsing. Sinon on garde `-sC` comme maintenant.
 - [x] `-sW` SCAN_WINDOW
-- [x] UDP payload
+- [ ] UDP payload (push nmap-service-probes)
 
 ### wtf
 

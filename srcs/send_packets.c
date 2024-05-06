@@ -39,22 +39,16 @@ static bool find_port(const char* line, uint16_t _port) {
 }
 
 static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t port) {
-    FILE* file;
+    FILE* file = fopen("nmap-service-probes", "r");
+    if (file == NULL) error("Failed to open nmap-service-probes file");
+
     char line[2048];
     char prev_line[2048];
     char prev_prev_line[2048];
     bool found_payload = false;
 
-    file = fopen("nmap-service-probes", "r");
-    if (file == NULL) {
-        error("Failed to open nmap-service-probes file");
-    }
-
     while (fgets(line, sizeof(line), file)) {
-		if (strstr(line, "ports") != NULL && strstr(prev_prev_line, "Probe UDP") != NULL && find_port(line, port)) {
-            // printf("%s", line);
-            // printf("prev_line: %s\n", prev_line);
-            // printf("prev_prev_line: %s\n", prev_prev_line);
+        if (strstr(line, "ports") && strstr(prev_prev_line, "Probe UDP") && find_port(line, port)) {
             found_payload = true;
             break;
         }
@@ -62,37 +56,34 @@ static void get_service_payload(uint8_t* payload, size_t* payload_size, uint16_t
         strcpy(prev_line, line);
     }
 
+    fclose(file);
     if (!found_payload) return;
 
     char* ptr = strchr(prev_prev_line, '|') + 1;
     int i = 0;
     while (*ptr && *ptr != '|') {
-        if (*ptr == '\\') {
-            if (*(ptr + 1) == 'x') {
-                unsigned int value;
-                sscanf(ptr + 2, "%02x", &value);
-                payload[i++] = (char)value;
-                ptr += 4;
-            } else {
-                ptr++;
-                switch (*ptr) {
-                    case '0': payload[i++] = '\0'; break;
-                    case 'r': payload[i++] = '\r'; break;
-                    case 'n': payload[i++] = '\n'; break;
-                    case 't': payload[i++] = '\t'; break;
-                    case 's': payload[i++] = ' '; break;
-                    default: payload[i++] = *ptr; break;
-                }
-                ptr++;
-            }
+        if (*ptr != '\\') {
+            payload[i++] = *ptr;
+            ptr++;
+        } else if (*(ptr + 1) == 'x') {
+            unsigned int value;
+            sscanf(ptr + 2, "%02x", &value);
+            payload[i++] = (char)value;
+            ptr += 4;
         } else {
-			payload[i++] = *ptr;
+            ptr++;
+            switch (*ptr) {
+                case '0': payload[i++] = '\0'; break;
+                case 'r': payload[i++] = '\r'; break;
+                case 'n': payload[i++] = '\n'; break;
+                case 't': payload[i++] = '\t'; break;
+                case 's': payload[i++] = ' '; break;
+                default: payload[i++] = *ptr; break;
+            }
             ptr++;
         }
     }
-	*payload_size = i;
-
-    fclose(file);
+    *payload_size = i;
 }
 
 static void send_packet(t_thread_info* th_info, uint16_t port) {
@@ -103,7 +94,7 @@ static void send_packet(t_thread_info* th_info, uint16_t port) {
     if (th_info->current_scan == SCAN_CONNECT) {
         connect_scan(th_info, port);
     } else if (th_info->current_scan == SCAN_UDP) {
-        uint8_t payload[1000] = {0};
+        uint8_t payload[1000] = {0}; // Lorenzo on est sur que c'est assez ?
         size_t payload_size = 0;
         get_service_payload(payload, &payload_size, port);
 
