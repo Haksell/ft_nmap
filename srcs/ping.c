@@ -34,7 +34,14 @@ void send_ping(t_thread_info* th_info) {
     icmphdr.checksum = calculate_checksum((uint16_t*)packet, icmp_packet_size);
     memcpy(packet, &icmphdr, ICMP_HDR_SIZE);
 
-    int bytes_sent = sendto(th_info->nmap->icmp_fd, packet, icmp_packet_size, 0, (struct sockaddr*)&th_info->hostaddr, sizeof(struct sockaddr_in));
+    int bytes_sent = sendto(
+        th_info->nmap->icmp_fd,
+        packet,
+        icmp_packet_size,
+        0,
+        (struct sockaddr*)&th_info->hostaddr,
+        sizeof(struct sockaddr_in)
+    );
     if (bytes_sent < 0) error("Sending ping failed");
 }
 
