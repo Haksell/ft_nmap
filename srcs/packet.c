@@ -27,17 +27,6 @@ static uint16_t checksum(void* pseudohdr, void* hdr, size_t hdr_size, void* payl
     return calculate_checksum((uint16_t*)checksum_packet, packet_size);
 }
 
-static void set_tcp_flags(struct tcphdr* tcph, scan_type type) {
-    switch (type) {
-        case SCAN_SYN: tcph->syn = 1; break;
-        case SCAN_WINDOW:
-        case SCAN_ACK: tcph->ack = 1; break;
-        case SCAN_FIN: tcph->fin = 1; break;
-        case SCAN_XMAS: tcph->fin = tcph->urg = tcph->psh = 1; break;
-        default: break;
-    }
-}
-
 static struct udphdr fill_udp_header(t_thread_info* th_info, uint16_t port, size_t payload_size) {
     struct udphdr udphdr = {
         .source = htons(th_info->port_source ^ port),
@@ -67,7 +56,14 @@ static struct tcphdr fill_tcp_header(t_thread_info* th_info, uint16_t port) {
         .urg_ptr = 0,
     };
 
-    set_tcp_flags(&tcphdr, th_info->current_scan);
+    switch (th_info->current_scan) {
+        case SCAN_SYN: tcphdr.syn = 1; break;
+        case SCAN_WINDOW:
+        case SCAN_ACK: tcphdr.ack = 1; break;
+        case SCAN_FIN: tcphdr.fin = 1; break;
+        case SCAN_XMAS: tcphdr.fin = tcphdr.urg = tcphdr.psh = 1; break;
+        default: break;
+    }
 
     return tcphdr;
 }
