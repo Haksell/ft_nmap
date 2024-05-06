@@ -113,10 +113,11 @@ static void print_line(
     t_paddings* paddings,
     bool hide_count,
     port_state common_port_state_combination[SCAN_MAX],
-    int port_index,
-    int port
+    int port_index
 ) {
-    if (port >= 0 && hide_count && same_port_combination(th_info, common_port_state_combination, port_index)) return;
+    if (port_index >= 0 && hide_count && same_port_combination(th_info, common_port_state_combination, port_index))
+        return;
+    int port = port_index < 0 ? port_index : th_info->nmap->port_array[port_index];
 
     char tcp_service[MAX_SERVICE_LEN + 1];
     char udp_service[MAX_SERVICE_LEN + 1];
@@ -169,20 +170,13 @@ static void gotta_go_fast(
     if (th_info->latency != 0) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
     if (host[0] != '\0') printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
 
-    print_line(th_info, paddings, hide_count, common_port_state_combination, HEADER_LINE, HEADER_LINE);
+    print_line(th_info, paddings, hide_count, common_port_state_combination, HEADER_LINE);
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
-        print_line(
-            th_info,
-            paddings,
-            hide_count,
-            common_port_state_combination,
-            port_index,
-            nmap->port_array[port_index]
-        );
+        print_line(th_info, paddings, hide_count, common_port_state_combination, port_index);
     }
 
     if (hide_count) {
-        print_line(th_info, paddings, hide_count, common_port_state_combination, HIDE_LINE, HIDE_LINE);
+        print_line(th_info, paddings, hide_count, common_port_state_combination, HIDE_LINE);
         printf("Not shown: %d ports\n", hide_count);
     }
 }
