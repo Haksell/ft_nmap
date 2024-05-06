@@ -14,9 +14,9 @@ static void connect_scan(t_thread_info* th_info, uint16_t port) {
 
     struct timeval tv = {.tv_usec = 50000}; // 100ms à voir || latency + 100ms ??
     if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
-        perror("setsockopt SO_RCVTIMEO failed");
+        error("setsockopt SO_RCVTIMEO failed");
     if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv) < 0)
-        perror("setsockopt SO_SNDTIMEO failed");
+        error("setsockopt SO_SNDTIMEO failed");
 
     struct sockaddr_in target = {
         .sin_family = AF_INET,
@@ -129,7 +129,7 @@ static bool is_host_down(t_thread_info* th_info) { // TODO: use the brain
     t_nmap* nmap = th_info->nmap;
     uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
     int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
-    if (bytes_received < 0 && errno != EWOULDBLOCK && errno != EAGAIN) error("recv failed");
+    if (bytes_received < 0 && errno != EWOULDBLOCK && errno != EAGAIN && errno != EINTR) error("recv failed");
     return bytes_received <= 0;
 }
 
@@ -169,7 +169,7 @@ void* send_packets(void* arg) {
         if (!(nmap->opt & OPT_NO_PING) && !is_localhost) {
             set_filter(th_info, true);
             send_ping(th_info);
-            if (is_host_down(th_info)) {
+            if (is_host_down(th_info) && run) {
                 print_host_is_down(th_info);
                 continue;
             }
