@@ -8,25 +8,30 @@ extern pcap_t* handle_net[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];
 extern pthread_mutex_t mutex_run;
 
-static void connect_scan(t_thread_info* th_info, uint16_t port) {
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0) error("Connect socket creation failed");
+static void connect_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
+    // TODO: parallelize using NONBLOCK
+    t_nmap* nmap = th_info->nmap;
+    for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
+        int port = loop_port_array[port_index];
+        int fd = socket(AF_INET, SOCK_STREAM, 0);
+        if (fd < 0) error("Connect socket creation failed");
 
-    struct timeval tv = {.tv_usec = 50000}; // 100ms à voir || latency + 100ms ??
-    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
-        error("setsockopt SO_RCVTIMEO failed");
-    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv) < 0)
-        error("setsockopt SO_SNDTIMEO failed");
+        struct timeval tv = {.tv_usec = 300000};
+        if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
+            error("setsockopt SO_RCVTIMEO failed");
+        if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv) < 0)
+            error("setsockopt SO_SNDTIMEO failed");
 
-    struct sockaddr_in target = {
-        .sin_family = AF_INET,
-        .sin_port = htons(port),
-        .sin_addr = th_info->hostaddr.sin_addr};
+        struct sockaddr_in target = {
+            .sin_family = AF_INET,
+            .sin_port = htons(port),
+            .sin_addr = th_info->hostaddr.sin_addr};
 
-    // TODO: filtered state if timeout
-    if (connect(fd, (struct sockaddr*)&target, sizeof(target)) == 0) set_port_state(th_info, PORT_OPEN, port);
-    else set_port_state(th_info, PORT_CLOSED, port);
-    close(fd);
+        if (connect(fd, (struct sockaddr*)&target, sizeof(target)) == 0) set_port_state(th_info, PORT_OPEN, port);
+        else if (errno == ECONNREFUSED) set_port_state(th_info, PORT_CLOSED, port);
+        else set_port_state(th_info, PORT_FILTERED, port);
+        close(fd);
+    }
 }
 
 static bool find_port(const char* line, uint16_t _port) {
@@ -96,9 +101,7 @@ static size_t get_udp_payload(uint16_t port, uint8_t* payload, size_t payload_ma
 static void send_packet(t_thread_info* th_info, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
 
-    if (th_info->current_scan == SCAN_CONNECT) {
-        connect_scan(th_info, port);
-    } else if (th_info->current_scan == SCAN_UDP) {
+    if (th_info->current_scan == SCAN_UDP) {
         uint8_t payload[1024] = {0};
         size_t payload_size = get_udp_payload(port, payload, sizeof(payload));
         uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size];
@@ -181,6 +184,11 @@ void* send_packets(void* arg) {
             pthread_mutex_lock(&mutex_run);
             th_info->current_scan = scan;
             pthread_mutex_unlock(&mutex_run);
+            if (scan == SCAN_CONNECT) {
+                connect_scan(th_info, loop_port_array);
+                continue;
+            }
+
             th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
             set_filter(th_info, false);
             for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
