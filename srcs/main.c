@@ -1,6 +1,4 @@
 #include "ft_nmap.h"
-#include "pcap/pcap.h"
-#include <bits/pthreadtypes.h>
 
 volatile sig_atomic_t run = true;
 pthread_mutex_t mutex_run;

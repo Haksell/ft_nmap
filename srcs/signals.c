@@ -1,5 +1,4 @@
 #include "ft_nmap.h"
-#include <bits/pthreadtypes.h>
 
 extern volatile sig_atomic_t run;
 extern pcap_t* handle_lo[MAX_HOSTNAMES];

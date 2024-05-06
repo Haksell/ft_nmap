@@ -1,5 +1,4 @@
 #include "ft_nmap.h"
-#include <netinet/in.h>
 
 extern pcap_t* handle_lo[MAX_HOSTNAMES];
 extern pcap_t* handle_net[MAX_HOSTNAMES];

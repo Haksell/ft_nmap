@@ -1,5 +1,4 @@
 #include "ft_nmap.h"
-#include <stdint.h>
 
 #define SEPARATOR " | "
 #define MAX_SERVICE_LEN 32
@@ -108,7 +107,7 @@ static void print_line(t_thread_info* th_info, t_paddings* paddings, bool hide_c
     printf(nmap->scan_count >= 2 ? SEPARATOR : " ");
 
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-		if (scan_type == SCAN_UDP) continue;
+        if (scan_type == SCAN_UDP) continue;
         if (nmap->scans & (1 << scan_type)) {
             print_scan_cell(th_info, paddings, scan_type, port_index, port, common_port_state_combination);
         }

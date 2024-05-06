@@ -1,7 +1,4 @@
 #include "ft_nmap.h"
-#include "pcap/pcap.h"
-#include <bits/pthreadtypes.h>
-#include <pthread.h>
 
 extern sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
@@ -76,8 +73,8 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
         case SCAN_NULL:
         case SCAN_FIN:
         case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
-		case SCAN_WINDOW: port_state = tcp->th_flags & TH_RST ? tcp->th_win ? PORT_OPEN : PORT_CLOSED : PORT_UNEXPECTED; break;
-		case SCAN_CONNECT: break; // TODO: Axel: on ne veut pas que pcap lis le connect(), donc faudra plutot le faire en amont pour efficience
+        case SCAN_WINDOW: port_state = tcp->th_flags & TH_RST ? tcp->th_win ? PORT_OPEN : PORT_CLOSED : PORT_UNEXPECTED; break;
+        case SCAN_CONNECT: break; // TODO: Axel: on ne veut pas que pcap lis le connect(), donc faudra plutot le faire en amont pour efficience
     }
     pthread_mutex_unlock(&mutex_run);
 
