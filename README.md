@@ -35,10 +35,11 @@
 - [ ] `-sC` SCAN_CONNECT (always same result as -sS)
 - [ ] no sudo for SCAN_CONNECT
 - [ ] no pcap for SCAN_CONNECT, a reflechir ensemble
+- [ ] UDP version detection (push nmap-service-probes)
 
 ### wtf
 
-- [ ] `--version-detection` (UDP: push nmap-service-probes) (TCP: ???)
+- [ ] TCP version detection (???)
 - [ ] `-O` `--os` OS detection
 - [ ] `--spoof-address` (hide source address)
 - [ ] `--decoy`
