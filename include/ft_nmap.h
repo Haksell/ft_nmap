@@ -220,6 +220,11 @@ typedef struct t_nmap {
 void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port);
 void* capture_packets(__attribute__((unused)) void* arg);
 
+// cleanup.c
+void cleanup(t_nmap* nmap);
+void error(char* message);
+void panic(const char* format, ...);
+
 // info.c
 void handle_info_args(option_value new_opt, uint8_t nmap_opts);
 
@@ -242,9 +247,6 @@ void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet);
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(t_nmap* nmap, uint16_t port);
 
-// print_payload.c
-void print_payload(const u_char* payload, int size_payload);
-
 // print_scan_report.c
 void print_scan_report(t_thread_info* th_info);
 
@@ -258,11 +260,6 @@ void* send_packets(void* arg);
 void handle_sigint(int sig);
 void set_signals();
 
-// cleanup.c
-void cleanup(t_nmap* nmap);
-void error(char* message);
-void panic(const char* format, ...);
-
 // utils.c
 bool hostname_to_ip(t_thread_info* th_info);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
@@ -273,5 +270,6 @@ uint64_t get_microseconds();
 
 // verbose.c
 void print_hostnames(t_nmap* nmap);
+void print_payload(const u_char* payload, int size_payload);
 void print_ports(t_nmap* nmap, char* name, uint16_t* port_array);
 void print_scans(uint8_t scans);

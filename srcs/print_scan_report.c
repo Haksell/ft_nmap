@@ -46,6 +46,7 @@ compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_
         .udp_service = 7,
         .two_columns = false
     };
+    bool may_have_two_columns = (nmap->scans & ~(1 << SCAN_UDP)) && (nmap->scans & (1 << SCAN_UDP));
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
         uint16_t port = nmap->port_array[port_index];
         if (port >= 10000) paddings.port = 5;
@@ -53,19 +54,17 @@ compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_
             port_state state = nmap->hosts[th_info->h_index].port_states[scan_type][port_index];
             paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_info[state].strlen);
         }
-        char tcp_service[MAX_SERVICE_LEN + 1];
-        char udp_service[MAX_SERVICE_LEN + 1];
-        get_service_name(port, "tcp", tcp_service);
-        get_service_name(port, "udp", udp_service);
         if (hide_count == 0 || !same_port_combination(th_info, common_port_state_combination, port_index)) {
+            char tcp_service[MAX_SERVICE_LEN + 1];
+            char udp_service[MAX_SERVICE_LEN + 1];
+            get_service_name(port, "tcp", tcp_service);
+            get_service_name(port, "udp", udp_service);
             paddings.tcp_service = MAX(paddings.tcp_service, strlen(tcp_service));
             paddings.udp_service = MAX(paddings.udp_service, strlen(udp_service));
+            if (may_have_two_columns && !paddings.two_columns && strcmp(tcp_service, udp_service) != 0)
+                paddings.two_columns = true;
         }
-        if (!paddings.two_columns && strcmp(tcp_service, udp_service) != 0) paddings.two_columns = true;
-    }
-    bool has_tcp = nmap->scans & ~(1 << SCAN_UDP);
-    bool has_udp = nmap->scans & (1 << SCAN_UDP);
-    if (!has_tcp || !has_udp) paddings.two_columns = false;
+    };
     return paddings;
 }
 
