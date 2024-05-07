@@ -2,7 +2,6 @@
 
 ## fix today
 
-- [ ] `t_thread_globals`
 - [ ] find `hostip` of every host during parsing and put it in `t_host`
 - [ ] `CONN` before `SYN`, `WIN` after `ACK`
 - [ ] `--retransmissions` flag (time proportional to undefined count and latency)
