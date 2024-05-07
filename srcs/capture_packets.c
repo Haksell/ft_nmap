@@ -1,8 +1,7 @@
 #include "ft_nmap.h"
 
-extern sig_atomic_t run;
+extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
-
 extern sig_atomic_t hostname_finished[MAX_HOSTNAMES];
 extern sig_atomic_t sender_finished[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];

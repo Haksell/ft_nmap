@@ -1,9 +1,9 @@
 #include "ft_nmap.h"
 
 extern volatile sig_atomic_t run;
+extern pthread_mutex_t mutex_run;
 extern pcap_t* handle_lo[MAX_HOSTNAMES];
 extern pcap_t* handle_net[MAX_HOSTNAMES];
-extern pthread_mutex_t mutex_run;
 
 void handle_sigint(__attribute__((unused)) int sig) {
     pthread_mutex_lock(&mutex_run);

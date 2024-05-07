@@ -1,13 +1,13 @@
 #include "ft_nmap.h"
 #include <asm-generic/errno-base.h>
 
-extern sig_atomic_t run;
+extern volatile sig_atomic_t run;
+extern pthread_mutex_t mutex_run;
 extern sig_atomic_t hostname_finished[MAX_HOSTNAMES];
 extern sig_atomic_t sender_finished[MAX_HOSTNAMES];
 extern pcap_t* handle_lo[MAX_HOSTNAMES];
 extern pcap_t* handle_net[MAX_HOSTNAMES];
 extern pcap_t* current_handle[MAX_HOSTNAMES];
-extern pthread_mutex_t mutex_run;
 
 static bool find_port(const char* line, uint16_t _port) {
     char port[6] = {0};
