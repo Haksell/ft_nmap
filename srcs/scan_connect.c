@@ -25,6 +25,7 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
     for (int port_index = start; port_index < end && run; ++port_index) {
         int port = loop_port_array[port_index];
         int fd = socket(AF_INET, SOCK_STREAM, 0);
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)); // TODO: remove?
         if (fd < 0) {
             error("Connect socket creation failed");
             continue;
