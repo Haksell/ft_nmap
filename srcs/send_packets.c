@@ -4,44 +4,55 @@
 extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
 
-static t_probe get_udp_probe(uint16_t port) {
-    t_probe best_probe = SENTINEL_PROBE;
+static void get_udp_probe(t_thread_info* th_info, uint16_t port) {
+    bool already_sent_payload = false;
     for (size_t i = 0; udp_probes[i].rarity != SENTINEL_RARITY; ++i) {
-        if (udp_probes[i].rarity < best_probe.rarity) {
-            size_t start = udp_probes[i].port_ranges_start << 1;
-            size_t end = udp_probes[i].port_ranges_end << 1;
-            for (size_t j = start; j < end; j += 2) {
-                if (concatenated_port_ranges[j] <= port && port <= concatenated_port_ranges[j + 1]) {
-                    best_probe = udp_probes[i];
-                    break;
-                }
+        t_probe probe = udp_probes[i];
+        size_t start = probe.port_ranges_start << 1;
+        size_t end = probe.port_ranges_end << 1;
+        for (size_t j = start; j < end; j += 2) {
+            if (concatenated_port_ranges[j] <= port && port <= concatenated_port_ranges[j + 1]) {
+                if (already_sent_payload) usleep(1000000);
+                already_sent_payload = true;
+                size_t payload_size = probe.payload_end - probe.payload_start;
+                uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size];
+                fill_packet(th_info, packet, port, concatenated_payloads + probe.payload_start, payload_size);
+                sendto(
+                    th_info->nmap->udp_fd,
+                    packet,
+                    sizeof(packet),
+                    0,
+                    (struct sockaddr*)&th_info->hostaddr,
+                    sizeof(th_info->hostaddr)
+                );
+                break;
             }
         }
     }
-    return best_probe;
-}
-
-static void send_packet(t_thread_info* th_info, uint16_t port) {
-    t_nmap* nmap = th_info->nmap;
-
-    if (th_info->current_scan == SCAN_UDP) {
-        t_probe probe = get_udp_probe(port);
-        size_t payload_size = probe.payload_end - probe.payload_start;
-        uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size];
-        fill_packet(th_info, packet, port, concatenated_payloads + probe.payload_start, payload_size);
+    if (!already_sent_payload) {
+        uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr)];
+        fill_packet(th_info, packet, port, concatenated_payloads, 0);
         sendto(
-            nmap->udp_fd,
+            th_info->nmap->udp_fd,
             packet,
             sizeof(packet),
             0,
             (struct sockaddr*)&th_info->hostaddr,
             sizeof(th_info->hostaddr)
         );
-    } else {
+    }
+}
+
+static void send_udp(t_thread_info* th_info, uint16_t port) { get_udp_probe(th_info, port); }
+
+static void send_packet(t_thread_info* th_info, uint16_t port) {
+    if (th_info->current_scan == SCAN_UDP) send_udp(th_info, port);
+    else {
+        // TODO: send_tcp
         uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
         fill_packet(th_info, packet, port, NULL, 0);
         sendto(
-            nmap->tcp_fd,
+            th_info->nmap->tcp_fd,
             packet,
             sizeof(packet),
             0,
