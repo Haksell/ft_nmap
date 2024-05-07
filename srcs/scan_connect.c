@@ -59,8 +59,8 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
         fd_read = fd_all;
 
         int res = select(max_fd + 1, NULL, &fd_read, NULL, &tv);
+        if (res == 0 || errno == EINTR) break;
         if (res < 0) error("select failed");
-        if (res == 0) break;
 
         for (int port_index = start; port_index < end; ++port_index) {
             if (fds[port_index - start] > 0 && FD_ISSET(fds[port_index - start], &fd_read)) {
