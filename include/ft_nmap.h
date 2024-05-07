@@ -48,10 +48,6 @@
 #define MAX_PORTS 1024
 #define MAX_HOSTNAMES 250
 
-#define TCP_HEADER_SIZE sizeof(struct tcphdr)
-#define IP_HEADER_SIZE sizeof(struct iphdr)
-#define PSEUDO_HEADER_SIZE sizeof(struct pseudohdr)
-#define NMAP_PACKET_SIZE (IP_HEADER_SIZE + TCP_HEADER_SIZE)
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
 
