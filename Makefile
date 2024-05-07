@@ -44,6 +44,7 @@ clean:
 	$(call remove_target,.vscode)
 	$(call remove_target,garbage/a.out)
 	$(call remove_target,$(PATH_OBJS))
+	$(call remove_target,nmap_service_probes)
 
 fclean: clean
 	$(call remove_target,$(NAME))
