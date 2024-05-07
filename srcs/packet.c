@@ -16,7 +16,7 @@ static uint16_t calculate_checksum(uint16_t* data, size_t length) {
     return (uint16_t)~sum;
 }
 
-static uint16_t checksum(void* pseudohdr, void* hdr, size_t hdr_size, void* payload, size_t payload_size) {
+static uint16_t checksum(void* pseudohdr, void* hdr, size_t hdr_size, const void* payload, size_t payload_size) {
     size_t packet_size = sizeof(struct pseudohdr) + hdr_size + payload_size;
     uint8_t checksum_packet[packet_size];
 
@@ -68,7 +68,7 @@ static struct tcphdr fill_tcp_header(t_thread_info* th_info, uint16_t port) {
     return tcphdr;
 }
 
-void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size) {
+void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size) {
     struct tcphdr tcphdr;
     struct udphdr udphdr;
     uint16_t hdr_size = th_info->current_scan == SCAN_UDP ? sizeof(udphdr) : sizeof(tcphdr);

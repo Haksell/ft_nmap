@@ -78,8 +78,9 @@ def parse_probes():
         if not line1.startswith("Probe UDP"):
             continue
         fullmatch = re.fullmatch(
-            r"Probe UDP [\w-]+ q\|(.*)\|(?: (?:no-payload|source=500))?", line1
+            r"Probe UDP [\w-]+ q\|(.*)\|(?: (no-payload|source=500))?", line1
         )
+        print(fullmatch.groups())
         assert fullmatch
         ports_line, rarity_line = sorted([line2, line3])
         assert re.fullmatch(r"ports (\d+(-\d+)?)(,(\d+(-\d+)?))*", ports_line)
@@ -87,7 +88,8 @@ def parse_probes():
         rarity = int(rarity_line.split()[1])
         payload_start = len(concatenated_payloads)
         port_ranges_start = len(concatenated_port_ranges)
-        concatenated_payloads.extend(parse_payload(fullmatch.group(1)))
+        if fullmatch.group(2) != "no-payload":
+            concatenated_payloads.extend(parse_payload(fullmatch.group(1)))
         concatenated_port_ranges.extend(parse_ranges(ports_line))
         probes.append(
             Probe(
@@ -102,34 +104,39 @@ def parse_probes():
 
 
 TEMPLATE = """
-    #pragma once
+#pragma once
 
-    #include "ft_nmap.h"
+#include "ft_nmap.h"
 
-    typedef struct {{
-        size_t rarity;
-        size_t payload_start;
-        size_t payload_end;
-        size_t port_ranges_start;
-        size_t port_ranges_end;
-    }} t_probe;
+#define MAX_PAYLOAD_SIZE 512
 
-    static const uint8_t concatenated_payloads[] = {{
-        {}
-    }};
+typedef struct {{
+    size_t rarity;
+    size_t payload_start;
+    size_t payload_end;
+    size_t port_ranges_start;
+    size_t port_ranges_end;
+}} t_probe;
 
-    static const uint16_t concatenated_port_ranges[] = {{
-        {}
-    }};
+#define SENTINEL_RARITY 10
+#define SENTINEL_PROBE ((t_probe){{SENTINEL_RARITY, 0, 0, 0, 0}})
 
-    static const t_probe PROBES[] = {{
-        {},
-    }};
+static const uint8_t concatenated_payloads[] = {{
+    {}
+}};
+
+static const uint16_t concatenated_port_ranges[] = {{
+    {}
+}};
+
+static const t_probe udp_probes[] = {{
+    {},
+    SENTINEL_PROBE,
+}};
 """
 
 
 def write_probes(concatenated_payloads, concatenated_port_ranges, probes):
-    print(probes[0])
     open("include/udp_probes.h", "w").write(
         TEMPLATE.format(
             ", ".join(map(str, concatenated_payloads)),

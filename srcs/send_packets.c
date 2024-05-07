@@ -1,80 +1,34 @@
 #include "ft_nmap.h"
+#include "udp_probes.h"
 
 extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
 
-static bool find_port(const char* line, uint16_t _port) {
-    char port[6] = {0};
-    sprintf(port, "%d", _port);
-    const char* match = strstr(line, port);
-    size_t end = strlen(port);
-
-    while (match) {
-        if ((match == line || *(match - 1) == ' ' || *(match - 1) == ',') &&
-            (match[end] == ',' || match[end] == ' ' || match[end] == '\n' || match[end] == '\0')) {
-            return true;
-        }
-        match = strstr(match + 1, port);
-    }
-    return false;
-}
-
-static size_t get_udp_payload(uint16_t port, uint8_t* payload, size_t payload_max_size) {
-    FILE* file = fopen("nmap-service-probes", "r");
-    if (!file) error("Failed to open nmap-service-probes file");
-
-    char line[2048];
-    char prev_line[2048];
-    char prev_prev_line[2048];
-    bool found_payload = false;
-
-    while (fgets(line, sizeof(line), file)) {
-        if (strstr(line, "ports") && strstr(prev_prev_line, "Probe UDP") && find_port(line, port)) {
-            found_payload = true;
-            break;
-        }
-        strcpy(prev_prev_line, prev_line);
-        strcpy(prev_line, line);
-    }
-
-    fclose(file);
-    if (!found_payload) return 0;
-
-    char* ptr = strchr(prev_prev_line, '|') + 1;
-    size_t i = 0;
-    while (i < payload_max_size && *ptr && *ptr != '|') {
-        if (*ptr != '\\') {
-            payload[i++] = *ptr;
-            ptr++;
-        } else if (*(ptr + 1) == 'x') {
-            unsigned int value;
-            sscanf(ptr + 2, "%02x", &value);
-            payload[i++] = (char)value;
-            ptr += 4;
-        } else {
-            ptr++;
-            switch (*ptr) {
-                case '0': payload[i++] = '\0'; break;
-                case 'r': payload[i++] = '\r'; break;
-                case 'n': payload[i++] = '\n'; break;
-                case 't': payload[i++] = '\t'; break;
-                case 's': payload[i++] = ' '; break;
-                default: payload[i++] = *ptr; break;
+static t_probe get_udp_probe(uint16_t port) {
+    t_probe best_probe = SENTINEL_PROBE;
+    for (size_t i = 0; udp_probes[i].rarity != SENTINEL_RARITY; ++i) {
+        if (udp_probes[i].rarity < best_probe.rarity) {
+            size_t start = udp_probes[i].port_ranges_start << 1;
+            size_t end = udp_probes[i].port_ranges_end << 1;
+            for (size_t j = start; j < end; j += 2) {
+                if (concatenated_port_ranges[j] <= port && port <= concatenated_port_ranges[j + 1]) {
+                    best_probe = udp_probes[i];
+                    break;
+                }
             }
-            ptr++;
         }
     }
-    return i;
+    return best_probe;
 }
 
 static void send_packet(t_thread_info* th_info, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
 
     if (th_info->current_scan == SCAN_UDP) {
-        uint8_t payload[1024] = {0};
-        size_t payload_size = get_udp_payload(port, payload, sizeof(payload));
+        t_probe probe = get_udp_probe(port);
+        size_t payload_size = probe.payload_end - probe.payload_start;
         uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size];
-        fill_packet(th_info, packet, port, payload, payload_size);
+        fill_packet(th_info, packet, port, concatenated_payloads + probe.payload_start, payload_size);
         sendto(
             nmap->udp_fd,
             packet,

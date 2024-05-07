@@ -231,7 +231,7 @@ void error(char* message);
 void panic(const char* format, ...);
 
 // packet.c
-void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size);
+void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);
 
 // parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
