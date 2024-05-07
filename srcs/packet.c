@@ -58,7 +58,7 @@ static struct tcphdr fill_tcp_header(t_thread_info* th_info, uint16_t port) {
 
     switch (th_info->current_scan) {
         case SCAN_SYN: tcphdr.syn = 1; break;
-        case SCAN_WINDOW:
+        case SCAN_WIN:
         case SCAN_ACK: tcphdr.ack = 1; break;
         case SCAN_FIN: tcphdr.fin = 1; break;
         case SCAN_XMAS: tcphdr.fin = tcphdr.urg = tcphdr.psh = 1; break;

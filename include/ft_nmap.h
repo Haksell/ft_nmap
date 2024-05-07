@@ -132,8 +132,8 @@ typedef enum {
     SCAN_NULL,
     SCAN_XMAS,
     SCAN_UDP,
-    SCAN_WINDOW,
-    SCAN_CONNECT,
+    SCAN_WIN,
+    SCAN_CONN,
     SCAN_MAX,
 } scan_type;
 

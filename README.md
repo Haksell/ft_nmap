@@ -41,8 +41,8 @@
 - [x] `--no-randomize`
 - [x] `--no-ping`
 - [x] `--top-ports`
-- [x] `-sW` SCAN_WINDOW
-- [ ] `-sC` SCAN_CONNECT
+- [x] `-sW` SCAN_WIN
+- [ ] `-sC` SCAN_CONN
 - [ ] UDP version detection
 
 ### wtf
