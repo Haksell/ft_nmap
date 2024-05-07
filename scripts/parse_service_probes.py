@@ -80,7 +80,6 @@ def parse_probes():
         fullmatch = re.fullmatch(
             r"Probe UDP [\w-]+ q\|(.*)\|(?: (no-payload|source=500))?", line1
         )
-        print(fullmatch.groups())
         assert fullmatch
         ports_line, rarity_line = sorted([line2, line3])
         assert re.fullmatch(r"ports (\d+(-\d+)?)(,(\d+(-\d+)?))*", ports_line)
@@ -100,6 +99,7 @@ def parse_probes():
                 len(concatenated_port_ranges),
             )
         )
+    sys.exit(1)
     return concatenated_payloads, concatenated_port_ranges, probes
 
 
