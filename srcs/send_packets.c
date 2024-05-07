@@ -49,7 +49,7 @@ static void send_packet_tcp(t_thread_info* th_info, uint16_t port) {
     );
 }
 
-static bool is_host_down(t_thread_info* th_info) { // TODO: use the brain
+static bool is_host_down(t_thread_info* th_info) { // TODO: Lorenzo use the brain
     t_nmap* nmap = th_info->nmap;
     uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
     int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
