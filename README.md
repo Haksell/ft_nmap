@@ -8,7 +8,7 @@
 - [ ] `--retransmissions` flag (time proportional to undefined count and latency)
 - [ ] fix UDP parsing (or just create an array from Python)
 - [ ] `CONN`: no sudo, timeout, more even segmentations (and bigger than 512), own separate thread
-- [ ] `UDP`: multiple sockets like `CONN`
+- [ ] `UDP`: multiple sockets like `CONN`, script to put probes in an array like top ports
 - [ ] no more usleep
 
 ## mandatory
