@@ -26,7 +26,7 @@ static void send_packet_udp(t_thread_info* th_info, uint16_t port) {
         size_t end = probe.port_ranges_end << 1;
         for (size_t j = start; j < end; j += 2) {
             if (concatenated_port_ranges[j] <= port && port <= concatenated_port_ranges[j + 1]) {
-                if (already_sent_payload) usleep(1000000); // TODO: multithread
+                if (already_sent_payload) usleep(1000000); // TODO: multiplex
                 already_sent_payload = true;
                 send_udp_probe(th_info, port, probe);
                 break;
