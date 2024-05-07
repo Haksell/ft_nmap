@@ -2,12 +2,7 @@
 
 volatile sig_atomic_t run = true;
 pthread_mutex_t mutex_run;
-// TODO: t_thread_globals
-sig_atomic_t sender_finished[MAX_HOSTNAMES];
-sig_atomic_t hostname_finished[MAX_HOSTNAMES];
-pcap_t* handle_lo[MAX_HOSTNAMES];
-pcap_t* handle_net[MAX_HOSTNAMES];
-pcap_t* current_handle[MAX_HOSTNAMES];
+t_thread_globals thread_globals[MAX_HOSTNAMES];
 
 static void init_mutex(t_nmap* nmap, pthread_mutex_t* mutex) {
     static int mutex_initialized = 0;
@@ -80,9 +75,10 @@ int main(int argc, char* argv[]) {
     verify_arguments(argc, argv, &nmap);
     init(&nmap);
 
-    if (nmap.num_threads == 0) send_packets(&(t_thread_info){.nmap = &nmap, .t_index = 0});
+    if (nmap.num_threads == 0)
+        send_packets(&(t_thread_info){.nmap = &nmap, .globals = thread_globals[0], .t_index = 0});
     for (int i = 0; i < nmap.num_threads; ++i) {
-        nmap.threads[i] = (t_thread_info){.nmap = &nmap, .t_index = i};
+        nmap.threads[i] = (t_thread_info){.nmap = &nmap, .globals = thread_globals[i], .t_index = i};
         if (pthread_create(&nmap.threads[i].thread_id, NULL, send_packets, nmap.threads + i))
             panic("Failed to create the sender thread");
     }

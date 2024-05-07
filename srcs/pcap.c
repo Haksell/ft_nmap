@@ -1,8 +1,6 @@
 #include "ft_nmap.h"
 
-extern pcap_t* handle_lo[MAX_HOSTNAMES];
-extern pcap_t* handle_net[MAX_HOSTNAMES];
-extern pcap_t* current_handle[MAX_HOSTNAMES];
+extern t_thread_globals thread_globals[MAX_HOSTNAMES];
 
 static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_exp) {
     struct bpf_program fp;
@@ -17,8 +15,8 @@ static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_e
 void unset_filters(t_nmap* nmap, int t_index) {
     static char filter_none[] = "tcp and not ip";
     pthread_mutex_lock(&nmap->mutex_unset_filters);
-    set_device_filter(handle_lo[t_index], nmap->device_lo, filter_none);
-    set_device_filter(handle_net[t_index], nmap->device_net, filter_none);
+    set_device_filter(thread_globals[t_index].handle_lo, nmap->device_lo, filter_none);
+    set_device_filter(thread_globals[t_index].handle_net, nmap->device_net, filter_none);
     pthread_mutex_unlock(&nmap->mutex_unset_filters);
 }
 
@@ -37,12 +35,10 @@ void set_filter(t_thread_info* th_info, bool ping) {
             th_info->hostip
         );
 
-    set_device_filter(
-        current_handle[th_info->t_index],
-        current_handle[th_info->t_index] == handle_lo[th_info->t_index] ? th_info->nmap->device_lo
-                                                                        : th_info->nmap->device_net,
-        filter_exp
-    );
+    bpf_u_int32 current_device = th_info->globals.current_handle == th_info->globals.handle_lo
+                                     ? th_info->nmap->device_lo
+                                     : th_info->nmap->device_net;
+    set_device_filter(th_info->globals.current_handle, current_device, filter_exp);
 }
 
 static pcap_t* set_handle(char* dev) {
@@ -70,8 +66,8 @@ void init_pcap(t_nmap* nmap) {
     lookup_net(nmap->devs->name, &nmap->device_net);
 
     for (int i = 0; i < nmap->num_handles; ++i) {
-        handle_lo[i] = set_handle("lo");
-        handle_net[i] = set_handle(nmap->devs->name);
+        thread_globals[i].handle_lo = set_handle("lo");
+        thread_globals[i].handle_net = set_handle(nmap->devs->name);
         unset_filters(nmap, i);
     }
 }

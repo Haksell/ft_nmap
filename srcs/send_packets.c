@@ -1,13 +1,7 @@
 #include "ft_nmap.h"
-#include <asm-generic/errno-base.h>
 
 extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
-extern sig_atomic_t hostname_finished[MAX_HOSTNAMES];
-extern sig_atomic_t sender_finished[MAX_HOSTNAMES];
-extern pcap_t* handle_lo[MAX_HOSTNAMES];
-extern pcap_t* handle_net[MAX_HOSTNAMES];
-extern pcap_t* current_handle[MAX_HOSTNAMES];
 
 static bool find_port(const char* line, uint16_t _port) {
     char port[6] = {0};
@@ -132,9 +126,9 @@ void* send_packets(void* arg) {
 
     // TODO: very important
     pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args
-    ){.th_info = th_info, .handle = handle_lo[th_info->t_index]});
+    ){.th_info = th_info, .handle = th_info->globals.handle_lo});
     pthread_t capture_thread_net = create_capture_thread(&(t_capture_args
-    ){.th_info = th_info, .handle = handle_net[th_info->t_index]});
+    ){.th_info = th_info, .handle = th_info->globals.handle_net});
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
@@ -144,7 +138,7 @@ void* send_packets(void* arg) {
         th_info->latency = 0.0;
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
         bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
-        current_handle[th_info->t_index] = is_localhost ? handle_lo[th_info->t_index] : handle_net[th_info->t_index];
+        th_info->globals.current_handle = is_localhost ? th_info->globals.handle_lo : th_info->globals.handle_net;
         if (!(nmap->opt & OPT_NO_PING) && !is_localhost) {
             set_filter(th_info, true);
             send_ping(th_info);
@@ -189,7 +183,7 @@ void* send_packets(void* arg) {
             unset_filters(nmap, th_info->t_index);
             set_default_port_states(th_info);
             pthread_mutex_lock(&nmap->mutex_hostname_finished);
-            hostname_finished[th_info->t_index] = true;
+            th_info->globals.hostname_finished = true;
             pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }
         if (run) {
@@ -198,11 +192,11 @@ void* send_packets(void* arg) {
         }
     }
     pthread_mutex_lock(&mutex_run);
-    sender_finished[th_info->t_index] = true;
+    th_info->globals.sender_finished = true;
     pthread_mutex_unlock(&mutex_run);
 
-    pcap_breakloop(handle_lo[th_info->t_index]);
-    pcap_breakloop(handle_net[th_info->t_index]);
+    pcap_breakloop(th_info->globals.handle_lo);
+    pcap_breakloop(th_info->globals.handle_net);
     pthread_join(capture_thread_lo, NULL);
     pthread_join(capture_thread_net, NULL);
     return NULL;

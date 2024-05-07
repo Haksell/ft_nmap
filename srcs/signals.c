@@ -2,16 +2,15 @@
 
 extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
-extern pcap_t* handle_lo[MAX_HOSTNAMES];
-extern pcap_t* handle_net[MAX_HOSTNAMES];
+extern t_thread_globals thread_globals[MAX_HOSTNAMES];
 
 void handle_sigint(__attribute__((unused)) int sig) {
     pthread_mutex_lock(&mutex_run);
     run = false;
     pthread_mutex_unlock(&mutex_run);
     for (int i = 0; i < MAX_HOSTNAMES; ++i) {
-        if (handle_net[i]) pcap_breakloop(handle_net[i]);
-        if (handle_lo[i]) pcap_breakloop(handle_lo[i]);
+        if (thread_globals[i].handle_net) pcap_breakloop(thread_globals[i].handle_net);
+        if (thread_globals[i].handle_lo) pcap_breakloop(thread_globals[i].handle_lo);
     }
 }
 

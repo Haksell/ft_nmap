@@ -1,14 +1,13 @@
 #include "ft_nmap.h"
 
-extern pcap_t* handle_lo[MAX_HOSTNAMES];
-extern pcap_t* handle_net[MAX_HOSTNAMES];
+extern t_thread_globals thread_globals[MAX_HOSTNAMES];
 
 void cleanup(t_nmap* nmap) {
     for (int i = 0; nmap->mutexes[i]; ++i) pthread_mutex_destroy(nmap->mutexes[i]);
     if (nmap->devs) pcap_freealldevs(nmap->devs);
     for (int i = 0; i < nmap->num_handles; ++i) {
-        if (handle_net[i]) pcap_close(handle_net[i]);
-        if (handle_lo[i]) pcap_close(handle_lo[i]);
+        if (thread_globals[i].handle_net) pcap_close(thread_globals[i].handle_net);
+        if (thread_globals[i].handle_lo) pcap_close(thread_globals[i].handle_lo);
     }
     if (nmap->tcp_fd > 2) close(nmap->tcp_fd);
     if (nmap->udp_fd > 2) close(nmap->udp_fd);

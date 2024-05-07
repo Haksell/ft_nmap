@@ -2,9 +2,6 @@
 
 extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
-extern sig_atomic_t hostname_finished[MAX_HOSTNAMES];
-extern sig_atomic_t sender_finished[MAX_HOSTNAMES];
-extern pcap_t* current_handle[MAX_HOSTNAMES];
 
 #define TCP_FILTERED 0b0010011000001110
 #define UDP_FILTERED 0b0010011000000110
@@ -20,7 +17,7 @@ void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port
         --nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan];
         bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
         pthread_mutex_unlock(&nmap->mutex_undefined_count);
-        if (zero) pcap_breakloop(current_handle[th_info->t_index]);
+        if (zero) pcap_breakloop(th_info->globals.current_handle);
     }
 }
 
@@ -137,7 +134,7 @@ void* capture_packets(void* args) {
         // TODO: check this very sensitive code
         if (ret == PCAP_ERROR_BREAK) {
             pthread_mutex_lock(&mutex_run);
-            bool should_break = (sender_finished[th_info->t_index] || !run);
+            bool should_break = (th_info->globals.sender_finished || !run);
             pthread_mutex_unlock(&mutex_run);
             if (should_break) break;
             unset_filters(nmap, th_info->t_index);

@@ -169,8 +169,17 @@ typedef struct {
     bool is_up;
 } t_host;
 
+typedef struct {
+    sig_atomic_t sender_finished;
+    sig_atomic_t hostname_finished;
+    pcap_t* handle_lo;
+    pcap_t* handle_net;
+    pcap_t* current_handle;
+} t_thread_globals;
+
 typedef struct t_thread_info {
     struct t_nmap* nmap;
+    t_thread_globals globals;
     int t_index;
     uint64_t latency;
     int h_index;
