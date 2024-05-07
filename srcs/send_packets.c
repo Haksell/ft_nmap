@@ -153,7 +153,7 @@ void* send_packets(void* arg) {
         }
 
         for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
-            if ((nmap->scans & 1 << scan) == 0) continue;
+            if ((nmap->scans & (1 << scan)) == 0) continue;
             pthread_mutex_lock(&mutex_run);
             th_info->current_scan = scan;
             pthread_mutex_unlock(&mutex_run);
