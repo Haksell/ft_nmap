@@ -22,6 +22,9 @@ counts = defaultdict(int)
 lines = open(FILENAME).read().strip().split("\n")
 for probe_udp, line2, line3 in triplets(lines):
     if probe_udp.startswith("Probe UDP"):
+        assert re.fullmatch(
+            r"Probe UDP [\w-]+ q\|.*\|( (no-payload|source=500))?", probe_udp
+        ), probe_udp
         ports, rarity = sorted([line2, line3])
         assert re.fullmatch(r"ports (\d+(-\d+)?)(,(\d+(-\d+)?))*", ports)
         assert re.fullmatch(r"rarity \d+", rarity)
