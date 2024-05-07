@@ -1,4 +1,5 @@
 from collections import defaultdict
+from operator import itemgetter
 import os
 import re
 import requests
@@ -25,5 +26,14 @@ for probe_udp, line2, line3 in triplets(lines):
         assert re.fullmatch(r"ports (\d+(-\d+)?)(,(\d+(-\d+)?))*", ports)
         assert re.fullmatch(r"rarity \d+", rarity)
         print(probe_udp)
-        print(ports)
+        for port in ports.split(" ")[1].split(","):
+            if "-" in port:
+                start, end = map(int, port.split("-"))
+                assert start <= end
+                for i in range(start, end + 1):
+                    counts[i] += 1
+            else:
+                counts[int(port)] += 1
         print()
+
+print(sorted(counts.items(), key=itemgetter(1), reverse=True))
