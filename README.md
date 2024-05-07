@@ -2,12 +2,14 @@
 
 ## fix today
 
+- [ ] find `hostip` of every host during parsing and put it in `t_host`
+- [ ] `CONN` before `SYN`, `WIN` after `ACK`
 - [ ] `t_thread_globals`
-- [ ] `--retransmissions` flag
+- [ ] `--retransmissions` flag (time proportional to undefined count and latency)
 - [ ] fix UDP parsing (or just create an array from Python)
-- [ ] better connect timeout
-- [ ] UDP multiple sockets
-- [ ] no sudo for SCAN_CONNECT
+- [ ] `CONN`: no sudo, timeout, more even segmentations (and bigger than 512), own separate thread
+- [ ] `UDP`: multiple sockets like `CONN`
+- [ ] no more usleep
 
 ## mandatory
 
