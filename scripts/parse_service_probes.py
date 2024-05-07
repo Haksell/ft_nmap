@@ -81,6 +81,8 @@ def parse_probes():
             r"Probe UDP [\w-]+ q\|(.*)\|(?: (no-payload|source=500))?", line1
         )
         assert fullmatch
+        if fullmatch.group(2) == "no-payload":
+            continue
         ports_line, rarity_line = sorted([line2, line3])
         assert re.fullmatch(r"ports (\d+(-\d+)?)(,(\d+(-\d+)?))*", ports_line)
         assert re.fullmatch(r"rarity [1-9]", rarity_line)
