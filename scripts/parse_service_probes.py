@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 import os
 import re
 import requests
@@ -9,6 +9,15 @@ FILENAME = "nmap-service-probes"
 MAX_RANGES = 64
 MAX_PAYLOAD_LENGTH = 1024
 ESCAPES = {"\\": 92, "0": 0, "a": 7, "b": 8, "f": 12, "n": 10, "r": 13, "t": 9, "v": 11}
+
+
+@dataclass
+class Probe:
+    rarity: int
+    payload_start: int
+    payload_end: int
+    port_ranges_start: int
+    port_ranges_end: int
 
 
 def triplets(it):
@@ -61,16 +70,7 @@ def parse_ranges(ports_line):
     return port_ranges
 
 
-@dataclass
-class Probe:
-    rarity: int
-    payload_start: int
-    payload_end: int
-    port_ranges_start: int
-    port_ranges_end: int
-
-
-def main():
+def parse_probes():
     concatenated_payloads = []
     concatenated_port_ranges = []
     probes = []
@@ -98,10 +98,48 @@ def main():
                 len(concatenated_port_ranges),
             )
         )
-    print(len(concatenated_payloads))
-    print(len(concatenated_port_ranges))
-    print(*probes, sep="\n")
+    return concatenated_payloads, concatenated_port_ranges, probes
 
 
-if __name__ == "__main__":
-    main()
+TEMPLATE = """
+    #pragma once
+
+    #include "ft_nmap.h"
+
+    typedef struct {{
+        size_t rarity;
+        size_t payload_start;
+        size_t payload_end;
+        size_t port_ranges_start;
+        size_t port_ranges_end;
+    }} t_probe;
+
+    static const uint8_t concatenated_payloads[] = {{
+        {}
+    }};
+
+    static const uint16_t concatenated_port_ranges[] = {{
+        {}
+    }};
+
+    static const t_probe PROBES[] = {{
+        {},
+    }};
+"""
+
+
+def write_probes(concatenated_payloads, concatenated_port_ranges, probes):
+    print(probes[0])
+    open("include/udp_probes.h", "w").write(
+        TEMPLATE.format(
+            ", ".join(map(str, concatenated_payloads)),
+            ", ".join(f"{start}, {end}" for start, end in concatenated_port_ranges),
+            ", ".join(
+                f"{{{', '.join(str(getattr(p, f.name)) for f in fields(p))}}}"
+                for p in probes
+            ),
+        )
+    )
+
+
+write_probes(*parse_probes())
