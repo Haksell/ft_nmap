@@ -124,11 +124,14 @@ void* send_packets(void* arg) {
     const int wait_operations = 10 + (nmap->port_count / 50);
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
-    // TODO: very important
-    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args
-    ){.th_info = th_info, .handle = th_info->globals.handle_lo});
-    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args
-    ){.th_info = th_info, .handle = th_info->globals.handle_net});
+    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){
+        .th_info = th_info,
+        .handle = th_info->globals.handle_lo,
+    });
+    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){
+        .th_info = th_info,
+        .handle = th_info->globals.handle_net,
+    });
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
