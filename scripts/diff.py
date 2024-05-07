@@ -1,3 +1,5 @@
+# TODO: clean this garbage
+
 import sys
 
 RESET = "\x1b[0m"
