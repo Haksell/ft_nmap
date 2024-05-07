@@ -18,25 +18,30 @@ def triplets(it):
     return zip(it, it[1:], it[2:])
 
 
+udp_probes = []
 counts = defaultdict(int)
 lines = open(FILENAME).read().strip().split("\n")
-for probe_udp, line2, line3 in triplets(lines):
-    if probe_udp.startswith("Probe UDP"):
-        assert re.fullmatch(
-            r"Probe UDP [\w-]+ q\|.*\|( (no-payload|source=500))?", probe_udp
-        ), probe_udp
+for line1, line2, line3 in triplets(lines):
+    if line1.startswith("Probe UDP"):
+        fullmatch = re.fullmatch(
+            r"Probe UDP [\w-]+ q\|(.*)\|(?: (?:no-payload|source=500))?", line1
+        )
+        assert fullmatch
+        udp_probes.append(fullmatch.group(1))
         ports, rarity = sorted([line2, line3])
         assert re.fullmatch(r"ports (\d+(-\d+)?)(,(\d+(-\d+)?))*", ports)
         assert re.fullmatch(r"rarity \d+", rarity)
-        print(probe_udp)
-        for port in ports.split(" ")[1].split(","):
+        rarity = int(rarity.split()[1])
+        for port in ports.split()[1].split(","):
             if "-" in port:
                 start, end = map(int, port.split("-"))
                 assert start <= end
+                print(end - start)
                 for i in range(start, end + 1):
                     counts[i] += 1
             else:
                 counts[int(port)] += 1
-        print()
-
-print(sorted(counts.items(), key=itemgetter(1), reverse=True))
+print("==============")
+# print(*udp_probes, sep="\n")
+print("==============")
+# print(sorted(counts.items(), key=itemgetter(1), reverse=True))
