@@ -48,10 +48,6 @@
 #define MAX_PORTS 1024
 #define MAX_HOSTNAMES 250
 
-#define TCP_HEADER_SIZE sizeof(struct tcphdr)
-#define IP_HEADER_SIZE sizeof(struct iphdr)
-#define PSEUDO_HEADER_SIZE sizeof(struct pseudohdr)
-#define NMAP_PACKET_SIZE (IP_HEADER_SIZE + TCP_HEADER_SIZE)
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
 
@@ -235,7 +231,7 @@ void error(char* message);
 void panic(const char* format, ...);
 
 // packet.c
-void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, uint8_t* payload, size_t payload_size);
+void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);
 
 // parsing.c
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
