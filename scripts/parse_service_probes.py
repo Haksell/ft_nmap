@@ -99,7 +99,6 @@ def parse_probes():
                 len(concatenated_port_ranges),
             )
         )
-    sys.exit(1)
     return concatenated_payloads, concatenated_port_ranges, probes
 
 

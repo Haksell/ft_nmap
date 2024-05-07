@@ -4,51 +4,49 @@
 extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
 
-static t_probe get_udp_probe(uint16_t port) {
-    t_probe best_probe = SENTINEL_PROBE;
+static void send_udp_probe(t_thread_info* th_info, uint16_t port, t_probe probe) {
+    size_t payload_size = probe.payload_end - probe.payload_start;
+    uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size];
+    fill_packet(th_info, packet, port, concatenated_payloads + probe.payload_start, payload_size);
+    sendto(
+        th_info->nmap->udp_fd,
+        packet,
+        sizeof(packet),
+        0,
+        (struct sockaddr*)&th_info->hostaddr,
+        sizeof(th_info->hostaddr)
+    );
+}
+
+static void send_packet_udp(t_thread_info* th_info, uint16_t port) {
+    bool already_sent_payload = false;
     for (size_t i = 0; udp_probes[i].rarity != SENTINEL_RARITY; ++i) {
-        if (udp_probes[i].rarity < best_probe.rarity) {
-            size_t start = udp_probes[i].port_ranges_start << 1;
-            size_t end = udp_probes[i].port_ranges_end << 1;
-            for (size_t j = start; j < end; j += 2) {
-                if (concatenated_port_ranges[j] <= port && port <= concatenated_port_ranges[j + 1]) {
-                    best_probe = udp_probes[i];
-                    break;
-                }
+        t_probe probe = udp_probes[i];
+        size_t start = probe.port_ranges_start << 1;
+        size_t end = probe.port_ranges_end << 1;
+        for (size_t j = start; j < end; j += 2) {
+            if (concatenated_port_ranges[j] <= port && port <= concatenated_port_ranges[j + 1]) {
+                if (already_sent_payload) usleep(1000000); // TODO: multithread
+                already_sent_payload = true;
+                send_udp_probe(th_info, port, probe);
+                break;
             }
         }
     }
-    return best_probe;
+    if (!already_sent_payload) send_udp_probe(th_info, port, SENTINEL_PROBE);
 }
 
-static void send_packet(t_thread_info* th_info, uint16_t port) {
-    t_nmap* nmap = th_info->nmap;
-
-    if (th_info->current_scan == SCAN_UDP) {
-        t_probe probe = get_udp_probe(port);
-        size_t payload_size = probe.payload_end - probe.payload_start;
-        uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + payload_size];
-        fill_packet(th_info, packet, port, concatenated_payloads + probe.payload_start, payload_size);
-        sendto(
-            nmap->udp_fd,
-            packet,
-            sizeof(packet),
-            0,
-            (struct sockaddr*)&th_info->hostaddr,
-            sizeof(th_info->hostaddr)
-        );
-    } else {
-        uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
-        fill_packet(th_info, packet, port, NULL, 0);
-        sendto(
-            nmap->tcp_fd,
-            packet,
-            sizeof(packet),
-            0,
-            (struct sockaddr*)&th_info->hostaddr,
-            sizeof(th_info->hostaddr)
-        );
-    }
+static void send_packet_tcp(t_thread_info* th_info, uint16_t port) {
+    uint8_t packet[sizeof(struct iphdr) + sizeof(struct tcphdr)];
+    fill_packet(th_info, packet, port, NULL, 0);
+    sendto(
+        th_info->nmap->tcp_fd,
+        packet,
+        sizeof(packet),
+        0,
+        (struct sockaddr*)&th_info->hostaddr,
+        sizeof(th_info->hostaddr)
+    );
 }
 
 static bool is_host_down(t_thread_info* th_info) { // TODO: use the brain
@@ -124,8 +122,9 @@ void* send_packets(void* arg) {
                 for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
                     if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] != PORT_UNDEFINED)
                         continue;
+                    uint16_t port = loop_port_array[port_index];
                     if (th_info->current_scan == SCAN_UDP && (port_index > 6 || transmission > 0)) usleep(1000000);
-                    send_packet(th_info, loop_port_array[port_index]);
+                    (th_info->current_scan == SCAN_UDP ? send_packet_udp : send_packet_tcp)(th_info, port);
                 }
 
                 for (int i = 0; i < wait_operations && run; ++i) {
