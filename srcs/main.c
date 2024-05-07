@@ -3,8 +3,8 @@
 volatile sig_atomic_t run = true;
 pthread_mutex_t mutex_run;
 // TODO: t_thread_globals
-volatile sig_atomic_t sender_finished[MAX_HOSTNAMES];
-volatile sig_atomic_t hostname_finished[MAX_HOSTNAMES];
+sig_atomic_t sender_finished[MAX_HOSTNAMES];
+sig_atomic_t hostname_finished[MAX_HOSTNAMES];
 pcap_t* handle_lo[MAX_HOSTNAMES];
 pcap_t* handle_net[MAX_HOSTNAMES];
 pcap_t* current_handle[MAX_HOSTNAMES];
