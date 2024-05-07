@@ -15,14 +15,13 @@ Vagrant.configure("2") do |config|
                        libssl-dev python3 python3-distutils \
                        libpcap-dev net-tools wget tcpdump
 
-    wget https://nmap.org/dist/nmap-7.94.tar.bz2
-    bzip2 -cd nmap-7.94.tar.bz2 | tar xvf -
-    cd nmap-7.94
+    wget https://nmap.org/dist/nmap-7.95.tar.bz2
+    bzip2 -cd nmap-7.95.tar.bz2 | tar xvf -
+    cd nmap-7.95
     ./configure
     make -j
     make install
     cp nmap-services /etc/services
-    cp nmap-service-probes /vagrant
     cd ..
     rm -rf nmap-*
 

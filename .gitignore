@@ -4,3 +4,4 @@ ft_nmap
 *VBox*.log
 *.pcap*
 .clangd
+nmap-service-probes
