@@ -2,7 +2,6 @@
 
 ## fix today
 
-- [ ] find `hostip` of every host during parsing and put it in `t_host`
 - [ ] `--retransmissions` flag (time proportional to undefined count and latency)
 - [ ] `CONN`: no sudo, timeout, more even segmentations (and bigger than 512), own separate thread
 - [ ] `UDP`: multiple sockets like `CONN`, better handling of multiple payloads
