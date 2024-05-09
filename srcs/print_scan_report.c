@@ -140,7 +140,12 @@ static void gotta_go_fast(
     port_state* common_port_state_combination,
     char* host
 ) {
-    printf("\nnmap scan report for %s (%s)\n", th_info->host->name, th_info->hostip);
+    if (strcmp(th_info->host->name, th_info->host->hostip) == 0) {
+        printf("\nnmap scan report for %s\n", th_info->host->name);
+    } else {
+        printf("\nnmap scan report for %s (%s)\n", th_info->host->name, th_info->host->hostip);
+    }
+
     if (th_info->latency) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
     if (host[0] != '\0') printf("rDNS record for %s: %s\n", th_info->host->name, host);
 

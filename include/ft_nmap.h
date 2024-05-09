@@ -180,7 +180,6 @@ typedef struct t_thread_info {
     uint16_t port_source;
     uint8_t current_scan;
     struct sockaddr_in hostaddr;
-    char hostip[INET_ADDRSTRLEN + 1];
     pthread_t thread_id;
     t_host* host;
 } t_thread_info;

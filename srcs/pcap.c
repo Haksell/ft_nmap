@@ -24,18 +24,19 @@ void unset_filters(t_nmap* nmap, int t_index) {
 
 void set_filter(t_thread_info* th_info, scan_type scan_type) {
     char filter_exp[256] = {0};
+    char* hostip = th_info->host->hostip;
 
     if (scan_type == SCAN_MAX) {
-        sprintf(filter_exp, "icmp and src %s", th_info->hostip);
+        sprintf(filter_exp, "icmp and src %s", hostip);
     } else if (scan_type == SCAN_UDP) {
-        sprintf(filter_exp, "(src host %s and udp) or (icmp and src %s)", th_info->hostip, th_info->hostip);
+        sprintf(filter_exp, "(src host %s and udp) or (icmp and src %s)", hostip, hostip);
     } else {
         sprintf(
             filter_exp,
             "(src host %s and tcp and dst port %d) or (icmp and src %s)",
-            th_info->hostip,
+            hostip,
             th_info->port_source,
-            th_info->hostip
+            hostip
         );
     }
 
