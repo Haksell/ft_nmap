@@ -51,4 +51,5 @@ void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet) {
     gettimeofday(&now, NULL);
     tv = timeval_subtract(*(struct timeval*)reply_packet, now);
     th_info->latency = tv.tv_sec * 1000000 + tv.tv_usec;
+    th_info->nmap->hosts[th_info->h_index].ping_received = true;
 }

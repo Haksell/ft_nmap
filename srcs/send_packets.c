@@ -49,12 +49,13 @@ static void send_packet_tcp(t_thread_info* th_info, uint16_t port) {
     );
 }
 
-static bool is_host_down(t_thread_info* th_info) { // TODO: Lorenzo use the brain
-    t_nmap* nmap = th_info->nmap;
-    uint8_t buffer[64] = {0}; //  a refaire avec socket a partir de l'autre thread
-    int bytes_received = recv(nmap->icmp_fd, buffer, sizeof(buffer), 0);
-    if (bytes_received < 0 && errno != EWOULDBLOCK && errno != EAGAIN && errno != EINTR) error("recv failed");
-    return bytes_received <= 0;
+static bool is_host_down(t_thread_info* th_info) {
+    for (int i = 0; i < 20 && run; ++i) {
+        // TODO: mutex if fsanitize not happy
+        if (th_info->nmap->hosts[th_info->h_index].ping_received) return false;
+        usleep(50000);
+    }
+    return true;
 }
 
 static pthread_t create_capture_thread(t_capture_args* args) {

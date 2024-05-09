@@ -163,6 +163,7 @@ typedef struct {
     char name[HOST_NAME_MAX + 1];
     port_state port_states[SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[SCAN_MAX];
+    bool ping_received;
     bool is_up;
 } t_host;
 
