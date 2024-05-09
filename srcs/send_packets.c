@@ -88,15 +88,18 @@ void* send_packets(void* arg) {
     t_thread_info* th_info = arg;
     t_nmap* nmap = th_info->nmap;
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
+    pthread_t capture_thread_lo, capture_thread_net;
 
-    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){
-        .th_info = th_info,
-        .handle = th_info->globals.handle_lo,
-    });
-    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){
-        .th_info = th_info,
-        .handle = th_info->globals.handle_net,
-    });
+    if (nmap->is_sudo) {
+        capture_thread_lo = create_capture_thread(&(t_capture_args){
+            .th_info = th_info,
+            .handle = th_info->globals.handle_lo,
+        });
+        capture_thread_net = create_capture_thread(&(t_capture_args){
+            .th_info = th_info,
+            .handle = th_info->globals.handle_net,
+        });
+    }
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
@@ -133,13 +136,16 @@ void* send_packets(void* arg) {
         }
         if (run) print_scan_report(th_info);
     }
-    pthread_mutex_lock(&mutex_run);
-    th_info->globals.sender_finished = true;
-    pthread_mutex_unlock(&mutex_run);
 
-    pcap_breakloop(th_info->globals.handle_lo);
-    pcap_breakloop(th_info->globals.handle_net);
-    pthread_join(capture_thread_lo, NULL);
-    pthread_join(capture_thread_net, NULL);
+    if (nmap->is_sudo) {
+        pthread_mutex_lock(&mutex_run);
+        th_info->globals.sender_finished = true;
+        pthread_mutex_unlock(&mutex_run);
+        pcap_breakloop(th_info->globals.handle_lo);
+        pcap_breakloop(th_info->globals.handle_net);
+        pthread_join(capture_thread_lo, NULL);
+        pthread_join(capture_thread_net, NULL);
+    }
+
     return NULL;
 }

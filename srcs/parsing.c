@@ -328,6 +328,7 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     } else if (!nmap->is_sudo && nmap->scans != (1 << SCAN_CONN)) {
         panic("This program requires root privileges for raw socket creation.\n");
     }
+    if (!nmap->is_sudo) nmap->opt |= OPT_NO_PING;
 
     if (!(nmap->opt & OPT_RETRANSMISSIONS)) nmap->retransmissions = DEFAULT_RETRANSMISSIONS;
     set_top_ports(nmap);

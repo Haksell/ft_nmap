@@ -23,18 +23,16 @@ static void init(t_nmap* nmap) {
         if (nmap->udp_fd < 0) error("UDP socket creation failed");
         nmap->icmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
         if (nmap->icmp_fd < 0) error("ICMP socket creation failed");
+        if (setsockopt(nmap->tcp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
+            error("setsockopt IP_HDRINCL failed");
+        if (setsockopt(nmap->udp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
+            error("setsockopt IP_HDRINCL failed");
+        struct timeval tv = {.tv_sec = 1};
+        if (setsockopt(nmap->icmp_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
+            error("setsockopt SO_RCVTIMEO failed");
+        if (setsockopt(nmap->icmp_fd, SOL_SOCKET, SO_BROADCAST, &(int){1}, sizeof(int)) < 0)
+            error("setsockopt SO_BROADCAST failed");
     }
-
-    if (setsockopt(nmap->tcp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
-        error("setsockopt IP_HDRINCL failed");
-    if (setsockopt(nmap->udp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
-        error("setsockopt IP_HDRINCL failed");
-
-    struct timeval tv = {.tv_sec = 1};
-    if (setsockopt(nmap->icmp_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
-        error("setsockopt SO_RCVTIMEO failed");
-    if (setsockopt(nmap->icmp_fd, SOL_SOCKET, SO_BROADCAST, &(int){1}, sizeof(int)) < 0)
-        error("setsockopt SO_BROADCAST failed");
 
     print_start_time(nmap);
 
@@ -48,7 +46,7 @@ static void init(t_nmap* nmap) {
     }
 
     set_signals();
-    init_pcap(nmap);
+    if (nmap->is_sudo) init_pcap(nmap); // TODO: in if block above?
 
     init_mutex(nmap, &nmap->mutex_print);
     init_mutex(nmap, &nmap->mutex_undefined_count);
