@@ -47,13 +47,13 @@ def main():
             f"{up_count1} hosts up in {sys.argv[1]}, {up_count2} hosts up in {sys.argv[2]}"
         )
     if up1 := set(reports1) - set(reports2):
-        print(f"Hosts up in {sys.argv[1]}, not {sys.argv[2]}.", *up1)
+        print(f"Hosts up in {sys.argv[1]}, not {sys.argv[2]}:", *up1)
     if up2 := set(reports2) - set(reports1):
-        print(f"Hosts up in {sys.argv[2]}, not {sys.argv[1]}.", *up2)
+        print(f"Hosts up in {sys.argv[2]}, not {sys.argv[1]}:", *up2)
     if down1 := set(downs1) - set(downs2):
-        print(f"Hosts down in {sys.argv[1]}, not {sys.argv[2]}.", *down1)
+        print(f"Hosts down in {sys.argv[1]}, not {sys.argv[2]}:", *down1)
     if down2 := set(downs2) - set(downs1):
-        print(f"Hosts down in {sys.argv[2]}, not {sys.argv[1]}.", *down2)
+        print(f"Hosts down in {sys.argv[2]}, not {sys.argv[1]}:", *down2)
     count = 0
     for k in set(reports1) & set(reports2):
         report1 = get_report(reports1, k)
