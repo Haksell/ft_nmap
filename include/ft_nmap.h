@@ -190,6 +190,8 @@ typedef struct t_thread_info {
 } t_thread_info;
 
 typedef struct t_nmap {
+    bool is_sudo;
+
     int tcp_fd;
     int udp_fd;
     int icmp_fd;

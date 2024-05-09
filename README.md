@@ -2,7 +2,7 @@
 
 ## fix today
 
-- [ ] `CONN`: no sudo, timeout, more even segmentations (and bigger than 512), own separate thread
+- [ ] `CONN`: no sudo, timeout, no ping, more even segmentations (and bigger than 512), own separate thread
 - [ ] `UDP`: better sleep, better handling of multiple payloads
 - [ ] no more usleep (si on est motive)
 
