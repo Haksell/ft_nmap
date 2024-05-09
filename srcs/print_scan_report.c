@@ -118,8 +118,11 @@ static void print_line(
         printf(" %-*s", has_udp ? paddings->udp_service : paddings->tcp_service, has_udp ? udp_service : tcp_service);
     printf(nmap->scan_count >= 2 ? SEPARATOR : " ");
 
+    if (nmap->scans & (1 << SCAN_CONN))
+        print_scan_cell(th_info, paddings, SCAN_CONN, port_index, port, common_port_state_combination);
+
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-        if (scan_type == SCAN_UDP) continue;
+        if (scan_type == SCAN_UDP || scan_type == SCAN_CONN) continue;
         if (nmap->scans & (1 << scan_type)) {
             print_scan_cell(th_info, paddings, scan_type, port_index, port, common_port_state_combination);
         }
