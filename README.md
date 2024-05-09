@@ -2,8 +2,6 @@
 
 ## fix today
 
-- [ ] fix ping
-- [ ] fix up count
 - [ ] `CONN` before `SYN`, `WIN` after `ACK`
 - [ ] find `hostip` of every host during parsing and put it in `t_host`
 - [ ] `--retransmissions` flag (time proportional to undefined count and latency)
