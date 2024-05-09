@@ -1,0 +1,259 @@
+Starting nmap 42.0 at 2024-05-09 15:56 CEST
+
+Host adobe.com is down.
+
+nmap scan report for apple.com (17.253.144.10)
+Host is up (3.33ms latency).
+rDNS record for apple.com: apple.com.uy
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[33mfiltered      [37m
+[0m
+nmap scan report for whatsapp.com (157.240.202.60)
+Host is up (5.33ms latency).
+rDNS record for whatsapp.com: whatsapp-cdn-shv-02-cdg4.fbcdn.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[32mopen          [37m
+[0m
+nmap scan report for facebook.com (157.240.202.35)
+Host is up (4.06ms latency).
+rDNS record for facebook.com: edge-star-mini-shv-02-cdg4.facebook.com
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[32mopen          [37m
+[0m
+nmap scan report for youtube.com (142.250.178.142)
+rDNS record for youtube.com: par21s22-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for support.google.com (142.250.178.142)
+Host is up (7.08ms latency).
+rDNS record for support.google.com: par21s22-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for www.google.com (142.250.75.228)
+Host is up (2.56ms latency).
+rDNS record for www.google.com: par10s41-in-f4.1e100.net
+PORT | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m  SERVICE | [37mUDP           [37m  SERVICE
+21   | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m  ssh     | [34mopen|filtered [37m  ftp    
+22   | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m  ssh     | [34mopen|filtered [37m  ssh    
+23   | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m  telnet  | [34mopen|filtered [37m  telnet 
+25   | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m  smtp    | [34mopen|filtered [37m  smtp   
+80   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m  http    | [34mopen|filtered [37m  http   
+443  | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m  https   | [34mopen|filtered [37m  https  
+[0m
+nmap scan report for www.blogger.com (142.250.201.169)
+Host is up (9.23ms latency).
+rDNS record for www.blogger.com: par21s23-in-f9.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for en.wikipedia.org (185.15.58.224)
+Host is up (15.14ms latency).
+rDNS record for en.wikipedia.org: text-lb.drmrs.wikimedia.org
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [31mclosed   [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed   [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [31mclosed   [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed   [37m[34mopen|filtered [37m
+25   smtp    | [31mclosed   [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed   [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for linkedin.com (13.107.42.14)
+Host is up (7.91ms latency).
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for cloudflare.com (104.16.132.229)
+Host is up (18.41ms latency).
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for microsoft.com (20.70.246.20)
+Host is up (278.82ms latency).
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for wordpress.org (198.143.164.252)
+Host is up (103.31ms latency).
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [31mclosed   [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed   [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for docs.google.com (142.250.75.238)
+Host is up (2.85ms latency).
+rDNS record for docs.google.com: par10s41-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for sites.google.com (172.217.20.206)
+Host is up (4.57ms latency).
+rDNS record for sites.google.com: waw02s08-in-f206.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for drive.google.com (216.58.214.174)
+Host is up (3.42ms latency).
+rDNS record for drive.google.com: mad01s26-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for mozilla.org (44.236.72.93)
+rDNS record for mozilla.org: ec2-44-236-72-93.us-west-2.compute.amazonaws.com
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for youtu.be (142.250.74.238)
+Host is up (5.03ms latency).
+rDNS record for youtu.be: par10s40-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for maps.google.com (142.250.74.238)
+Host is up (5.10ms latency).
+rDNS record for maps.google.com: par10s40-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for accounts.google.com (173.194.76.84)
+Host is up (14.02ms latency).
+rDNS record for accounts.google.com: ws-in-f84.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for googleusercontent.com (172.217.20.161)
+Host is up (2.64ms latency).
+rDNS record for googleusercontent.com: par10s49-in-f1.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for t.me (149.154.167.99)
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for plus.google.com (142.250.201.174)
+Host is up (7.54ms latency).
+rDNS record for plus.google.com: par21s23-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for europa.eu (147.67.210.45)
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL   [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap scan report for play.google.com (142.250.179.78)
+Host is up (6.03ms latency).
+rDNS record for play.google.com: par21s19-in-f14.1e100.net
+PORT SERVICE | [37mSYN      [37m[37mACK        [37m[37mFIN    [37m[37mNULL          [37m[37mXMAS   [37m[37mWIN    [37m[37mCONN     [37m[37mUDP           [37m
+21   ftp     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed        [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+22   ssh     | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[34mopen|filtered [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+23   telnet  | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed        [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+25   smtp    | [33mfiltered [37m[35munfiltered [37m[31mclosed [37m[31mclosed        [37m[31mclosed [37m[31mclosed [37m[33mfiltered [37m[34mopen|filtered [37m
+80   http    | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed        [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+443  https   | [32mopen     [37m[35munfiltered [37m[31mclosed [37m[31mclosed        [37m[31mclosed [37m[31mclosed [37m[32mopen     [37m[34mopen|filtered [37m
+[0m
+nmap done: 25 IP addresses (25 hosts up) scanned in 18.81 seconds

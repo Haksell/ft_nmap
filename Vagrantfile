@@ -10,10 +10,9 @@ Vagrant.configure("2") do |config|
     export DEBIAN_FRONTEND=noninteractive
 
     apt-get update
-    apt-get install -y binutils build-essential bzip2 curl  \
-                       clang git make valgrind zsh openssl  \
-                       libssl-dev python3 python3-distutils \
-                       libpcap-dev net-tools wget tcpdump
+    apt-get install -y binutils build-essential bzip2 clang curl git \
+                       libpcap-dev libssl-dev make net-tools openssl \
+                       python3 python3-distutils tcpdump valgrind wget zsh
 
     wget https://nmap.org/dist/nmap-7.94.tar.bz2
     bzip2 -cd nmap-7.94.tar.bz2 | tar xvf -
