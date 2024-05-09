@@ -108,7 +108,6 @@ void* send_packets(void* arg) {
         strncpy(th_info->hostip, th_info->host->hostip, INET_ADDRSTRLEN);
         th_info->hostip[INET_ADDRSTRLEN] = '\0';
 
-        th_info->hostip = th_info->host->hostip; // TODO
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
         bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
         th_info->globals.current_handle = is_localhost ? th_info->globals.handle_lo : th_info->globals.handle_net;

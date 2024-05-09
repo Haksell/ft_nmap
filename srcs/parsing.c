@@ -94,7 +94,7 @@ static void add_hostname(t_nmap* nmap, char* hostname, char* hostip) {
     }
     strncpy(nmap->hosts[nmap->hostname_count].name, hostname, HOST_NAME_MAX);
     nmap->hosts[nmap->hostname_count].name[HOST_NAME_MAX] = '\0';
-    strncpy(nmap->hosts[nmap->hostname_count].hostip, hostname, INET_ADDRSTRLEN);
+    strncpy(nmap->hosts[nmap->hostname_count].hostip, hostip, INET_ADDRSTRLEN);
     nmap->hosts[nmap->hostname_count].hostip[INET_ADDRSTRLEN] = '\0';
     nmap->hostname_count++;
 }
