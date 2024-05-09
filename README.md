@@ -2,10 +2,9 @@
 
 ## fix today
 
-- [ ] `--retransmissions` flag (time proportional to undefined count and latency)
 - [ ] `CONN`: no sudo, timeout, more even segmentations (and bigger than 512), own separate thread
-- [ ] `UDP`: multiple sockets like `CONN`, better handling of multiple payloads
-- [ ] no more usleep
+- [ ] `UDP`: better sleep, better handling of multiple payloads
+- [ ] no more usleep (si on est motive)
 
 ## mandatory
 
