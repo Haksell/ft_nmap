@@ -87,24 +87,26 @@ static void parse_scan(char* value, uint16_t* scans) {
     }
 }
 
-static void add_hostname(t_nmap* nmap, char* hostname) {
+static void add_hostname(t_nmap* nmap, char* hostname, char* hostip) {
     if (nmap->hostname_count == MAX_HOSTNAMES) {
         fprintf(stderr, "nmap: too many hostnames\n");
         args_error();
     }
     strncpy(nmap->hosts[nmap->hostname_count].name, hostname, HOST_NAME_MAX);
     nmap->hosts[nmap->hostname_count].name[HOST_NAME_MAX] = '\0';
+    strncpy(nmap->hosts[nmap->hostname_count].hostip, hostname, INET_ADDRSTRLEN);
+    nmap->hosts[nmap->hostname_count].hostip[INET_ADDRSTRLEN] = '\0';
     nmap->hostname_count++;
 }
 
 static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
     if (hostname[0] == '\0') return;
     char* slash = strchr(hostname, '/');
+    char hostip[INET_ADDRSTRLEN + 1];
     if (slash) {
         *slash = '\0';
         int cidr = atoi_check(slash + 1, 24, 32, "CIDR");
         int shift = 32 - cidr;
-        char hostip[INET_ADDRSTRLEN + 1];
         if (hostname_to_ip(hostname, hostip)) {
             char* last_part = strrchr(hostip, '.') + 1;
             int last_val = atoi_check(last_part, 0, 255, "CIDR IP");
@@ -112,14 +114,14 @@ static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
             int end_range = start_range + (1 << shift);
             // TODO: fix broadcast address
             for (int i = start_range; i < end_range; ++i) {
-                if (i == last_val) add_hostname(nmap, hostname);
+                if (i == last_val) add_hostname(nmap, hostname, hostip);
                 else {
                     sprintf(last_part, "%d", i);
-                    add_hostname(nmap, hostip);
+                    add_hostname(nmap, hostip, hostip);
                 }
             }
         }
-    } else add_hostname(nmap, hostname);
+    } else if (hostname_to_ip(hostname, hostip)) add_hostname(nmap, hostname, hostip);
 }
 
 static void parse_file(char* filename, t_nmap* nmap) {

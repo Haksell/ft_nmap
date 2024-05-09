@@ -159,6 +159,7 @@ typedef struct {
 
 typedef struct {
     char name[HOST_NAME_MAX + 1];
+    char hostip[INET_ADDRSTRLEN + 1];
     port_state port_states[SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[SCAN_MAX];
     bool is_up;
