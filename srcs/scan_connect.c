@@ -24,7 +24,8 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         struct sockaddr_in target = {
             .sin_family = AF_INET,
             .sin_port = htons(port),
-            .sin_addr = th_info->hostaddr.sin_addr};
+            .sin_addr = th_info->hostaddr.sin_addr,
+        };
         targets[port_index] = target;
         fds[port_index].fd = fd;
         fds[port_index].events = POLLOUT;
