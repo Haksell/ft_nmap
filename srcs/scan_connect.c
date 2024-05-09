@@ -43,7 +43,6 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         if (res < 0) error("poll failed");
 
         for (int i = 0; i < port_count; ++i) {
-            // TODO: POLLOUT = PORT_OPEN, POLLERR = PORT_CLOSED
             if (fds[i].revents & POLLOUT || fds[i].revents & POLLERR) {
                 int so_error;
                 getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, &so_error, &(socklen_t){sizeof(so_error)});
