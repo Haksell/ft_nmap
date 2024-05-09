@@ -144,7 +144,7 @@ static void gotta_go_fast(
     t_nmap* nmap = th_info->nmap;
 
     printf("\nnmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
-    if (th_info->latency != 0) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
+    if (th_info->latency) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
     if (host[0] != '\0') printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
 
     print_line(th_info, paddings, common_port_state_combination, HEADER_LINE);
@@ -160,7 +160,15 @@ static void gotta_go_fast(
     }
 }
 
-void print_scan_report(t_thread_info* th_info) {
+static void print_host_is_down(t_thread_info* th_info) {
+    t_nmap* nmap = th_info->nmap;
+    pthread_mutex_lock(&nmap->mutex_print);
+    printf("\nHost %s is down.\n", nmap->hosts[th_info->h_index].name);
+    pthread_mutex_unlock(&nmap->mutex_print);
+}
+
+// TODO: lsimanic better
+static void print_host_is_up(t_thread_info* th_info) {
     t_nmap* nmap = th_info->nmap;
 
     port_state common_port_state_combination[SCAN_MAX];
@@ -176,4 +184,9 @@ void print_scan_report(t_thread_info* th_info) {
     gotta_go_fast(th_info, &paddings, hide_count, common_port_state_combination, host);
     printf(RESET);
     pthread_mutex_unlock(&nmap->mutex_print);
+}
+
+void print_scan_report(t_thread_info* th_info) {
+    if (th_info->nmap->hosts[th_info->h_index].is_up) print_host_is_down(th_info);
+    else print_host_is_up(th_info);
 }

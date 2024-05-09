@@ -1,4 +1,6 @@
 #include "ft_nmap.h"
+#include <bits/types/struct_timeval.h>
+#include <stdint.h>
 
 static uint16_t calculate_checksum(uint16_t* packet, int length) {
     uint32_t sum = 0;
@@ -13,7 +15,7 @@ static uint16_t calculate_checksum(uint16_t* packet, int length) {
     return (uint16_t)~sum;
 }
 
-void send_ping(t_thread_info* th_info) {
+void send_ping_icmp(t_thread_info* th_info) {
     struct icmphdr icmphdr = {
         .type = ICMP_ECHO,
         .code = 0,
@@ -45,11 +47,27 @@ void send_ping(t_thread_info* th_info) {
     if (bytes_sent < 0) error("Sending ping failed");
 }
 
+void send_ping_udp(t_thread_info* th_info) {
+    struct timeval ping_time;
+    gettimeofday(&ping_time, NULL);
+    uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(ping_time)];
+
+    fill_packet(th_info, packet, 80, (const uint8_t*)&ping_time, sizeof(ping_time));
+    sendto(
+        th_info->nmap->udp_fd,
+        packet,
+        sizeof(packet),
+        0,
+        (struct sockaddr*)&th_info->hostaddr,
+        sizeof(th_info->hostaddr)
+    );
+    // TODO: on verifier si tout est protege!!!!!
+}
+
 void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet) {
     struct timeval now, tv;
 
     gettimeofday(&now, NULL);
     tv = timeval_subtract(*(struct timeval*)reply_packet, now);
     th_info->latency = tv.tv_sec * 1000000 + tv.tv_usec;
-    th_info->nmap->hosts[th_info->h_index].ping_received = true;
 }

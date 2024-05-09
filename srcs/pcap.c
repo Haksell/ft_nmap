@@ -20,13 +20,14 @@ void unset_filters(t_nmap* nmap, int t_index) {
     pthread_mutex_unlock(&nmap->mutex_unset_filters);
 }
 
-void set_filter(t_thread_info* th_info, bool ping) {
+void set_filter(t_thread_info* th_info, scan_type scan_type) {
     char filter_exp[256] = {0};
 
-    if (ping) sprintf(filter_exp, "icmp and src %s", th_info->hostip);
-    else if (th_info->current_scan == SCAN_UDP)
+    if (scan_type == SCAN_MAX) {
+        sprintf(filter_exp, "icmp and src %s", th_info->hostip);
+    } else if (scan_type == SCAN_UDP) {
         sprintf(filter_exp, "(src host %s and udp) or (icmp and src %s)", th_info->hostip, th_info->hostip);
-    else
+    } else {
         sprintf(
             filter_exp,
             "(src host %s and tcp and dst port %d) or (icmp and src %s)",
@@ -34,6 +35,7 @@ void set_filter(t_thread_info* th_info, bool ping) {
             th_info->port_source,
             th_info->hostip
         );
+    }
 
     bpf_u_int32 current_device = th_info->globals.current_handle == th_info->globals.handle_lo
                                      ? th_info->nmap->device_lo

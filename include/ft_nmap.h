@@ -163,7 +163,6 @@ typedef struct {
     char name[HOST_NAME_MAX + 1];
     port_state port_states[SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[SCAN_MAX];
-    bool ping_received;
     bool is_up;
 } t_host;
 
@@ -245,7 +244,7 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const u
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
 // pcap.c
-void set_filter(t_thread_info* th_info, bool ping);
+void set_filter(t_thread_info* th_info, scan_type scan_type);
 void init_pcap(t_nmap* nmap);
 void unset_filters(t_nmap* nmap, int t_index);
 
