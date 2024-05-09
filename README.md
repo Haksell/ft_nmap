@@ -30,24 +30,18 @@
 
 ## bonus
 
-### ez
-
+- [x] ping (latency)
 - [x] Reverse DNS
 - [x] CIDR ranges
 - [x] `--no-randomize`
 - [x] `--no-ping`
 - [x] `--top-ports`
 - [x] `-sW` SCAN_WIN
-- [ ] `-sC` SCAN_CONN
-- [ ] UDP version detection
-
-### wtf
-
-- [ ] TCP version detection (???)
+- [x] `-sC` SCAN_CONN
+- [x] UDP probes
+- [ ] `--udp-rate`
+- [x] various spoofes (Ctrl+F `random_u32_range`)
 - [ ] `--spoof-address` (hide source address)
-- [ ] `--decoy`
-- [ ] `--fragment-packets`
-- [ ] other flags to go over the IDS/Firewall (FIREWALL/IDS EVASION AND SPOOFING section)
 
 ## push check
 

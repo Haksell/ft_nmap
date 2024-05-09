@@ -81,12 +81,12 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const u
         .ihl = 5,
         .tos = 0,
         .tot_len = htons(sizeof(iphdr) + hdr_size + payload_size),
-        .id = htons(random_u32_range(0, UINT16_MAX)), // a verifier
+        .id = htons(random_u32_range(0, UINT16_MAX)),
         .frag_off = 0,
         .ttl = random_u32_range(33, 63),
         .protocol = th_info->current_scan == SCAN_UDP ? IPPROTO_UDP : IPPROTO_TCP,
         .check = 0,
-        .saddr = th_info->nmap->source_address, // spoof possible?
+        .saddr = th_info->nmap->source_address, // TODO: spoof possible?
         .daddr = th_info->hostaddr.sin_addr.s_addr,
     };
 
