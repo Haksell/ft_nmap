@@ -225,7 +225,7 @@ typedef struct t_nmap {
 
     pthread_mutex_t mutex_print;
     pthread_mutex_t mutex_undefined_count;
-    pthread_mutex_t mutex_unset_filters;
+    pthread_mutex_t mutex_pcap_filter;
     pthread_mutex_t* mutexes[5]; // only used to free the mutexes
 } t_nmap;
 
