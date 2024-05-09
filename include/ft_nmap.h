@@ -49,6 +49,9 @@
 #define MAX_HOSTNAMES 250
 #define MAX_SERVICE_LEN 20
 
+#define MAX_RETRANSMISSIONS 10
+#define DEFAULT_RETRANSMISSIONS 1
+
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
 
@@ -58,11 +61,12 @@ typedef enum {
     OPT_NO_PING = 1 << 2,
     OPT_NO_RANDOMIZE = 1 << 3,
     OPT_PORTS = 1 << 4,
-    OPT_SCAN = 1 << 5,
-    OPT_THREADS = 1 << 6,
-    OPT_TOP_PORTS = 1 << 7,
-    OPT_VERSION = 1 << 8,
-    OPT_VERBOSE = 1 << 9,
+    OPT_RETRANSMISSIONS = 1 << 5,
+    OPT_SCAN = 1 << 6,
+    OPT_THREADS = 1 << 7,
+    OPT_TOP_PORTS = 1 << 8,
+    OPT_VERSION = 1 << 9,
+    OPT_VERBOSE = 1 << 10,
 } option_value;
 
 typedef struct {
@@ -73,17 +77,18 @@ typedef struct {
 } option;
 
 static const option valid_opt[] = {
-    {OPT_FILE,         'f',  "file",         true },
-    {OPT_HELP,         'h',  "help",         false},
-    {OPT_NO_PING,      '\0', "no-ping",      false},
-    {OPT_NO_RANDOMIZE, '\0', "no-randomize", false},
-    {OPT_PORTS,        'p',  "ports",        true },
-    {OPT_SCAN,         's',  "scans",        true },
-    {OPT_THREADS,      't',  "threads",      true },
-    {OPT_TOP_PORTS,    '\0', "top-ports",    true },
-    {OPT_VERBOSE,      'v',  "verbose",      false},
-    {OPT_VERSION,      'V',  "version",      false},
-    {0,                0,    NULL,           false}
+    {OPT_FILE,            'f',  "file",            true },
+    {OPT_HELP,            'h',  "help",            false},
+    {OPT_NO_PING,         '\0', "no-ping",         false},
+    {OPT_NO_RANDOMIZE,    '\0', "no-randomize",    false},
+    {OPT_PORTS,           'p',  "ports",           true },
+    {OPT_RETRANSMISSIONS, 'r',  "retransmissions", true },
+    {OPT_SCAN,            's',  "scans",           true },
+    {OPT_THREADS,         't',  "threads",         true },
+    {OPT_TOP_PORTS,       '\0', "top-ports",       true },
+    {OPT_VERBOSE,         'v',  "verbose",         false},
+    {OPT_VERSION,         'V',  "version",         false},
+    {0,                   0,    NULL,              false}
 };
 
 typedef enum {
@@ -205,6 +210,7 @@ typedef struct t_nmap {
     uint8_t num_handles;
     uint64_t start_time;
     uint16_t top_ports;
+    uint8_t retransmissions;
 
     char tcp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];
     char udp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];

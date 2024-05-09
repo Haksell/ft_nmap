@@ -62,7 +62,7 @@ static pthread_t create_capture_thread(t_capture_args* args) {
 static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
     t_nmap* nmap = th_info->nmap;
     // TODO: --retransmissions
-    for (int transmission = 0; transmission < 3; ++transmission) {
+    for (int transmission = 0; transmission <= nmap->retransmissions; ++transmission) {
         for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
             if (th_info->host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
             uint16_t port = loop_port_array[port_index];

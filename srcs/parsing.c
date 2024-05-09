@@ -168,6 +168,9 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
     switch (opt) {
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
+        case OPT_RETRANSMISSIONS:
+            nmap->retransmissions = atoi_check(value, 0, MAX_RETRANSMISSIONS, "retransmissions");
+            break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
         case OPT_THREADS: nmap->num_threads = atoi_check(value, 0, MAX_HOSTNAMES, "threads"); break;
         case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, 1, MAX_PORTS, "top-ports")); break;
@@ -319,6 +322,7 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
 
     if (nmap->opt & (OPT_HELP | OPT_VERSION)) exit(EXIT_SUCCESS);
     if (nmap->scans == 0) nmap->scans = ~(1 << SCAN_CONN | 1 << SCAN_WIN);
+    if (!(nmap->opt & OPT_RETRANSMISSIONS)) nmap->retransmissions = DEFAULT_RETRANSMISSIONS;
     set_top_ports(nmap);
     set_default_ports(nmap);
     set_port_mappings(nmap);
