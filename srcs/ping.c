@@ -15,7 +15,7 @@ static uint16_t calculate_checksum(uint16_t* packet, int length) {
     return (uint16_t)~sum;
 }
 
-void send_ping_icmp(t_thread_info* th_info) {
+void send_ping(t_thread_info* th_info) {
     struct icmphdr icmphdr = {
         .type = ICMP_ECHO,
         .code = 0,
@@ -45,23 +45,6 @@ void send_ping_icmp(t_thread_info* th_info) {
         sizeof(struct sockaddr_in)
     );
     if (bytes_sent < 0) error("Sending ping failed");
-}
-
-void send_ping_udp(t_thread_info* th_info) {
-    struct timeval ping_time;
-    gettimeofday(&ping_time, NULL);
-    uint8_t packet[sizeof(struct iphdr) + sizeof(struct udphdr) + sizeof(ping_time)];
-
-    fill_packet(th_info, packet, 80, (const uint8_t*)&ping_time, sizeof(ping_time));
-    sendto(
-        th_info->nmap->udp_fd,
-        packet,
-        sizeof(packet),
-        0,
-        (struct sockaddr*)&th_info->hostaddr,
-        sizeof(th_info->hostaddr)
-    );
-    // TODO: on verifier si tout est protege!!!!!
 }
 
 void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet) {
