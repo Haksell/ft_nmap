@@ -18,6 +18,7 @@ static void init(t_nmap* nmap) {
         panic("This program requires root privileges for raw socket creation.\n");
     }
 
+    get_service_names(nmap);
     nmap->source_address = get_source_address();
 
     nmap->tcp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);

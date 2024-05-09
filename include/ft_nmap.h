@@ -47,6 +47,7 @@
 
 #define MAX_PORTS 1024
 #define MAX_HOSTNAMES 250
+#define MAX_SERVICE_LEN 20
 
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
@@ -208,6 +209,9 @@ typedef struct t_nmap {
     uint64_t start_time;
     uint16_t top_ports;
 
+    char tcp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];
+    char udp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];
+
     pcap_if_t* devs;
     bpf_u_int32 device_lo;
     bpf_u_int32 device_net;
@@ -229,6 +233,9 @@ void* capture_packets(__attribute__((unused)) void* arg);
 void cleanup(t_nmap* nmap);
 void error(char* message);
 void panic(const char* format, ...);
+
+// get_service_names.c
+void get_service_names(t_nmap* nmap);
 
 // packet.c
 void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);

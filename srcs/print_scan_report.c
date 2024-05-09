@@ -1,7 +1,6 @@
 #include "ft_nmap.h"
 
 #define SEPARATOR " | "
-#define MAX_SERVICE_LEN 32
 #define HIDE_LIMIT 10
 #define HEADER_LINE (-1)
 #define HIDE_LINE (-2)
@@ -13,13 +12,6 @@ typedef struct {
     int udp_service;
     bool two_columns;
 } t_paddings;
-
-static void get_service_name(uint16_t port, const char* proto, char buffer[MAX_SERVICE_LEN + 1]) {
-    struct servent* service = getservbyport(htons(port), proto);
-    char* service_name = service ? service->s_name : "unknown";
-    strncpy(buffer, service_name, MAX_SERVICE_LEN);
-    buffer[MAX_SERVICE_LEN] = '\0';
-}
 
 static void copy_port_state_combination(t_thread_info* th_info, port_state combination[SCAN_MAX], int port_index) {
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
@@ -55,10 +47,8 @@ compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_
             paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_info[state].strlen);
         }
         if (hide_count == 0 || !same_port_combination(th_info, common_port_state_combination, port_index)) {
-            char tcp_service[MAX_SERVICE_LEN + 1];
-            char udp_service[MAX_SERVICE_LEN + 1];
-            get_service_name(port, "tcp", tcp_service);
-            get_service_name(port, "udp", udp_service);
+            char* tcp_service = nmap->tcp_services[port_index];
+            char* udp_service = nmap->udp_services[port_index];
             paddings.tcp_service = MAX(paddings.tcp_service, strlen(tcp_service));
             paddings.udp_service = MAX(paddings.udp_service, strlen(udp_service));
             if (may_have_two_columns && !paddings.two_columns && strcmp(tcp_service, udp_service) != 0)
@@ -118,17 +108,8 @@ static void print_line(
     int port = port_index < 0 ? port_index : nmap->port_array[port_index];
     bool has_udp = (nmap->scans >> SCAN_UDP) & 1;
 
-    char tcp_service[MAX_SERVICE_LEN + 1];
-    char udp_service[MAX_SERVICE_LEN + 1];
-    if (port == HIDE_LINE) {
-        tcp_service[0] = udp_service[0] = '\0';
-    } else if (port == HEADER_LINE) {
-        strcpy(tcp_service, "SERVICE");
-        strcpy(udp_service, "SERVICE");
-    } else {
-        get_service_name(port, "tcp", tcp_service);
-        get_service_name(port, "udp", udp_service);
-    }
+    char* tcp_service = port == HIDE_LINE ? "" : port == HEADER_LINE ? "SERVICE" : nmap->tcp_services[port_index];
+    char* udp_service = port == HIDE_LINE ? "" : port == HEADER_LINE ? "SERVICE" : nmap->udp_services[port_index];
 
     if (port == HEADER_LINE) printf("%-*s", paddings->port, "PORT");
     else if (port == HIDE_LINE) printf("%-*s", paddings->port, "...");
