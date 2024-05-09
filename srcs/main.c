@@ -50,7 +50,7 @@ static void init(t_nmap* nmap) {
 
     init_mutex(nmap, &nmap->mutex_print);
     init_mutex(nmap, &nmap->mutex_undefined_count);
-    init_mutex(nmap, &nmap->mutex_unset_filters);
+    init_mutex(nmap, &nmap->mutex_pcap_filter);
     init_mutex(nmap, &mutex_run);
 }
 

@@ -16,10 +16,10 @@ static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_e
 
 void unset_filters(t_nmap* nmap, int t_index) {
     static char filter_none[] = "tcp and not ip";
-    pthread_mutex_lock(&nmap->mutex_unset_filters);
+    pthread_mutex_lock(&nmap->mutex_pcap_filter);
     set_device_filter(thread_globals[t_index].handle_lo, nmap->device_lo, filter_none);
     set_device_filter(thread_globals[t_index].handle_net, nmap->device_net, filter_none);
-    pthread_mutex_unlock(&nmap->mutex_unset_filters);
+    pthread_mutex_unlock(&nmap->mutex_pcap_filter);
 }
 
 void set_filter(t_thread_info* th_info, scan_type scan_type) {
@@ -43,7 +43,10 @@ void set_filter(t_thread_info* th_info, scan_type scan_type) {
     bpf_u_int32 current_device = th_info->globals.current_handle == th_info->globals.handle_lo
                                      ? th_info->nmap->device_lo
                                      : th_info->nmap->device_net;
+
+    pthread_mutex_lock(&th_info->nmap->mutex_pcap_filter);
     set_device_filter(th_info->globals.current_handle, current_device, filter_exp);
+    pthread_mutex_unlock(&th_info->nmap->mutex_pcap_filter);
 }
 
 static pcap_t* set_handle(char* dev) {
