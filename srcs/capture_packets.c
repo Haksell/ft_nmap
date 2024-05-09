@@ -73,10 +73,14 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
                          : tcp->th_flags & TH_RST           ? PORT_CLOSED
                                                             : PORT_UNEXPECTED;
             break;
-        case SCAN_ACK: port_state = tcp->th_flags & TH_RST ? PORT_UNFILTERED : PORT_UNEXPECTED; break;
+        case SCAN_ACK:
+            if (tcp->th_flags & TH_RST) port_state = PORT_UNFILTERED;
+            break;
         case SCAN_NULL:
         case SCAN_FIN:
-        case SCAN_XMAS: port_state = tcp->th_flags & TH_RST ? PORT_CLOSED : PORT_UNEXPECTED; break;
+        case SCAN_XMAS:
+            if (tcp->th_flags & TH_RST) port_state = PORT_CLOSED;
+            break;
         case SCAN_WIN:
             if (tcp->th_flags & TH_RST) port_state = tcp->th_win ? PORT_OPEN : PORT_CLOSED;
             break;
