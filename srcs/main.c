@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     // maybe detach instead
     for (int i = 0; i < nmap.num_threads; ++i) pthread_join(nmap.threads[i].thread_id, NULL);
 
-    final_credits(&nmap);
+    if (run) final_credits(&nmap);
     cleanup(&nmap);
     return EXIT_SUCCESS;
 }
