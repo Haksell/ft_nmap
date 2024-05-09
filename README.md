@@ -51,6 +51,7 @@
 
 ## push check
 
+- [ ] protect all the syscalls
 - [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes`
 - [ ] static all the functions
 - [ ] check forbidden functions
