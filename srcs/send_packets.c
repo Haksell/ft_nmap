@@ -54,6 +54,7 @@ static void send_packet_tcp(t_thread_info* th_info, uint16_t port) {
 }
 
 static pthread_t create_capture_thread(t_capture_args* args) {
+    if (!args->th_info->nmap->is_sudo) return 0;
     pthread_t thread_id;
     if (pthread_create(&thread_id, NULL, capture_packets, args)) panic("Failed to create the capture thread");
     return thread_id;
@@ -88,18 +89,15 @@ void* send_packets(void* arg) {
     t_thread_info* th_info = arg;
     t_nmap* nmap = th_info->nmap;
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
-    pthread_t capture_thread_lo, capture_thread_net;
 
-    if (nmap->is_sudo) {
-        capture_thread_lo = create_capture_thread(&(t_capture_args){
-            .th_info = th_info,
-            .handle = th_info->globals.handle_lo,
-        });
-        capture_thread_net = create_capture_thread(&(t_capture_args){
-            .th_info = th_info,
-            .handle = th_info->globals.handle_net,
-        });
-    }
+    pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){
+        .th_info = th_info,
+        .handle = th_info->globals.handle_lo,
+    });
+    pthread_t capture_thread_net = create_capture_thread(&(t_capture_args){
+        .th_info = th_info,
+        .handle = th_info->globals.handle_net,
+    });
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
