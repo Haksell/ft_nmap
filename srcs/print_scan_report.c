@@ -187,6 +187,6 @@ static void print_host_is_up(t_thread_info* th_info) {
 }
 
 void print_scan_report(t_thread_info* th_info) {
-    if (th_info->nmap->hosts[th_info->h_index].is_up) print_host_is_down(th_info);
-    else print_host_is_up(th_info);
+    if (th_info->nmap->hosts[th_info->h_index].is_up) print_host_is_up(th_info);
+    else print_host_is_down(th_info);
 }
