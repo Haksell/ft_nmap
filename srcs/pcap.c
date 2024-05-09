@@ -1,5 +1,7 @@
 #include "ft_nmap.h"
 
+#define SNAP_LEN 1518 // maximum size of ethernet packet
+
 extern t_thread_globals thread_globals[MAX_HOSTNAMES];
 
 static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_exp) {

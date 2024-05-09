@@ -52,8 +52,6 @@
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
 
-#define SNAP_LEN 1518 // maximum size of ethernet packet
-
 typedef enum {
     OPT_FILE = 1 << 0,
     OPT_HELP = 1 << 1,
@@ -178,7 +176,7 @@ typedef struct t_thread_info {
     t_thread_globals globals;
     int t_index;
     uint64_t latency;
-    uint16_t port_source; // ???
+    uint16_t port_source;
     uint8_t current_scan;
     struct sockaddr_in hostaddr;
     char hostip[INET_ADDRSTRLEN + 1];
