@@ -123,14 +123,14 @@ static const t_port_state_info port_state_info[] = {
 };
 
 typedef enum {
+    SCAN_CONN,
     SCAN_SYN,
     SCAN_ACK,
+    SCAN_WIN,
     SCAN_FIN,
     SCAN_NULL,
     SCAN_XMAS,
     SCAN_UDP,
-    SCAN_WIN,
-    SCAN_CONN,
     SCAN_MAX,
 } scan_type;
 
@@ -142,15 +142,15 @@ typedef struct {
 static const port_state default_port_state[SCAN_MAX] = {
     PORT_FILTERED,
     PORT_FILTERED,
-    PORT_OPEN_FILTERED,
-    PORT_OPEN_FILTERED,
-    PORT_OPEN_FILTERED,
-    PORT_OPEN_FILTERED,
     PORT_FILTERED,
     PORT_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
 };
 
-static const char scans_str[][7] = {"SYN", "ACK", "FIN", "NULL", "XMAS", "UDP", "WIN", "CONN"};
+static const char scans_str[][5] = {"CONN", "SYN", "ACK", "WIN", "FIN", "NULL", "XMAS", "UDP"};
 
 struct t_thread_info;
 

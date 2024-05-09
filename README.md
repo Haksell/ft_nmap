@@ -2,7 +2,6 @@
 
 ## fix today
 
-- [ ] `CONN` before `SYN`, `WIN` after `ACK`
 - [ ] find `hostip` of every host during parsing and put it in `t_host`
 - [ ] `--retransmissions` flag (time proportional to undefined count and latency)
 - [ ] `CONN`: no sudo, timeout, more even segmentations (and bigger than 512), own separate thread
