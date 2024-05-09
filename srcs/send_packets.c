@@ -1,6 +1,8 @@
 #include "ft_nmap.h"
 #include "udp_probes.h"
 
+#define WAIT_SCAN_US 50000
+
 extern volatile sig_atomic_t run;
 extern pthread_mutex_t mutex_run;
 
@@ -57,10 +59,35 @@ static pthread_t create_capture_thread(t_capture_args* args) {
     return thread_id;
 }
 
+static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
+    t_nmap* nmap = th_info->nmap;
+    t_host* host = &nmap->hosts[th_info->h_index];
+    // TODO: --retransmissions
+    for (int transmission = 0; transmission < 3; ++transmission) {
+        for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
+            if (host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
+            uint16_t port = loop_port_array[port_index];
+            if (th_info->current_scan == SCAN_UDP && (port_index > 6 || transmission > 0)) usleep(1000000);
+            (th_info->current_scan == SCAN_UDP ? send_packet_udp : send_packet_tcp)(th_info, port);
+        }
+
+        int latency_sleeps = th_info->latency ? (2 * th_info->latency) / WAIT_SCAN_US : 5;
+        int port_sleeps = host->undefined_count[th_info->current_scan] * 500 / WAIT_SCAN_US;
+        int sleeps = 1 + latency_sleeps + port_sleeps;
+
+        for (int i = 0; i < sleeps && run; ++i) {
+            pthread_mutex_lock(&nmap->mutex_undefined_count);
+            bool zero = host->undefined_count[th_info->current_scan] == 0;
+            pthread_mutex_unlock(&nmap->mutex_undefined_count);
+            if (zero) return;
+            usleep(WAIT_SCAN_US);
+        }
+    }
+}
+
 void* send_packets(void* arg) {
     t_thread_info* th_info = arg;
     t_nmap* nmap = th_info->nmap;
-    const int wait_operations = 10 + (nmap->port_count / 50);
     uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
     pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){
@@ -77,11 +104,12 @@ void* send_packets(void* arg) {
     for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run;
          th_info->h_index += step) {
         if (!hostname_to_ip(th_info->nmap->hosts[th_info->h_index].name, th_info->hostip)) continue;
+
         th_info->latency = 0.0;
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
         bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
         th_info->globals.current_handle = is_localhost ? th_info->globals.handle_lo : th_info->globals.handle_net;
-        th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
+
         if (!(nmap->opt & OPT_NO_PING) && !is_localhost) {
             set_filter(th_info, SCAN_MAX);
             send_ping(th_info);
@@ -94,32 +122,13 @@ void* send_packets(void* arg) {
             pthread_mutex_unlock(&mutex_run);
             if (scan == SCAN_CONN) {
                 scan_connect(th_info, loop_port_array);
-                continue;
+            } else {
+                th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
+                set_filter(th_info, scan);
+                exec_scan(th_info, loop_port_array);
+                unset_filters(nmap, th_info->t_index);
+                set_default_port_states(th_info);
             }
-
-            set_filter(th_info, scan);
-
-            // TODO: --transmissions flag
-            for (int transmission = 0; transmission < 2; ++transmission) {
-                for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
-                    if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] != PORT_UNDEFINED)
-                        continue;
-                    uint16_t port = loop_port_array[port_index];
-                    if (th_info->current_scan == SCAN_UDP && (port_index > 6 || transmission > 0)) usleep(1000000);
-                    (th_info->current_scan == SCAN_UDP ? send_packet_udp : send_packet_tcp)(th_info, port);
-                }
-
-                for (int i = 0; i < wait_operations && run; ++i) {
-                    pthread_mutex_lock(&nmap->mutex_undefined_count);
-                    bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
-                    pthread_mutex_unlock(&nmap->mutex_undefined_count);
-                    if (zero) break;
-                    usleep(50000);
-                }
-            }
-
-            unset_filters(nmap, th_info->t_index);
-            set_default_port_states(th_info);
         }
         if (run) print_scan_report(th_info);
     }
