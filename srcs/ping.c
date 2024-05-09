@@ -1,4 +1,6 @@
 #include "ft_nmap.h"
+#include <bits/types/struct_timeval.h>
+#include <stdint.h>
 
 static uint16_t calculate_checksum(uint16_t* packet, int length) {
     uint32_t sum = 0;
