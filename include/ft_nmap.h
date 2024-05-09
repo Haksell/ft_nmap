@@ -168,7 +168,6 @@ typedef struct {
 
 typedef struct {
     sig_atomic_t sender_finished;
-    sig_atomic_t hostname_finished;
     pcap_t* handle_lo;
     pcap_t* handle_net;
     pcap_t* current_handle;
@@ -220,9 +219,8 @@ typedef struct t_nmap {
 
     pthread_mutex_t mutex_print;
     pthread_mutex_t mutex_undefined_count;
-    pthread_mutex_t mutex_hostname_finished;
     pthread_mutex_t mutex_unset_filters;
-    pthread_mutex_t* mutexes[6]; // only used to free the mutexes
+    pthread_mutex_t* mutexes[5]; // only used to free the mutexes
 } t_nmap;
 
 // capture_packets.c

@@ -120,9 +120,6 @@ void* send_packets(void* arg) {
 
             unset_filters(nmap, th_info->t_index);
             set_default_port_states(th_info);
-            pthread_mutex_lock(&nmap->mutex_hostname_finished);
-            th_info->globals.hostname_finished = true;
-            pthread_mutex_unlock(&nmap->mutex_hostname_finished);
         }
         if (run) print_scan_report(th_info);
     }
