@@ -178,12 +178,12 @@ typedef struct t_thread_info {
     t_thread_globals globals;
     int t_index;
     uint64_t latency;
-    int h_index;
     uint16_t port_source; // ???
     uint8_t current_scan;
     struct sockaddr_in hostaddr;
     char hostip[INET_ADDRSTRLEN + 1];
     pthread_t thread_id;
+    t_host* host;
 } t_thread_info;
 
 typedef struct t_nmap {

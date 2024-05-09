@@ -6,14 +6,13 @@
 extern volatile sig_atomic_t run;
 
 static void set_port_and_host_state(t_thread_info* th_info, port_state port_state, uint16_t port) {
-    th_info->nmap->hosts[th_info->h_index].is_up = true;
+    th_info->host->is_up = true;
     set_port_state(th_info, port_state, port);
 }
 
 // TODO: same code for UDP?
 
 static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array, int start, int end) {
-    t_nmap* nmap = th_info->nmap;
     fd_set fd_read, fd_all;
     int max_fd = 0;
 
@@ -80,7 +79,7 @@ static void scan_connect_range(t_thread_info* th_info, uint16_t* loop_port_array
                 fds[port_index - start] = -1;
             }
         }
-        if (nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0) break;
+        if (th_info->host->undefined_count[th_info->current_scan] == 0) break;
     }
     for (int port_index = start; port_index < end; ++port_index) close(fds[port_index - start]);
 }

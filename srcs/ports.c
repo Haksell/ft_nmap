@@ -30,11 +30,9 @@ void set_port(t_nmap* nmap, uint16_t port) {
 }
 
 void set_default_port_states(t_thread_info* th_info) {
-    t_nmap* nmap = th_info->nmap;
-    for (int i = 0; i < nmap->port_count; ++i) {
-        if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][i] == PORT_UNDEFINED) {
-            nmap->hosts[th_info->h_index]
-                .port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
+    for (int i = 0; i < th_info->nmap->port_count; ++i) {
+        if (th_info->host->port_states[th_info->current_scan][i] == PORT_UNDEFINED) {
+            th_info->host->port_states[th_info->current_scan][i] = default_port_state[th_info->current_scan];
         }
     }
 }

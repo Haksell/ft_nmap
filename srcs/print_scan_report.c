@@ -15,13 +15,13 @@ typedef struct {
 
 static void copy_port_state_combination(t_thread_info* th_info, port_state combination[SCAN_MAX], int port_index) {
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-        combination[scan_type] = th_info->nmap->hosts[th_info->h_index].port_states[scan_type][port_index];
+        combination[scan_type] = th_info->host->port_states[scan_type][port_index];
     }
 }
 
 static bool same_port_combination(t_thread_info* th_info, port_state combination[SCAN_MAX], int port_index) {
     for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-        if (combination[scan_type] != th_info->nmap->hosts[th_info->h_index].port_states[scan_type][port_index]) {
+        if (combination[scan_type] != th_info->host->port_states[scan_type][port_index]) {
             return false;
         }
     }
@@ -43,7 +43,7 @@ compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_
         uint16_t port = nmap->port_array[port_index];
         if (port >= 10000) paddings.port = 5;
         for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-            port_state state = nmap->hosts[th_info->h_index].port_states[scan_type][port_index];
+            port_state state = th_info->host->port_states[scan_type][port_index];
             paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_info[state].strlen);
         }
         if (hide_count == 0 || !same_port_combination(th_info, common_port_state_combination, port_index)) {
@@ -87,9 +87,8 @@ static void print_scan_cell(
     port_state common_port_state_combination[SCAN_MAX]
 ) {
     port_state port_state = port == HEADER_LINE ? PORT_UNDEFINED
-                            : port == HIDE_LINE
-                                ? common_port_state_combination[scan_type]
-                                : th_info->nmap->hosts[th_info->h_index].port_states[scan_type][port_index];
+                            : port == HIDE_LINE ? common_port_state_combination[scan_type]
+                                                : th_info->host->port_states[scan_type][port_index];
     printf(
         "%s%-*s " WHITE,
         port == HEADER_LINE ? WHITE : port_state_info[port_state].color,
@@ -141,14 +140,12 @@ static void gotta_go_fast(
     port_state* common_port_state_combination,
     char* host
 ) {
-    t_nmap* nmap = th_info->nmap;
-
-    printf("\nnmap scan report for %s (%s)\n", nmap->hosts[th_info->h_index].name, th_info->hostip);
+    printf("\nnmap scan report for %s (%s)\n", th_info->host->name, th_info->hostip);
     if (th_info->latency) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
-    if (host[0] != '\0') printf("rDNS record for %s: %s\n", nmap->hosts[th_info->h_index].name, host);
+    if (host[0] != '\0') printf("rDNS record for %s: %s\n", th_info->host->name, host);
 
     print_line(th_info, paddings, common_port_state_combination, HEADER_LINE);
-    for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
+    for (int port_index = 0; port_index < th_info->nmap->port_count; ++port_index) {
         if (!hide_count || !same_port_combination(th_info, common_port_state_combination, port_index)) {
             print_line(th_info, paddings, common_port_state_combination, port_index);
         }
@@ -161,32 +158,27 @@ static void gotta_go_fast(
 }
 
 static void print_host_is_down(t_thread_info* th_info) {
-    t_nmap* nmap = th_info->nmap;
-    pthread_mutex_lock(&nmap->mutex_print);
-    printf("\nHost %s is down.\n", nmap->hosts[th_info->h_index].name);
-    pthread_mutex_unlock(&nmap->mutex_print);
+    pthread_mutex_lock(&th_info->nmap->mutex_print);
+    printf("\nHost %s is down.\n", th_info->host->name);
+    pthread_mutex_unlock(&th_info->nmap->mutex_print);
 }
 
-// TODO: lsimanic better
 static void print_host_is_up(t_thread_info* th_info) {
-    t_nmap* nmap = th_info->nmap;
-
     port_state common_port_state_combination[SCAN_MAX];
     int hide_count = find_most_common_port_state_combination(th_info, common_port_state_combination);
     t_paddings paddings = compute_paddings(th_info, hide_count, common_port_state_combination);
 
     char host[NI_MAXHOST];
-    if (!ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) ||
-        strcmp(nmap->hosts[th_info->h_index].name, host) == 0)
+    if (!ip_to_hostname(th_info->hostaddr.sin_addr, host, sizeof(host)) || strcmp(th_info->host->name, host) == 0)
         host[0] = '\0';
 
-    pthread_mutex_lock(&nmap->mutex_print);
+    pthread_mutex_lock(&th_info->nmap->mutex_print);
     gotta_go_fast(th_info, &paddings, hide_count, common_port_state_combination, host);
     printf(RESET);
-    pthread_mutex_unlock(&nmap->mutex_print);
+    pthread_mutex_unlock(&th_info->nmap->mutex_print);
 }
 
 void print_scan_report(t_thread_info* th_info) {
-    if (th_info->nmap->hosts[th_info->h_index].is_up) print_host_is_up(th_info);
+    if (th_info->host->is_up) print_host_is_up(th_info);
     else print_host_is_down(th_info);
 }

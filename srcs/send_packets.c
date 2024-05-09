@@ -61,23 +61,22 @@ static pthread_t create_capture_thread(t_capture_args* args) {
 
 static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
     t_nmap* nmap = th_info->nmap;
-    t_host* host = &nmap->hosts[th_info->h_index];
     // TODO: --retransmissions
     for (int transmission = 0; transmission < 3; ++transmission) {
         for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
-            if (host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
+            if (th_info->host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
             uint16_t port = loop_port_array[port_index];
             if (th_info->current_scan == SCAN_UDP && (port_index > 6 || transmission > 0)) usleep(1000000);
             (th_info->current_scan == SCAN_UDP ? send_packet_udp : send_packet_tcp)(th_info, port);
         }
 
         int latency_sleeps = th_info->latency ? (2 * th_info->latency) / WAIT_SCAN_US : 5;
-        int port_sleeps = host->undefined_count[th_info->current_scan] * 500 / WAIT_SCAN_US;
+        int port_sleeps = th_info->host->undefined_count[th_info->current_scan] * 500 / WAIT_SCAN_US;
         int sleeps = 1 + latency_sleeps + port_sleeps;
 
         for (int i = 0; i < sleeps && run; ++i) {
             pthread_mutex_lock(&nmap->mutex_undefined_count);
-            bool zero = host->undefined_count[th_info->current_scan] == 0;
+            bool zero = th_info->host->undefined_count[th_info->current_scan] == 0;
             pthread_mutex_unlock(&nmap->mutex_undefined_count);
             if (zero) return;
             usleep(WAIT_SCAN_US);
@@ -101,9 +100,9 @@ void* send_packets(void* arg) {
 
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
-    for (th_info->h_index = th_info->t_index; th_info->h_index < nmap->hostname_count && run;
-         th_info->h_index += step) {
-        if (!hostname_to_ip(th_info->nmap->hosts[th_info->h_index].name, th_info->hostip)) continue;
+    for (int h_index = th_info->t_index; h_index < nmap->hostname_count && run; h_index += step) {
+        th_info->host = th_info->nmap->hosts + h_index;
+        if (!hostname_to_ip(th_info->host->name, th_info->hostip)) continue;
 
         th_info->latency = 0.0;
         th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};

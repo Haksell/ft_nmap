@@ -10,12 +10,12 @@ void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port
     t_nmap* nmap = th_info->nmap;
     uint16_t port_index = nmap->port_dictionary[port];
     if (port_index == MAX_PORTS) return;
-    if (nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] == PORT_UNDEFINED) {
-        nmap->hosts[th_info->h_index].port_states[th_info->current_scan][port_index] = port_state;
+    if (th_info->host->port_states[th_info->current_scan][port_index] == PORT_UNDEFINED) {
+        th_info->host->port_states[th_info->current_scan][port_index] = port_state;
 
         pthread_mutex_lock(&nmap->mutex_undefined_count);
-        --nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan];
-        bool zero = nmap->hosts[th_info->h_index].undefined_count[th_info->current_scan] == 0;
+        --th_info->host->undefined_count[th_info->current_scan];
+        bool zero = th_info->host->undefined_count[th_info->current_scan] == 0;
         pthread_mutex_unlock(&nmap->mutex_undefined_count);
         if (zero) pcap_breakloop(th_info->globals.current_handle);
     }
@@ -56,12 +56,11 @@ static void handle_icmp(t_thread_info* th_info, const u_char* packet, const stru
 }
 
 static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struct ip* ip, int size_ip) {
-    t_nmap* nmap = th_info->nmap;
     const struct tcphdr* tcp = (struct tcphdr*)(packet + SIZE_ETHERNET + size_ip);
 
     int size_tcp = tcp->th_off * 4;
     if (size_tcp < 20) {
-        if (nmap->opt & OPT_VERBOSE) printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
+        if (th_info->nmap->opt & OPT_VERBOSE) printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
         return;
     }
 
@@ -91,7 +90,7 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
     set_port_state(th_info, port_state, ntohs(tcp->th_sport));
 
     int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-    if (size_payload > 0 && nmap->opt & OPT_VERBOSE)
+    if (size_payload > 0 && th_info->nmap->opt & OPT_VERBOSE)
         print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
@@ -122,7 +121,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
         return;
     }
 
-    th_info->nmap->hosts[th_info->h_index].is_up = true;
+    th_info->host->is_up = true;
     if (ip->ip_p == IPPROTO_ICMP) handle_icmp(th_info, packet, ip);
     else if (ip->ip_p == IPPROTO_TCP) handle_tcp(th_info, packet, ip, size_ip);
     else if (ip->ip_p == IPPROTO_UDP) handle_udp(th_info, packet, size_ip);
