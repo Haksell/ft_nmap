@@ -2,8 +2,8 @@
 
 ## fix today
 
-- [ ] `CONN`: no timeout, no ping, more even segmentations (and bigger than 512), own separate thread
-- [ ] `UDP`: better sleep, better handling of multiple payloads
+- [ ] `SCAN_CONN`: better timeout
+- [ ] `SCAN_UDP`: better sleep, better handling of multiple payloads
 - [ ] no more usleep (si on est motive)
 
 ## mandatory
