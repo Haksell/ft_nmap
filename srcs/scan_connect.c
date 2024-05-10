@@ -15,7 +15,7 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
     for (int port_index = 0; port_index < port_count && run; ++port_index) {
         int port = loop_port_array[port_index];
         int fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (fd < 0) error("Connect socket creation failed");
+        if (fd < 0) error("SCAN_CONN socket creation failed");
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
             error("setsockopt SO_REUSEADDR failed");
 
