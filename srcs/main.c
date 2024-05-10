@@ -14,7 +14,7 @@ static void init_mutex(t_nmap* nmap, pthread_mutex_t* mutex) {
 
 static void init(t_nmap* nmap) {
     get_service_names(nmap);
-    nmap->source_address = get_source_address();
+    if (!(nmap->opt & OPT_SPOOF_ADDRESS)) nmap->source_address = get_source_address();
 
     if (nmap->is_sudo) {
         nmap->tcp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);

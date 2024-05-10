@@ -63,11 +63,12 @@ typedef enum {
     OPT_PORTS = 1 << 4,
     OPT_RETRANSMISSIONS = 1 << 5,
     OPT_SCAN = 1 << 6,
-    OPT_THREADS = 1 << 7,
-    OPT_TOP_PORTS = 1 << 8,
-    OPT_UDP_RATE = 1 << 9,
-    OPT_VERSION = 1 << 10,
-    OPT_VERBOSE = 1 << 11,
+    OPT_SPOOF_ADDRESS = 1 << 7,
+    OPT_THREADS = 1 << 8,
+    OPT_TOP_PORTS = 1 << 9,
+    OPT_UDP_RATE = 1 << 10,
+    OPT_VERSION = 1 << 11,
+    OPT_VERBOSE = 1 << 12,
 } option_value;
 
 typedef struct {
@@ -85,6 +86,7 @@ static const option valid_opt[] = {
     {OPT_PORTS,           'p',  "ports",           true },
     {OPT_RETRANSMISSIONS, 'r',  "retransmissions", true },
     {OPT_SCAN,            's',  "scans",           true },
+    {OPT_SPOOF_ADDRESS,   '\0', "spoof-address",   true },
     {OPT_THREADS,         't',  "threads",         true },
     {OPT_TOP_PORTS,       '\0', "top-ports",       true },
     {OPT_UDP_RATE,        'u',  "udp-rate",        true },

@@ -1,9 +1,5 @@
 # ft_nmap
 
-## fix today
-
-- [ ] no more usleep (si on est motive)
-
 ## mandatory
 
 - [x] The executable must be named ft_nmap.
