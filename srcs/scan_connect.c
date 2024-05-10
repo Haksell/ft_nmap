@@ -13,8 +13,8 @@ void scan_connect(t_thread_info* th_info) {
     struct pollfd fds[port_count];
     struct sockaddr_in targets[port_count];
 
-    for (int port_index = 0; port_index < port_count && run; ++port_index) {
-        uint16_t actual_index = nmap->opt & OPT_NO_RANDOMIZE ? port_index : nmap->random_indices[port_index];
+    for (int i = 0; i < port_count && run; ++i) {
+        uint16_t actual_index = nmap->opt & OPT_NO_RANDOMIZE ? i : nmap->random_indices[i];
         int port = nmap->port_array[actual_index];
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0) error("SCAN_CONN socket creation failed");
@@ -30,11 +30,11 @@ void scan_connect(t_thread_info* th_info) {
             .sin_port = htons(port),
             .sin_addr = th_info->hostaddr.sin_addr,
         };
-        targets[port_index] = target;
-        fds[port_index].fd = fd;
-        fds[port_index].events = POLLOUT;
+        targets[i] = target;
+        fds[i].fd = fd;
+        fds[i].events = POLLOUT;
 
-        if (connect(fd, (struct sockaddr*)&targets[port_index], sizeof(target)) == -1 && errno != EINPROGRESS) {
+        if (connect(fd, (struct sockaddr*)&targets[i], sizeof(target)) == -1 && errno != EINPROGRESS) {
             set_port_and_host_state(th_info, PORT_CLOSED, port);
         }
     }
