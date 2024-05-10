@@ -2,7 +2,6 @@
 
 ## fix today
 
-- [ ] `SCAN_UDP`: better sleep, better handling of multiple payloads
 - [ ] no more usleep (si on est motive)
 
 ## mandatory
@@ -38,7 +37,7 @@
 - [x] `-sW` SCAN_WIN
 - [x] `-sC` SCAN_CONN
 - [x] UDP probes
-- [ ] `--udp-rate`
+- [x] `--udp-rate`
 - [x] Various spoofs (Ctrl+F `random_u32_range`)
 - [ ] `--spoof-address` (hide source address)
 
