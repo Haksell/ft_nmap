@@ -35,10 +35,15 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         }
     }
 
-    int timeout = 2000 + 8 * port_count; // TODO: better timeout
+    uint64_t full_timeout = 2000000 + 8 * port_count;
+    uint64_t start_time = get_microseconds();
 
     while (run) {
-        int res = poll(fds, port_count, timeout);
+        uint64_t us_since_start = get_microseconds() - start_time;
+        if (us_since_start >= full_timeout) break;
+        uint64_t remaining_timeout = MAX(500000, full_timeout - us_since_start);
+
+        int res = poll(fds, port_count, remaining_timeout);
         if (res == 0 || errno == EINTR) break;
         if (res < 0) error("poll failed");
 
