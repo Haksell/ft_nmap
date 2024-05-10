@@ -157,6 +157,19 @@ static void parse_file(char* filename, t_nmap* nmap) {
     add_hostname_or_cidr(nmap, hostname);
 }
 
+static in_addr_t parse_spoof_address(char* value, char* long_opt) {
+    if (strlen(value) > HOST_NAME_MAX) panic("nmap: hostname too long in \"%s\": %s...\n", long_opt, value);
+
+    struct addrinfo hints = {.ai_family = AF_INET};
+    struct addrinfo* res = NULL;
+
+    int status = getaddrinfo(value, NULL, &hints, &res);
+    if (status < 0 || res == NULL) panic("\nnmap: getaddrinfo failed: %s\n", gai_strerror(status));
+    in_addr_t addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
+    freeaddrinfo(res);
+    return addr;
+}
+
 static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_nmap* nmap) {
     if (value == NULL) {
         if (long_opt) fprintf(stderr, "nmap: option '--%s' requires an argument\n", long_opt);
@@ -172,6 +185,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
             nmap->retransmissions = atoi_check(value, 0, MAX_RETRANSMISSIONS, "retransmissions");
             break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
+        case OPT_SPOOF_ADDRESS: nmap->source_address = parse_spoof_address(value, long_opt); break;
         case OPT_THREADS: nmap->num_threads = atoi_check(value, 0, MAX_HOSTNAMES, "threads"); break;
         case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, 1, MAX_PORTS, "top-ports")); break;
         // TODO: specify in --help that no udp-rate is fastest
@@ -227,7 +241,7 @@ static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
             if (is_long_opt)
                 if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true) return true;
             if (!is_long_opt && *(*arg + 1) == valid_opt[i].short_opt) {
-                if (valid_opt[i].has_arg == false) {
+                if (!valid_opt[i].has_arg) {
                     handle_info_args(valid_opt[i].opt, nmap->opt);
                     nmap->opt |= valid_opt[i].opt;
                 } else {
