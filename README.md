@@ -2,6 +2,7 @@
 
 ## fix today
 
+- [ ] fix localhost
 - [ ] no more usleep (si on est motive)
 
 ## mandatory
