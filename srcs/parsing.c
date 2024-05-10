@@ -335,10 +335,10 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     if (!(nmap->opt & OPT_RETRANSMISSIONS)) nmap->retransmissions = DEFAULT_RETRANSMISSIONS;
     set_top_ports(nmap);
     set_default_ports(nmap);
+    if (!(nmap->opt & OPT_NO_RANDOMIZE)) randomize_ports(nmap);
     set_port_mappings(nmap);
     set_undefined_count(nmap);
     set_scan_count(nmap);
-    if (!(nmap->opt & OPT_NO_RANDOMIZE)) randomize_ports(nmap);
     if (nmap->num_threads > nmap->hostname_count) nmap->num_threads = nmap->hostname_count;
     nmap->num_handles = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 }
