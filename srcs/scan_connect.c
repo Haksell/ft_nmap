@@ -35,15 +35,15 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         }
     }
 
-    uint64_t full_timeout = 2000000 + 8 * port_count;
+    uint64_t full_timeout = 1000000;
     uint64_t start_time = get_microseconds();
 
     while (run) {
         uint64_t us_since_start = get_microseconds() - start_time;
-        if (us_since_start >= full_timeout) break;
-        uint64_t remaining_timeout = MAX(500000, full_timeout - us_since_start);
+        uint16_t remaining_timeout = full_timeout - us_since_start;
+        uint64_t timeout_us = us_since_start >= full_timeout || remaining_timeout <= 200 ? 200 : remaining_timeout;
 
-        int res = poll(fds, port_count, remaining_timeout / 1000);
+        int res = poll(fds, port_count, timeout_us / 1000);
         if (res == 0 || errno == EINTR) break;
         if (res < 0) error("poll failed");
 
@@ -52,11 +52,8 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
                 int so_error;
                 getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, &so_error, &(socklen_t){sizeof(so_error)});
 
-                if (so_error == 0) {
-                    set_port_and_host_state(th_info, PORT_OPEN, loop_port_array[i]);
-                } else if (so_error == ECONNREFUSED) {
-                    set_port_and_host_state(th_info, PORT_CLOSED, loop_port_array[i]);
-                }
+                if (so_error == 0) set_port_and_host_state(th_info, PORT_OPEN, loop_port_array[i]);
+                else if (so_error == ECONNREFUSED) set_port_and_host_state(th_info, PORT_CLOSED, loop_port_array[i]);
 
                 close(fds[i].fd);
                 fds[i].fd = -1;
