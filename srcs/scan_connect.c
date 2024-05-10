@@ -7,13 +7,15 @@ static void set_port_and_host_state(t_thread_info* th_info, port_state port_stat
     set_port_state(th_info, port_state, port);
 }
 
-void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
+void scan_connect(t_thread_info* th_info) {
+    t_nmap* nmap = th_info->nmap;
     uint16_t port_count = th_info->nmap->port_count;
     struct pollfd fds[port_count];
     struct sockaddr_in targets[port_count];
 
-    for (int port_index = 0; port_index < port_count && run; ++port_index) {
-        int port = loop_port_array[port_index];
+    for (int i = 0; i < port_count && run; ++i) {
+        uint16_t actual_index = nmap->opt & OPT_NO_RANDOMIZE ? i : nmap->random_indices[i];
+        int port = nmap->port_array[actual_index];
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0) error("SCAN_CONN socket creation failed");
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
@@ -28,11 +30,11 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
             .sin_port = htons(port),
             .sin_addr = th_info->hostaddr.sin_addr,
         };
-        targets[port_index] = target;
-        fds[port_index].fd = fd;
-        fds[port_index].events = POLLOUT;
+        targets[i] = target;
+        fds[i].fd = fd;
+        fds[i].events = POLLOUT;
 
-        if (connect(fd, (struct sockaddr*)&targets[port_index], sizeof(target)) == -1 && errno != EINPROGRESS) {
+        if (connect(fd, (struct sockaddr*)&targets[i], sizeof(target)) == -1 && errno != EINPROGRESS) {
             set_port_and_host_state(th_info, PORT_CLOSED, port);
         }
     }
@@ -52,11 +54,13 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
 
         for (int i = 0; i < port_count; ++i) {
             if (fds[i].revents & POLLOUT || fds[i].revents & POLLERR) {
+                uint16_t actual_index = nmap->opt & OPT_NO_RANDOMIZE ? i : nmap->random_indices[i];
                 int so_error;
                 getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, &so_error, &(socklen_t){sizeof(so_error)});
 
-                if (so_error == 0) set_port_and_host_state(th_info, PORT_OPEN, loop_port_array[i]);
-                else if (so_error == ECONNREFUSED) set_port_and_host_state(th_info, PORT_CLOSED, loop_port_array[i]);
+                if (so_error == 0) set_port_and_host_state(th_info, PORT_OPEN, nmap->port_array[actual_index]);
+                else if (so_error == ECONNREFUSED)
+                    set_port_and_host_state(th_info, PORT_CLOSED, nmap->port_array[actual_index]);
 
                 close(fds[i].fd);
                 fds[i].fd = -1;

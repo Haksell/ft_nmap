@@ -206,7 +206,7 @@ typedef struct t_nmap {
     uint16_t port_count;
     uint64_t port_set[1024];
     uint16_t port_array[MAX_PORTS];
-    uint16_t random_port_array[MAX_PORTS];
+    uint16_t random_indices[MAX_PORTS];
     uint16_t port_dictionary[1 << 16];
     uint16_t scans;
     uint8_t scan_count;
@@ -271,7 +271,7 @@ void print_scan_report(t_thread_info* th_info);
 uint32_t random_u32_range(uint32_t a, uint32_t b);
 
 // scan_connect.c
-void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array);
+void scan_connect(t_thread_info* th_info);
 
 // send_packets.c
 void* send_packets(void* arg);
