@@ -2,7 +2,7 @@
 
 ## fix today
 
-- [ ] fix localhost
+- [ ] fix localhost (port randomization?)
 - [ ] no more usleep (si on est motive)
 
 ## mandatory
