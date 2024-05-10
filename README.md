@@ -2,7 +2,6 @@
 
 ## fix today
 
-- [ ] `SCAN_CONN`: better timeout
 - [ ] `SCAN_UDP`: better sleep, better handling of multiple payloads
 - [ ] no more usleep (si on est motive)
 
