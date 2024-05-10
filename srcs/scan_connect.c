@@ -35,13 +35,14 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         }
     }
 
-    uint64_t full_timeout = 2000000;
+    uint64_t full_timeout = 1000000;
     uint64_t start_time = get_microseconds();
 
     while (run) {
         uint64_t us_since_start = get_microseconds() - start_time;
-        uint16_t remaining_timeout = full_timeout - us_since_start;
-        uint64_t timeout_us = us_since_start >= full_timeout || remaining_timeout <= 200 ? 200 : remaining_timeout;
+        uint64_t remaining_timeout = full_timeout - us_since_start;
+        uint64_t timeout_us = us_since_start >= full_timeout || remaining_timeout <= 200000 ? 200000
+                                                                                            : remaining_timeout;
 
         int res = poll(fds, port_count, timeout_us / 1000);
         if (res == 0 || errno == EINTR) break;
