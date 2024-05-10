@@ -65,8 +65,9 @@ typedef enum {
     OPT_SCAN = 1 << 6,
     OPT_THREADS = 1 << 7,
     OPT_TOP_PORTS = 1 << 8,
-    OPT_VERSION = 1 << 9,
-    OPT_VERBOSE = 1 << 10,
+    OPT_UDP_RATE = 1 << 9,
+    OPT_VERSION = 1 << 10,
+    OPT_VERBOSE = 1 << 11,
 } option_value;
 
 typedef struct {
@@ -86,6 +87,7 @@ static const option valid_opt[] = {
     {OPT_SCAN,            's',  "scans",           true },
     {OPT_THREADS,         't',  "threads",         true },
     {OPT_TOP_PORTS,       '\0', "top-ports",       true },
+    {OPT_UDP_RATE,        'u',  "udp-rate",        true },
     {OPT_VERBOSE,         'v',  "verbose",         false},
     {OPT_VERSION,         'V',  "version",         false},
     {0,                   0,    NULL,              false}
@@ -213,6 +215,7 @@ typedef struct t_nmap {
     uint64_t start_time;
     uint16_t top_ports;
     uint8_t retransmissions;
+    uint32_t udp_sleep_us;
 
     char tcp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];
     char udp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];

@@ -29,7 +29,7 @@ static void send_packet_udp(t_thread_info* th_info, uint16_t port) {
         size_t end = probe.port_ranges_end << 1;
         for (size_t j = start; j < end; j += 2) {
             if (concatenated_port_ranges[j] <= port && port <= concatenated_port_ranges[j + 1]) {
-                if (already_sent_payload) usleep(1000000); // TODO: multiplex
+                if (already_sent_payload && th_info->nmap->udp_sleep_us) usleep(th_info->nmap->udp_sleep_us);
                 already_sent_payload = true;
                 send_udp_probe(th_info, port, probe);
                 break;
@@ -67,7 +67,7 @@ static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
         for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
             if (th_info->host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
             uint16_t port = loop_port_array[port_index];
-            if (th_info->current_scan == SCAN_UDP && (port_index > 6 || transmission > 0)) usleep(1000000);
+            if (th_info->current_scan == SCAN_UDP && th_info->nmap->udp_sleep_us) usleep(th_info->nmap->udp_sleep_us);
             (th_info->current_scan == SCAN_UDP ? send_packet_udp : send_packet_tcp)(th_info, port);
         }
 

@@ -174,6 +174,8 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
         case OPT_THREADS: nmap->num_threads = atoi_check(value, 0, MAX_HOSTNAMES, "threads"); break;
         case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, 1, MAX_PORTS, "top-ports")); break;
+        // TODO: specify in --help that no udp-rate is fastest
+        case OPT_UDP_RATE: nmap->udp_sleep_us = 1000000 / atoi_check(value, 1, 1000000, "udp-rate"); break;
     }
     return true;
 }
