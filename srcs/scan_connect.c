@@ -16,6 +16,8 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         int port = loop_port_array[port_index];
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0) error("Connect socket creation failed");
+        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
+            error("setsockopt SO_REUSEADDR failed");
 
         int flags = fcntl(fd, F_GETFL, 0);
         if (flags == -1) error("fcntl F_GETFL failed");
