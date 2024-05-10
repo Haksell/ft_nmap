@@ -43,7 +43,7 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         if (us_since_start >= full_timeout) break;
         uint64_t remaining_timeout = MAX(500000, full_timeout - us_since_start);
 
-        int res = poll(fds, port_count, remaining_timeout);
+        int res = poll(fds, port_count, remaining_timeout / 1000);
         if (res == 0 || errno == EINTR) break;
         if (res < 0) error("poll failed");
 
