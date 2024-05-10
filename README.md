@@ -2,11 +2,8 @@
 
 ## fix today
 
-- [ ] find `hostip` of every host during parsing and put it in `t_host`
-- [ ] `--retransmissions` flag (time proportional to undefined count and latency)
-- [ ] `CONN`: no sudo, timeout, more even segmentations (and bigger than 512), own separate thread
-- [ ] `UDP`: multiple sockets like `CONN`, better handling of multiple payloads
-- [ ] no more usleep
+- [ ] `SCAN_UDP`: better sleep, better handling of multiple payloads
+- [ ] no more usleep (si on est motive)
 
 ## mandatory
 
@@ -32,32 +29,26 @@
 
 ## bonus
 
-### ez
-
+- [x] ping (latency)
 - [x] Reverse DNS
 - [x] CIDR ranges
 - [x] `--no-randomize`
 - [x] `--no-ping`
 - [x] `--top-ports`
 - [x] `-sW` SCAN_WIN
-- [ ] `-sC` SCAN_CONN
-- [ ] UDP version detection
-
-### wtf
-
-- [ ] TCP version detection (???)
+- [x] `-sC` SCAN_CONN
+- [x] UDP probes
+- [ ] `--udp-rate`
+- [x] various spoofes (Ctrl+F `random_u32_range`)
 - [ ] `--spoof-address` (hide source address)
-- [ ] `--decoy`
-- [ ] `--fragment-packets`
-- [ ] other flags to go over the IDS/Firewall (FIREWALL/IDS EVASION AND SPOOFING section)
 
 ## push check
 
-- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes`
+- [ ] protect all the syscalls
+- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283728`
 - [ ] static all the functions
 - [ ] check forbidden functions
 - [ ] consistent typedef names (PascalCase or t_snake_case)
 - [ ] remove unused libraries
-- [ ] remove `garbage` and `output` folders (and maybe `hosts`?)
 - [ ] `help` corresponds to actual flags
 - [ ] remove fsanitize from Makefile

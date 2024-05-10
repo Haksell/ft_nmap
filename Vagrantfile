@@ -32,5 +32,10 @@ Vagrant.configure("2") do |config|
     ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
     echo "Europe/Paris" > /etc/timezone
     dpkg-reconfigure -f noninteractive tzdata
+
+    echo "vagrant hard nofile 1048576" >> /etc/security/limits.conf
+    echo "vagrant soft nofile 1048576" >> /etc/security/limits.conf
+    echo "root hard nofile 1048576" >> /etc/security/limits.conf
+    echo "root soft nofile 1048576" >> /etc/security/limits.conf
   SHELL
 end

@@ -87,24 +87,26 @@ static void parse_scan(char* value, uint16_t* scans) {
     }
 }
 
-static void add_hostname(t_nmap* nmap, char* hostname) {
+static void add_hostname(t_nmap* nmap, char* hostname, char* hostip) {
     if (nmap->hostname_count == MAX_HOSTNAMES) {
         fprintf(stderr, "nmap: too many hostnames\n");
         args_error();
     }
     strncpy(nmap->hosts[nmap->hostname_count].name, hostname, HOST_NAME_MAX);
     nmap->hosts[nmap->hostname_count].name[HOST_NAME_MAX] = '\0';
+    strncpy(nmap->hosts[nmap->hostname_count].hostip, hostip, INET_ADDRSTRLEN);
+    nmap->hosts[nmap->hostname_count].hostip[INET_ADDRSTRLEN] = '\0';
     nmap->hostname_count++;
 }
 
 static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
     if (hostname[0] == '\0') return;
     char* slash = strchr(hostname, '/');
+    char hostip[INET_ADDRSTRLEN + 1];
     if (slash) {
         *slash = '\0';
         int cidr = atoi_check(slash + 1, 24, 32, "CIDR");
         int shift = 32 - cidr;
-        char hostip[INET_ADDRSTRLEN + 1];
         if (hostname_to_ip(hostname, hostip)) {
             char* last_part = strrchr(hostip, '.') + 1;
             int last_val = atoi_check(last_part, 0, 255, "CIDR IP");
@@ -112,14 +114,14 @@ static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
             int end_range = start_range + (1 << shift);
             // TODO: fix broadcast address
             for (int i = start_range; i < end_range; ++i) {
-                if (i == last_val) add_hostname(nmap, hostname);
+                if (i == last_val) add_hostname(nmap, hostname, hostip);
                 else {
                     sprintf(last_part, "%d", i);
-                    add_hostname(nmap, hostip);
+                    add_hostname(nmap, hostip, hostip);
                 }
             }
         }
-    } else add_hostname(nmap, hostname);
+    } else if (hostname_to_ip(hostname, hostip)) add_hostname(nmap, hostname, hostip);
 }
 
 static void parse_file(char* filename, t_nmap* nmap) {
@@ -166,6 +168,9 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
     switch (opt) {
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
+        case OPT_RETRANSMISSIONS:
+            nmap->retransmissions = atoi_check(value, 0, MAX_RETRANSMISSIONS, "retransmissions");
+            break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
         case OPT_THREADS: nmap->num_threads = atoi_check(value, 0, MAX_HOSTNAMES, "threads"); break;
         case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, 1, MAX_PORTS, "top-ports")); break;
@@ -316,7 +321,16 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     }
 
     if (nmap->opt & (OPT_HELP | OPT_VERSION)) exit(EXIT_SUCCESS);
-    if (nmap->scans == 0) nmap->scans = ~(1 << SCAN_CONN | 1 << SCAN_WIN);
+
+    nmap->is_sudo = geteuid() == 0;
+    if (nmap->scans == 0) {
+        nmap->scans = nmap->is_sudo ? ~(1 << SCAN_CONN | 1 << SCAN_WIN) : (1 << SCAN_CONN);
+    } else if (!nmap->is_sudo && nmap->scans != (1 << SCAN_CONN)) {
+        panic("This program requires root privileges for raw socket creation.\n");
+    }
+    if (!nmap->is_sudo) nmap->opt |= OPT_NO_PING;
+
+    if (!(nmap->opt & OPT_RETRANSMISSIONS)) nmap->retransmissions = DEFAULT_RETRANSMISSIONS;
     set_top_ports(nmap);
     set_default_ports(nmap);
     set_port_mappings(nmap);

@@ -49,6 +49,9 @@
 #define MAX_HOSTNAMES 250
 #define MAX_SERVICE_LEN 20
 
+#define MAX_RETRANSMISSIONS 10
+#define DEFAULT_RETRANSMISSIONS 1
+
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
 
@@ -58,11 +61,12 @@ typedef enum {
     OPT_NO_PING = 1 << 2,
     OPT_NO_RANDOMIZE = 1 << 3,
     OPT_PORTS = 1 << 4,
-    OPT_SCAN = 1 << 5,
-    OPT_THREADS = 1 << 6,
-    OPT_TOP_PORTS = 1 << 7,
-    OPT_VERSION = 1 << 8,
-    OPT_VERBOSE = 1 << 9,
+    OPT_RETRANSMISSIONS = 1 << 5,
+    OPT_SCAN = 1 << 6,
+    OPT_THREADS = 1 << 7,
+    OPT_TOP_PORTS = 1 << 8,
+    OPT_VERSION = 1 << 9,
+    OPT_VERBOSE = 1 << 10,
 } option_value;
 
 typedef struct {
@@ -73,17 +77,18 @@ typedef struct {
 } option;
 
 static const option valid_opt[] = {
-    {OPT_FILE,         'f',  "file",         true },
-    {OPT_HELP,         'h',  "help",         false},
-    {OPT_NO_PING,      '\0', "no-ping",      false},
-    {OPT_NO_RANDOMIZE, '\0', "no-randomize", false},
-    {OPT_PORTS,        'p',  "ports",        true },
-    {OPT_SCAN,         's',  "scans",        true },
-    {OPT_THREADS,      't',  "threads",      true },
-    {OPT_TOP_PORTS,    '\0', "top-ports",    true },
-    {OPT_VERBOSE,      'v',  "verbose",      false},
-    {OPT_VERSION,      'V',  "version",      false},
-    {0,                0,    NULL,           false}
+    {OPT_FILE,            'f',  "file",            true },
+    {OPT_HELP,            'h',  "help",            false},
+    {OPT_NO_PING,         '\0', "no-ping",         false},
+    {OPT_NO_RANDOMIZE,    '\0', "no-randomize",    false},
+    {OPT_PORTS,           'p',  "ports",           true },
+    {OPT_RETRANSMISSIONS, 'r',  "retransmissions", true },
+    {OPT_SCAN,            's',  "scans",           true },
+    {OPT_THREADS,         't',  "threads",         true },
+    {OPT_TOP_PORTS,       '\0', "top-ports",       true },
+    {OPT_VERBOSE,         'v',  "verbose",         false},
+    {OPT_VERSION,         'V',  "version",         false},
+    {0,                   0,    NULL,              false}
 };
 
 typedef enum {
@@ -121,7 +126,6 @@ static const t_port_state_info port_state_info[] = {
 };
 
 typedef enum {
-    SCAN_CONN,
     SCAN_SYN,
     SCAN_ACK,
     SCAN_WIN,
@@ -129,6 +133,7 @@ typedef enum {
     SCAN_NULL,
     SCAN_XMAS,
     SCAN_UDP,
+    SCAN_CONN,
     SCAN_MAX,
 } scan_type;
 
@@ -141,14 +146,14 @@ static const port_state default_port_state[SCAN_MAX] = {
     PORT_FILTERED,
     PORT_FILTERED,
     PORT_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
+    PORT_OPEN_FILTERED,
     PORT_FILTERED,
-    PORT_OPEN_FILTERED,
-    PORT_OPEN_FILTERED,
-    PORT_OPEN_FILTERED,
-    PORT_OPEN_FILTERED,
 };
 
-static const char scans_str[][5] = {"CONN", "SYN", "ACK", "WIN", "FIN", "NULL", "XMAS", "UDP"};
+static const char scans_str[][5] = {"SYN", "ACK", "WIN", "FIN", "NULL", "XMAS", "UDP", "CONN"};
 
 struct t_thread_info;
 
@@ -159,6 +164,7 @@ typedef struct {
 
 typedef struct {
     char name[HOST_NAME_MAX + 1];
+    char hostip[INET_ADDRSTRLEN + 1];
     port_state port_states[SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[SCAN_MAX];
     bool is_up;
@@ -179,12 +185,13 @@ typedef struct t_thread_info {
     uint16_t port_source;
     uint8_t current_scan;
     struct sockaddr_in hostaddr;
-    char hostip[INET_ADDRSTRLEN + 1];
     pthread_t thread_id;
     t_host* host;
 } t_thread_info;
 
 typedef struct t_nmap {
+    bool is_sudo;
+
     int tcp_fd;
     int udp_fd;
     int icmp_fd;
@@ -205,6 +212,7 @@ typedef struct t_nmap {
     uint8_t num_handles;
     uint64_t start_time;
     uint16_t top_ports;
+    uint8_t retransmissions;
 
     char tcp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];
     char udp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];
@@ -217,7 +225,7 @@ typedef struct t_nmap {
 
     pthread_mutex_t mutex_print;
     pthread_mutex_t mutex_undefined_count;
-    pthread_mutex_t mutex_unset_filters;
+    pthread_mutex_t mutex_pcap_filter;
     pthread_mutex_t* mutexes[5]; // only used to free the mutexes
 } t_nmap;
 

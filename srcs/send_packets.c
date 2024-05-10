@@ -54,6 +54,7 @@ static void send_packet_tcp(t_thread_info* th_info, uint16_t port) {
 }
 
 static pthread_t create_capture_thread(t_capture_args* args) {
+    if (!args->th_info->nmap->is_sudo) return 0;
     pthread_t thread_id;
     if (pthread_create(&thread_id, NULL, capture_packets, args)) panic("Failed to create the capture thread");
     return thread_id;
@@ -61,8 +62,8 @@ static pthread_t create_capture_thread(t_capture_args* args) {
 
 static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
     t_nmap* nmap = th_info->nmap;
-    // TODO: --retransmissions
-    for (int transmission = 0; transmission < 3; ++transmission) {
+
+    for (int transmission = 0; transmission <= nmap->retransmissions; ++transmission) {
         for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
             if (th_info->host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
             uint16_t port = loop_port_array[port_index];
@@ -101,11 +102,13 @@ void* send_packets(void* arg) {
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
     for (int h_index = th_info->t_index; h_index < nmap->hostname_count && run; h_index += step) {
-        th_info->host = th_info->nmap->hosts + h_index;
-        if (!hostname_to_ip(th_info->host->name, th_info->hostip)) continue;
-
+        th_info->host = nmap->hosts + h_index;
         th_info->latency = 0.0;
-        th_info->hostaddr = (struct sockaddr_in){.sin_family = AF_INET, .sin_addr.s_addr = inet_addr(th_info->hostip)};
+
+        th_info->hostaddr = (struct sockaddr_in){
+            .sin_family = AF_INET,
+            .sin_addr.s_addr = inet_addr(th_info->host->hostip),
+        };
         bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
         th_info->globals.current_handle = is_localhost ? th_info->globals.handle_lo : th_info->globals.handle_net;
 
@@ -131,13 +134,16 @@ void* send_packets(void* arg) {
         }
         if (run) print_scan_report(th_info);
     }
-    pthread_mutex_lock(&mutex_run);
-    th_info->globals.sender_finished = true;
-    pthread_mutex_unlock(&mutex_run);
 
-    pcap_breakloop(th_info->globals.handle_lo);
-    pcap_breakloop(th_info->globals.handle_net);
-    pthread_join(capture_thread_lo, NULL);
-    pthread_join(capture_thread_net, NULL);
+    if (nmap->is_sudo) {
+        pthread_mutex_lock(&mutex_run);
+        th_info->globals.sender_finished = true;
+        pthread_mutex_unlock(&mutex_run);
+        pcap_breakloop(th_info->globals.handle_lo);
+        pcap_breakloop(th_info->globals.handle_net);
+        pthread_join(capture_thread_lo, NULL);
+        pthread_join(capture_thread_net, NULL);
+    }
+
     return NULL;
 }

@@ -17,7 +17,7 @@ void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port
         --th_info->host->undefined_count[th_info->current_scan];
         bool zero = th_info->host->undefined_count[th_info->current_scan] == 0;
         pthread_mutex_unlock(&nmap->mutex_undefined_count);
-        if (zero) pcap_breakloop(th_info->globals.current_handle);
+        if (nmap->is_sudo && zero) pcap_breakloop(th_info->globals.current_handle);
     }
 }
 
