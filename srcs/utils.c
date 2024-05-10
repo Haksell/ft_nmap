@@ -1,5 +1,7 @@
 #include "ft_nmap.h"
 
+#define GAI_RETRY_US 100000
+
 bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]) {
     struct addrinfo hints = {.ai_family = AF_INET};
     struct addrinfo* res = NULL;
@@ -9,7 +11,7 @@ bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLE
         status = getaddrinfo(hostname, NULL, &hints, &res);
         if (status == 0 && res != NULL) break;
         if (status == EAI_AGAIN || status == EAI_SYSTEM) {
-            usleep(100000);
+            usleep(GAI_RETRY_US);
         } else if (status == EAI_NONAME) {
             fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
             return false;
