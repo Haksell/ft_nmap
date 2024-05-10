@@ -46,11 +46,10 @@
 ## push check
 
 - [ ] protect all the syscalls
-- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes`
+- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283728`
 - [ ] static all the functions
 - [ ] check forbidden functions
 - [ ] consistent typedef names (PascalCase or t_snake_case)
 - [ ] remove unused libraries
-- [ ] remove `garbage` and `output` folders (and maybe `hosts`?)
 - [ ] `help` corresponds to actual flags
 - [ ] remove fsanitize from Makefile
