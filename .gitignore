@@ -6,3 +6,4 @@ ft_nmap
 .clangd
 nmap-service-probes
 try*
+output/

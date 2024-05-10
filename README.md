@@ -39,7 +39,7 @@
 - [x] `-sC` SCAN_CONN
 - [x] UDP probes
 - [ ] `--udp-rate`
-- [x] various spoofes (Ctrl+F `random_u32_range`)
+- [x] Various spoofs (Ctrl+F `random_u32_range`)
 - [ ] `--spoof-address` (hide source address)
 
 ## push check
