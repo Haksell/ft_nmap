@@ -30,11 +30,11 @@ void scan_connect(t_thread_info* th_info) {
             .sin_port = htons(port),
             .sin_addr = th_info->hostaddr.sin_addr,
         };
-        targets[actual_index] = target;
-        fds[actual_index].fd = fd;
-        fds[actual_index].events = POLLOUT;
+        targets[port_index] = target;
+        fds[port_index].fd = fd;
+        fds[port_index].events = POLLOUT;
 
-        if (connect(fd, (struct sockaddr*)&targets[actual_index], sizeof(target)) == -1 && errno != EINPROGRESS) {
+        if (connect(fd, (struct sockaddr*)&targets[port_index], sizeof(target)) == -1 && errno != EINPROGRESS) {
             set_port_and_host_state(th_info, PORT_CLOSED, port);
         }
     }
