@@ -37,7 +37,7 @@ void scan_connect(t_thread_info* th_info, uint16_t* loop_port_array) {
         }
     }
 
-    uint64_t full_timeout = 1000000;
+    uint64_t full_timeout = 3000000; // todo latency
     uint64_t start_time = get_microseconds();
 
     while (run) {
