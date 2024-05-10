@@ -62,7 +62,7 @@ static pthread_t create_capture_thread(t_capture_args* args) {
 
 static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
     t_nmap* nmap = th_info->nmap;
-    // TODO: --retransmissions
+
     for (int transmission = 0; transmission <= nmap->retransmissions; ++transmission) {
         for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
             if (th_info->host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
@@ -102,7 +102,7 @@ void* send_packets(void* arg) {
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
     for (int h_index = th_info->t_index; h_index < nmap->hostname_count && run; h_index += step) {
-        th_info->host = th_info->nmap->hosts + h_index;
+        th_info->host = nmap->hosts + h_index;
         th_info->latency = 0.0;
 
         th_info->hostaddr = (struct sockaddr_in){
