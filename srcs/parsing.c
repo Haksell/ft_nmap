@@ -185,7 +185,7 @@ static bool handle_arg(int opt, char* value, char short_opt, char* long_opt, t_n
             nmap->retransmissions = atoi_check(value, 0, MAX_RETRANSMISSIONS, "retransmissions");
             break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
-        case OPT_SPOOF_ADDRESS: nmap->source_address = parse_spoof_address(value, long_opt);
+        case OPT_SPOOF_ADDRESS: nmap->source_address = parse_spoof_address(value, long_opt); break;
         case OPT_THREADS: nmap->num_threads = atoi_check(value, 0, MAX_HOSTNAMES, "threads"); break;
         case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atoi_check(value, 1, MAX_PORTS, "top-ports")); break;
         // TODO: specify in --help that no udp-rate is fastest
