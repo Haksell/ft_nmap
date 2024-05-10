@@ -301,12 +301,12 @@ static void set_scan_count(t_nmap* nmap) {
 }
 
 static void randomize_ports(t_nmap* nmap) {
-    for (int i = 0; i < nmap->port_count; ++i) nmap->random_port_array[i] = nmap->port_array[i];
+    for (int i = 0; i < nmap->port_count; ++i) nmap->random_indices[i] = i;
     for (int i = 0; i < nmap->port_count; ++i) {
         uint32_t rd = random_u32_range(i, nmap->port_count);
-        uint16_t tmp_port = nmap->random_port_array[rd];
-        nmap->random_port_array[rd] = nmap->random_port_array[i];
-        nmap->random_port_array[i] = tmp_port;
+        uint16_t tmp = nmap->random_indices[rd];
+        nmap->random_indices[rd] = nmap->random_indices[i];
+        nmap->random_indices[i] = tmp;
     }
 }
 
@@ -335,10 +335,10 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     if (!(nmap->opt & OPT_RETRANSMISSIONS)) nmap->retransmissions = DEFAULT_RETRANSMISSIONS;
     set_top_ports(nmap);
     set_default_ports(nmap);
-    if (!(nmap->opt & OPT_NO_RANDOMIZE)) randomize_ports(nmap);
     set_port_mappings(nmap);
     set_undefined_count(nmap);
     set_scan_count(nmap);
+    if (!(nmap->opt & OPT_NO_RANDOMIZE)) randomize_ports(nmap);
     if (nmap->num_threads > nmap->hostname_count) nmap->num_threads = nmap->hostname_count;
     nmap->num_handles = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 }

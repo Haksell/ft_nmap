@@ -60,13 +60,14 @@ static pthread_t create_capture_thread(t_capture_args* args) {
     return thread_id;
 }
 
-static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
+static void exec_scan(t_thread_info* th_info) {
     t_nmap* nmap = th_info->nmap;
 
     for (int transmission = 0; transmission <= nmap->retransmissions; ++transmission) {
         for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
-            if (th_info->host->port_states[th_info->current_scan][port_index] != PORT_UNDEFINED) continue;
-            uint16_t port = loop_port_array[port_index];
+            uint16_t actual_index = nmap->opt & OPT_NO_RANDOMIZE ? port_index : nmap->random_indices[port_index];
+            if (th_info->host->port_states[th_info->current_scan][actual_index] != PORT_UNDEFINED) continue;
+            uint16_t port = nmap->port_array[actual_index];
             if (th_info->current_scan == SCAN_UDP && th_info->nmap->udp_sleep_us) usleep(th_info->nmap->udp_sleep_us);
             (th_info->current_scan == SCAN_UDP ? send_packet_udp : send_packet_tcp)(th_info, port);
         }
@@ -88,7 +89,6 @@ static void exec_scan(t_thread_info* th_info, uint16_t* loop_port_array) {
 void* send_packets(void* arg) {
     t_thread_info* th_info = arg;
     t_nmap* nmap = th_info->nmap;
-    uint16_t* loop_port_array = nmap->opt & OPT_NO_RANDOMIZE ? nmap->port_array : nmap->random_port_array;
 
     pthread_t capture_thread_lo = create_capture_thread(&(t_capture_args){
         .th_info = th_info,
@@ -123,11 +123,11 @@ void* send_packets(void* arg) {
             th_info->current_scan = scan;
             pthread_mutex_unlock(&mutex_run);
             if (scan == SCAN_CONN) {
-                scan_connect(th_info, loop_port_array);
+                scan_connect(th_info);
             } else {
                 th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
                 set_filter(th_info, scan);
-                exec_scan(th_info, loop_port_array);
+                exec_scan(th_info);
                 unset_filters(nmap, th_info->t_index);
                 set_default_port_states(th_info);
             }
