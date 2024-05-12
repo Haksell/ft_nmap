@@ -6,28 +6,21 @@ bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLE
     struct addrinfo hints = {.ai_family = AF_INET};
     struct addrinfo* res = NULL;
 
-    int status;
-    for (size_t i = 0; i < 10; ++i) {
-        status = getaddrinfo(hostname, NULL, &hints, &res);
-        if (status == 0 && res != NULL) break;
-        if (status == EAI_AGAIN || status == EAI_SYSTEM) {
-            usleep(GAI_RETRY_US);
-        } else if (status == EAI_NONAME) {
-            fprintf(stdout, "\nnmap: cannot resolve %s: %s\n", hostname, gai_strerror(status));
-            return false;
-        } else {
-            fprintf(stderr, "\nnmap: getaddrinfo failed: %s\n", gai_strerror(status));
-            return false;
+    int status = getaddrinfo(hostname, NULL, &hints, &res);
+    if (status == 0 && res != NULL) {
+        if (!inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, hostip, INET_ADDRSTRLEN)) {
+            freeaddrinfo(res);
+            error("inet_ntop failed");
         }
-    }
-
-    if (!inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, hostip, INET_ADDRSTRLEN)) {
         freeaddrinfo(res);
-        error("inet_ntop failed");
+        return true;
+    } else if (status == EAI_NONAME || status == EAI_AGAIN) {
+        printf("nmap: cannot resolve %s: %s\n\n", hostname, gai_strerror(status));
+        return false;
+    } else {
+        panic("nmap: getaddrinfo failed: %s\n", gai_strerror(status));
+        return false;
     }
-
-    freeaddrinfo(res);
-    return true;
 }
 
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {

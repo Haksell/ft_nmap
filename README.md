@@ -36,7 +36,6 @@
 - [x] `--udp-rate`
 - [x] Various spoofs (Ctrl+F `random_u32_range`)
 - [ ] `--spoof-address` (hide source address, no ping, different scan report (only show what is sent))
-- [ ] `--decoy` (`spoof-address` + normal)
 
 ## push check
 

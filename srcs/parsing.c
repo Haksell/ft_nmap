@@ -105,7 +105,7 @@ static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
     char hostip[INET_ADDRSTRLEN + 1];
     if (slash) {
         *slash = '\0';
-        int cidr = atoi_check(slash + 1, 24, 32, "CIDR");
+        int cidr = atoi_check(slash + 1, 25, 32, "CIDR");
         int shift = 32 - cidr;
         if (hostname_to_ip(hostname, hostip)) {
             char* last_part = strrchr(hostip, '.') + 1;
