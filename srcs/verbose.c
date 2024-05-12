@@ -26,7 +26,7 @@ static void print_hex_ascii_line(const u_char* payload, int len, int offset) {
     printf("\n");
 }
 
-void print_payload(const u_char* payload, int size_payload) {
+void print_payload(const u_char* payload, uint32_t size_payload) {
     printf("   Payload (%d bytes):\n", size_payload);
     for (int offset = 0; size_payload > 0; size_payload -= PAYLOAD_LINE_WIDTH) {
         print_hex_ascii_line(payload + offset, MIN(size_payload, PAYLOAD_LINE_WIDTH), offset);

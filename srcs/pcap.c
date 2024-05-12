@@ -1,7 +1,5 @@
 #include "ft_nmap.h"
 
-#define SNAP_LEN 1518 // maximum size of ethernet packet
-
 extern t_thread_globals thread_globals[MAX_HOSTNAMES];
 
 static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_exp) {
@@ -14,7 +12,7 @@ static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_e
     pcap_freecode(&fp);
 }
 
-void unset_filters(t_nmap* nmap, int t_index) {
+void unset_filters(t_nmap* nmap, uint16_t t_index) {
     static char filter_none[] = "tcp and not ip";
     pthread_mutex_lock(&nmap->mutex_pcap_filter);
     set_device_filter(thread_globals[t_index].handle_lo, nmap->device_lo, filter_none);
@@ -47,35 +45,4 @@ void set_filter(t_thread_info* th_info, scan_type scan_type) {
     pthread_mutex_lock(&th_info->nmap->mutex_pcap_filter);
     set_device_filter(th_info->globals.current_handle, current_device, filter_exp);
     pthread_mutex_unlock(&th_info->nmap->mutex_pcap_filter);
-}
-
-static pcap_t* set_handle(char* dev) {
-    char errbuf[PCAP_ERRBUF_SIZE];
-
-    pcap_t* handle = pcap_open_live(dev, SNAP_LEN, 1, 1, errbuf);
-    if (handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
-    if (pcap_datalink(handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
-    return handle;
-}
-
-static void lookup_net(char* name, bpf_u_int32* device) {
-    char errbuf[PCAP_ERRBUF_SIZE];
-    if (pcap_lookupnet(name, device, &(bpf_u_int32){0}, errbuf) == PCAP_ERROR) {
-        panic("Couldn't get netmask for device %s: %s\n", name, errbuf);
-    }
-}
-
-void init_pcap(t_nmap* nmap) {
-    char errbuf[PCAP_ERRBUF_SIZE];
-
-    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR)
-        panic("Couldn't find all devices: %s\n", errbuf); // TODO error
-    lookup_net("lo", &nmap->device_lo);
-    lookup_net(nmap->devs->name, &nmap->device_net);
-
-    for (int i = 0; i < nmap->num_handles; ++i) {
-        thread_globals[i].handle_lo = set_handle("lo");
-        thread_globals[i].handle_net = set_handle(nmap->devs->name);
-        unset_filters(nmap, i);
-    }
 }
