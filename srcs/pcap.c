@@ -80,12 +80,10 @@ static void lookup_net(t_nmap* nmap, char* name, bpf_u_int32* device) {
 
 void init_pcap(t_nmap* nmap) {
     char errbuf[PCAP_ERRBUF_SIZE];
-    pcap_if_t* devs = NULL;
 
-    if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR) {
+    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR) {
         panic_init_pcap(nmap, "nmap: couldn't find all devices", errbuf);
     }
-    nmap->devs = devs;
     lookup_net(nmap, "lo", &nmap->device_lo);
     lookup_net(nmap, nmap->devs->name, &nmap->device_net);
 
