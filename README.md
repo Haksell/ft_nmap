@@ -40,7 +40,7 @@
 ## push check
 
 - [ ] protect all the syscalls
-- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283728`
+- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283760`
 - [ ] static all the functions
 - [ ] check forbidden functions
 - [ ] consistent typedef names (PascalCase or t_snake_case)

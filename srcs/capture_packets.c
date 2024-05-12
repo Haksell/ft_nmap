@@ -22,7 +22,7 @@ void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port
 }
 
 static void handle_icmp(t_thread_info* th_info, const u_char* packet, const struct ip* ip) {
-    int icmp_offset = SIZE_ETHERNET + ip->ip_hl * 4;
+    uint32_t icmp_offset = SIZE_ETHERNET + ip->ip_hl * 4;
     struct icmphdr* icmp = (struct icmphdr*)(packet + icmp_offset);
 
     if (icmp->type == ICMP_ECHOREPLY) {
@@ -30,9 +30,9 @@ static void handle_icmp(t_thread_info* th_info, const u_char* packet, const stru
     } else if (icmp->type == ICMP_DEST_UNREACH) {
         uint16_t mask = (1 << icmp->code);
 
-        int original_ip_offset = icmp_offset + ICMP_HDR_SIZE;
+        uint32_t original_ip_offset = icmp_offset + ICMP_HDR_SIZE;
         struct ip* original_ip = (struct ip*)(packet + original_ip_offset);
-        int original_ip_hdr_len = original_ip->ip_hl * 4;
+        uint32_t original_ip_hdr_len = original_ip->ip_hl * 4;
 
         uint8_t* original_packet = (uint8_t*)(packet + original_ip_offset + original_ip_hdr_len);
         uint16_t original_port;
@@ -55,10 +55,10 @@ static void handle_icmp(t_thread_info* th_info, const u_char* packet, const stru
     }
 }
 
-static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struct ip* ip, int size_ip) {
+static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struct ip* ip, uint32_t size_ip) {
     const struct tcphdr* tcp = (struct tcphdr*)(packet + SIZE_ETHERNET + size_ip);
 
-    int size_tcp = tcp->th_off * 4;
+    uint32_t size_tcp = tcp->th_off * 4;
     if (size_tcp < 20) {
         if (th_info->nmap->opt & OPT_VERBOSE) printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
         return;
@@ -89,12 +89,12 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
 
     set_port_state(th_info, port_state, ntohs(tcp->th_sport));
 
-    int size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
+    uint32_t size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
     if (size_payload > 0 && th_info->nmap->opt & OPT_VERBOSE)
         print_payload((u_char*)(packet + SIZE_ETHERNET + size_ip + size_tcp), size_payload);
 }
 
-static void handle_udp(t_thread_info* th_info, const u_char* packet, /* const struct ip* ip*/ int size_ip) {
+static void handle_udp(t_thread_info* th_info, const u_char* packet, uint32_t size_ip) {
     const struct udphdr* udp = (struct udphdr*)(packet + SIZE_ETHERNET + size_ip);
 
     if ((ntohs(udp->uh_dport) ^ ntohs(udp->uh_sport)) != th_info->port_source) return;
@@ -115,7 +115,7 @@ static void got_packet(u_char* args, __attribute__((unused)) const struct pcap_p
     t_thread_info* th_info = (t_thread_info*)args;
 
     const struct ip* ip = (struct ip*)(packet + SIZE_ETHERNET);
-    int size_ip = ip->ip_hl * 4;
+    uint32_t size_ip = ip->ip_hl * 4;
     if (size_ip < 20) {
         if (th_info->nmap->opt & OPT_VERBOSE) printf("   * Invalid IP header length: %u bytes\n", size_ip);
         return;
@@ -131,7 +131,7 @@ void* capture_packets(void* args) {
     t_thread_info* th_info = ((t_capture_args*)args)->th_info;
     t_nmap* nmap = th_info->nmap;
     pcap_t* handle = ((t_capture_args*)args)->handle;
-    while (true) {
+    while (run) {
         int ret = pcap_dispatch(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
         // TODO: check this very sensitive code

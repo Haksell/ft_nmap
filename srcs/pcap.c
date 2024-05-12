@@ -1,4 +1,5 @@
 #include "ft_nmap.h"
+#include <stdlib.h>
 
 #define SNAP_LEN 1518 // maximum size of ethernet packet
 
@@ -14,7 +15,7 @@ static void set_device_filter(pcap_t* handle, bpf_u_int32 device, char* filter_e
     pcap_freecode(&fp);
 }
 
-void unset_filters(t_nmap* nmap, int t_index) {
+void unset_filters(t_nmap* nmap, uint16_t t_index) {
     static char filter_none[] = "tcp and not ip";
     pthread_mutex_lock(&nmap->mutex_pcap_filter);
     set_device_filter(thread_globals[t_index].handle_lo, nmap->device_lo, filter_none);
@@ -49,33 +50,48 @@ void set_filter(t_thread_info* th_info, scan_type scan_type) {
     pthread_mutex_unlock(&th_info->nmap->mutex_pcap_filter);
 }
 
-static pcap_t* set_handle(char* dev) {
+static void panic_init_pcap(t_nmap* nmap, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    cleanup(nmap);
+    exit(EXIT_FAILURE);
+}
+
+static pcap_t* set_handle(t_nmap* nmap, char* dev) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
     pcap_t* handle = pcap_open_live(dev, SNAP_LEN, 1, 1, errbuf);
-    if (handle == NULL) panic("Couldn't open device %s: %s\n", dev, errbuf);
-    if (pcap_datalink(handle) != DLT_EN10MB) panic("%s is not an Ethernet\n", dev);
+    if (handle == NULL) panic_init_pcap(nmap, "Couldn't open device %s: %s\n", dev, errbuf);
+    if (pcap_datalink(handle) != DLT_EN10MB) {
+        pcap_close(handle);
+        panic_init_pcap(nmap, "%s is not an Ethernet\n", dev);
+    }
     return handle;
 }
 
-static void lookup_net(char* name, bpf_u_int32* device) {
+static void lookup_net(t_nmap* nmap, char* name, bpf_u_int32* device) {
     char errbuf[PCAP_ERRBUF_SIZE];
     if (pcap_lookupnet(name, device, &(bpf_u_int32){0}, errbuf) == PCAP_ERROR) {
-        panic("Couldn't get netmask for device %s: %s\n", name, errbuf);
+        panic_init_pcap(nmap, "Couldn't get netmask for device %s: %s\n", name, errbuf);
     }
 }
 
 void init_pcap(t_nmap* nmap) {
     char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_if_t* devs = NULL;
 
-    if (pcap_findalldevs(&nmap->devs, errbuf) == PCAP_ERROR)
-        panic("Couldn't find all devices: %s\n", errbuf); // TODO error
-    lookup_net("lo", &nmap->device_lo);
-    lookup_net(nmap->devs->name, &nmap->device_net);
+    if (pcap_findalldevs(&devs, errbuf) == PCAP_ERROR) {
+        panic_init_pcap(nmap, "nmap: couldn't find all devices", errbuf);
+    }
+    nmap->devs = devs;
+    lookup_net(nmap, "lo", &nmap->device_lo);
+    lookup_net(nmap, nmap->devs->name, &nmap->device_net);
 
-    for (int i = 0; i < nmap->num_handles; ++i) {
-        thread_globals[i].handle_lo = set_handle("lo");
-        thread_globals[i].handle_net = set_handle(nmap->devs->name);
+    for (uint16_t i = 0; i < nmap->num_handles; ++i) {
+        thread_globals[i].handle_lo = set_handle(nmap, "lo");
+        thread_globals[i].handle_net = set_handle(nmap, nmap->devs->name);
         unset_filters(nmap, i);
     }
 }
