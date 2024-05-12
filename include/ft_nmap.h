@@ -248,6 +248,9 @@ void stop();
 // get_service_names.c
 void get_service_names(t_nmap* nmap);
 
+// init_pcap.c
+void init_pcap(t_nmap* nmap);
+
 // packet.c
 void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);
 

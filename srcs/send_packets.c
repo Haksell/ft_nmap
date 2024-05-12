@@ -102,7 +102,6 @@ void* send_packets(void* arg) {
     int step = nmap->num_threads == 0 ? 1 : nmap->num_threads;
 
     for (uint16_t h_index = th_info->t_index; h_index < nmap->hostname_count && run; h_index += step) {
-        if (h_index == 5) panic("OOGA");
         th_info->host = nmap->hosts + h_index;
         th_info->latency = 0.0;
 
