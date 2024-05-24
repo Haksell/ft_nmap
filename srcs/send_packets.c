@@ -69,6 +69,8 @@ static void exec_scan(t_thread_info* th_info) {
             (th_info->current_scan == SCAN_UDP ? send_packet_udp : send_packet_tcp)(th_info, port);
         }
 
+        if (nmap->opt & OPT_SPOOF_ADDRESS) return;
+
         int latency_sleeps = th_info->latency ? (2 * th_info->latency) / WAIT_SCAN_US : 5;
         int port_sleeps = th_info->host->undefined_count[th_info->current_scan] * 500 / WAIT_SCAN_US;
         int sleeps = 1 + latency_sleeps + port_sleeps;
@@ -109,7 +111,7 @@ void* send_packets(void* arg) {
         bool is_localhost = (th_info->hostaddr.sin_addr.s_addr & 255) == 127;
         th_info->globals.current_handle = is_localhost ? th_info->globals.handle_lo : th_info->globals.handle_net;
 
-        if (!(nmap->opt & OPT_NO_PING) && !is_localhost) {
+        if (!(nmap->opt & OPT_NO_PING) && !is_localhost && !(nmap->opt & OPT_SPOOF_ADDRESS)) {
             set_filter(th_info, SCAN_MAX);
             send_ping(th_info);
         }

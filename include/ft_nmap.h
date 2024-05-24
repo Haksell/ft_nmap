@@ -222,6 +222,7 @@ typedef struct t_nmap {
     bpf_u_int32 device_lo;
     bpf_u_int32 device_net;
 
+    char spoof_hostname[HOST_NAME_MAX + 1];
     in_addr_t source_address;
 
     pthread_mutex_t mutex_print;

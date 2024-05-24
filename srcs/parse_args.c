@@ -157,17 +157,18 @@ static void parse_file(char* filename, t_nmap* nmap) {
     add_hostname_or_cidr(nmap, hostname);
 }
 
-static in_addr_t parse_spoof_address(char* value, char* long_opt) {
+static void parse_spoof_address(char* value, char* long_opt, t_nmap* nmap) {
     if (strlen(value) > HOST_NAME_MAX) panic_parsing("nmap: hostname too long in \"%s\": %s...\n", long_opt, value);
+    strcpy(nmap->spoof_hostname, value);
+    nmap->spoof_hostname[HOST_NAME_MAX] = '\0';
 
     struct addrinfo hints = {.ai_family = AF_INET};
     struct addrinfo* res = NULL;
 
     int status = getaddrinfo(value, NULL, &hints, &res);
     if (status < 0 || res == NULL) panic_parsing("\nnmap: getaddrinfo failed: %s\n", gai_strerror(status));
-    in_addr_t addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
+    nmap->source_address = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
     freeaddrinfo(res);
-    return addr;
 }
 
 static bool handle_arg(t_option_value opt, char* value, char short_opt, char* long_opt, t_nmap* nmap) {
@@ -183,7 +184,7 @@ static bool handle_arg(t_option_value opt, char* value, char short_opt, char* lo
         case OPT_PORTS: parse_ports(value, nmap); break;
         case OPT_MAX_RETRIES: nmap->max_retries = atou_check(value, 0, MAX_MAX_RETRIES, long_opt); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
-        case OPT_SPOOF_ADDRESS: nmap->source_address = parse_spoof_address(value, long_opt); break;
+        case OPT_SPOOF_ADDRESS: parse_spoof_address(value, long_opt, nmap); break;
         case OPT_THREADS: nmap->num_threads = atou_check(value, 0, MAX_HOSTNAMES, long_opt); break;
         case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atou_check(value, 1, MAX_PORTS, long_opt)); break;
         case OPT_UDP_RATE: nmap->udp_sleep_us = 1000000 / atou_check(value, 1, 1000000, long_opt); break;
@@ -350,6 +351,11 @@ void parse_args(int argc, char* argv[], t_nmap* nmap) {
     set_port_mappings(nmap);
     set_undefined_count(nmap);
     set_scan_count(nmap);
+
+    if ((nmap->opt & OPT_SPOOF_ADDRESS) && (nmap->scans & 1 << SCAN_CONN)) {
+        panic_parsing("You can't spoof source address while doing a connect scan.\n");
+    }
+
     if (!(nmap->opt & OPT_NO_RANDOMIZE)) randomize_ports(nmap);
     if (nmap->num_threads > nmap->hostname_count) nmap->num_threads = nmap->hostname_count;
     nmap->num_handles = nmap->num_threads == 0 ? 1 : nmap->num_threads;

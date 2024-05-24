@@ -143,11 +143,9 @@ static void gotta_go_fast(
     t_port_state* common_port_state_combination,
     char* host
 ) {
-    if (strcmp(th_info->host->name, th_info->host->hostip) == 0) {
+    if (strcmp(th_info->host->name, th_info->host->hostip) == 0)
         printf("\nnmap scan report for %s\n", th_info->host->name);
-    } else {
-        printf("\nnmap scan report for %s (%s)\n", th_info->host->name, th_info->host->hostip);
-    }
+    else printf("\nnmap scan report for %s (%s)\n", th_info->host->name, th_info->host->hostip);
 
     if (th_info->latency) printf("Host is up (%.2fms latency).\n", th_info->latency / 1000.0);
     if (host[0] != '\0') printf("rDNS record for %s: %s\n", th_info->host->name, host);
@@ -165,12 +163,6 @@ static void gotta_go_fast(
     }
 }
 
-static void print_host_is_down(t_thread_info* th_info) {
-    pthread_mutex_lock(&th_info->nmap->mutex_print);
-    printf("\nHost %s is down.\n", th_info->host->name);
-    pthread_mutex_unlock(&th_info->nmap->mutex_print);
-}
-
 static void print_host_is_up(t_thread_info* th_info) {
     t_port_state common_port_state_combination[SCAN_MAX];
     int hide_count = find_most_common_port_state_combination(th_info, common_port_state_combination);
@@ -186,7 +178,28 @@ static void print_host_is_up(t_thread_info* th_info) {
     pthread_mutex_unlock(&th_info->nmap->mutex_print);
 }
 
+static void print_host_is_down(t_thread_info* th_info) {
+    pthread_mutex_lock(&th_info->nmap->mutex_print);
+    printf("\nHost %s is down.\n", th_info->host->name);
+    pthread_mutex_unlock(&th_info->nmap->mutex_print);
+}
+
+static void print_sent_spoof(t_thread_info* th_info) {
+    t_nmap* nmap = th_info->nmap;
+    char hostip[INET_ADDRSTRLEN + 1];
+
+    pthread_mutex_lock(&th_info->nmap->mutex_print);
+    if (!inet_ntop(AF_INET, &nmap->source_address, hostip, INET_ADDRSTRLEN) ||
+        strcmp(nmap->spoof_hostname, hostip) == 0) {
+        printf("\nSent packets from %s to ", nmap->spoof_hostname);
+    } else printf("\nSent packets from %s (%s) to ", nmap->spoof_hostname, hostip);
+    if (strcmp(th_info->host->name, th_info->host->hostip) == 0) printf("%s\n", th_info->host->name);
+    else printf("%s (%s)\n", th_info->host->name, th_info->host->hostip);
+    pthread_mutex_unlock(&th_info->nmap->mutex_print);
+}
+
 void print_scan_report(t_thread_info* th_info) {
-    if (th_info->host->is_up) print_host_is_up(th_info);
+    if (th_info->nmap->opt & OPT_SPOOF_ADDRESS) print_sent_spoof(th_info);
+    else if (th_info->host->is_up) print_host_is_up(th_info);
     else print_host_is_down(th_info);
 }

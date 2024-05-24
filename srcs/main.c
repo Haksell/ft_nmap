@@ -5,14 +5,13 @@ pthread_mutex_t mutex_run;
 t_thread_globals thread_globals[MAX_HOSTNAMES];
 
 static void final_credits(t_nmap* nmap) {
-    uint16_t hosts_up = 0;
-    for (uint16_t i = 0; i < nmap->hostname_count; ++i) hosts_up += nmap->hosts[i].is_up;
-    printf(
-        "\nnmap done: %d IP addresses (%d hosts up) scanned in %.2f seconds\n",
-        nmap->hostname_count,
-        hosts_up,
-        (get_microseconds() - nmap->start_time) / 1000000.0
-    );
+    printf("\nnmap done: %d IP addresses ", nmap->hostname_count);
+    if (!(nmap->opt & OPT_SPOOF_ADDRESS)) {
+        uint16_t hosts_up = 0;
+        for (uint16_t i = 0; i < nmap->hostname_count; ++i) hosts_up += nmap->hosts[i].is_up;
+        printf("(%d hosts up) ", hosts_up);
+    }
+    printf("scanned in %.2f seconds\n", (get_microseconds() - nmap->start_time) / 1000000.0);
 }
 
 static void launch_threads(t_nmap* nmap) {
