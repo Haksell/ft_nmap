@@ -231,7 +231,6 @@ typedef struct t_nmap {
 } t_nmap;
 
 // capture_packets.c
-void set_port_state(t_thread_info* th_info, t_port_state port_state, uint16_t port);
 void* capture_packets(__attribute__((unused)) void* arg);
 
 // cleanup.c
@@ -263,6 +262,7 @@ void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet);
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(t_nmap* nmap, uint16_t port);
+void set_port_state(t_thread_info* th_info, t_port_state port_state, uint16_t port);
 void set_default_port_states(t_thread_info* th_info);
 
 // print_info.c
