@@ -44,5 +44,4 @@
 - [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283760`
 - [ ] static all the functions
 - [ ] check forbidden functions
-- [ ] remove unused libraries
 - [ ] remove fsanitize from Makefile

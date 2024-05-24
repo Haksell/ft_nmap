@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pcap/pcap.h"
 #include <arpa/inet.h>
 #include <bits/pthreadtypes.h>
 #include <ctype.h>
