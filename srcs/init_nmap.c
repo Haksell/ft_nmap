@@ -46,7 +46,7 @@ static in_addr_t get_source_address() {
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET) {
-            if (strcmp(ifa->ifa_name, "lo") == 0) continue; // TODO: Lorenzo check
+            if (strcmp(ifa->ifa_name, "lo") == 0) continue;
             struct sockaddr_in* ipv4 = (struct sockaddr_in*)ifa->ifa_addr;
             source_address = ipv4->sin_addr.s_addr;
             break;
@@ -54,7 +54,7 @@ static in_addr_t get_source_address() {
     }
 
     freeifaddrs(ifaddr);
-    return source_address; // TODO: Lorenzo check
+    return source_address;
 }
 
 static void get_service_name(uint16_t port, const char* proto, char buffer[MAX_SERVICE_LEN + 1]) {
