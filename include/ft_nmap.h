@@ -76,23 +76,24 @@ typedef struct {
     char short_opt;
     char* long_opt;
     bool has_arg;
+    char* description;
 } option;
 
 static const option valid_opt[] = {
-    {OPT_FILE,            'f',  "file",            true },
-    {OPT_HELP,            'h',  "help",            false},
-    {OPT_NO_PING,         '\0', "no-ping",         false},
-    {OPT_NO_RANDOMIZE,    '\0', "no-randomize",    false},
-    {OPT_PORTS,           'p',  "ports",           true },
-    {OPT_RETRANSMISSIONS, 'r',  "retransmissions", true },
-    {OPT_SCAN,            's',  "scans",           true },
-    {OPT_SPOOF_ADDRESS,   '\0', "spoof-address",   true },
-    {OPT_THREADS,         't',  "threads",         true },
-    {OPT_TOP_PORTS,       '\0', "top-ports",       true },
-    {OPT_UDP_RATE,        'u',  "udp-rate",        true },
-    {OPT_VERBOSE,         'v',  "verbose",         false},
-    {OPT_VERSION,         'V',  "version",         false},
-    {0,                   0,    NULL,              false}
+    {OPT_FILE,            'f',  "file",            true,  "filename containing addresses to scan"              },
+    {OPT_HELP,            'h',  "help",            false, "print this help screen"                             },
+    {OPT_NO_PING,         '\0', "no-ping",         false, "skip host discovery"                                },
+    {OPT_NO_RANDOMIZE,    '\0', "no-randomize",    false, "scan ports sequentially"                            },
+    {OPT_PORTS,           'p',  "ports",           true,  "ports to scan (e.g. 1-10 or 1,2,3 or 1,5-15)"       },
+    {OPT_RETRANSMISSIONS, 'r',  "retransmissions", true,  "caps number of port scan probe retransmissions"     },
+    {OPT_SCAN,            's',  "scans",           true,  "ACK/CONN/FIN/NULL/SYN/UDP/WIN/XMAS"                 },
+    {OPT_SPOOF_ADDRESS,   '\0', "spoof-address",   true,  "spoof source address"                               },
+    {OPT_THREADS,         't',  "threads",         true,  "use <number> parallel threads (0-250)"              },
+    {OPT_TOP_PORTS,       '\0', "top-ports",       true,  "scan <number> most common ports"                    },
+    {OPT_UDP_RATE,        'u',  "udp-rate",        true,  "send UDP packets no faster than <number> per second"},
+    {OPT_VERBOSE,         'v',  "verbose",         false, "increase verbosity level"                           },
+    {OPT_VERSION,         'V',  "version",         false, "print version number"                               },
+    {0,                   0,    NULL,              false, NULL                                                 }
 };
 
 typedef enum {
@@ -247,6 +248,9 @@ void stop();
 
 // get_service_names.c
 void get_service_names(t_nmap* nmap);
+
+// information.c
+void handle_info_flags(option_value new_opt, uint32_t nmap_opts);
 
 // init_pcap.c
 void init_pcap(t_nmap* nmap);

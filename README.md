@@ -3,7 +3,7 @@
 ## mandatory
 
 - [x] The executable must be named ft_nmap.
-- [ ] A help menu must be available.
+- [x] A help menu must be available.
 - [x] You must only manage a simple IPv4 (address/hostname) as parameter for your scans.
 - [x] You must manage FQDN however you don’t have to make the DNS resolution.
 - [x] It must be possible to choose the number of threads (default:0 max:250) to make the scan faster
@@ -39,11 +39,11 @@
 
 ## push check
 
+- [ ] remove all TODO and useless comments
 - [ ] protect all the syscalls
 - [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283760`
 - [ ] static all the functions
 - [ ] check forbidden functions
 - [ ] consistent typedef names (PascalCase or t_snake_case)
 - [ ] remove unused libraries
-- [ ] `help` corresponds to actual flags
 - [ ] remove fsanitize from Makefile

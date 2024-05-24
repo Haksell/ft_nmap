@@ -36,19 +36,6 @@ static uint32_t atou_check(char* s, uint32_t min, uint32_t max, char* opt_name) 
     return n;
 }
 
-static void handle_info_args(option_value new_opt, uint32_t nmap_opts) {
-    if (nmap_opts & new_opt) return;
-    if (new_opt == OPT_VERSION) printf("ft_nmap version " VERSION "\n");
-    else if (new_opt == OPT_HELP) {
-        printf("ft_nmap <ip/hostname/file> [options]\n");
-        printf("--help      Print this help screen\n");
-        printf("--ports     Ports to scan (e.g. 1-10 or 1,2,3 or 1,5-15)\n");
-        printf("--scans     ACK/CONN/FIN/NULL/SYN/UDP/WIN/XMAS\n");
-        printf("--threads   Number of parallel threads to use (0-255)\n");
-        printf("--version   Print version number\n");
-    }
-}
-
 static void parse_ports(char* value, t_nmap* nmap) {
     char* end = strchr(value, '\0');
     char* comma = end;
@@ -236,7 +223,7 @@ static bool handle_long_opt(char* opt, size_t i, int* index, char** argv, t_nmap
                 fprintf(stderr, "nmap: option '--%s' doesn't allow an argument\n", valid_opt[i].long_opt);
                 args_error();
             }
-            handle_info_args(valid_opt[i].opt, nmap->opt);
+            handle_info_flags(valid_opt[i].opt, nmap->opt);
             nmap->opt |= valid_opt[i].opt;
         } else {
             if (equal_sign == NULL) (*index)++;
@@ -258,7 +245,7 @@ static bool is_valid_opt(char** arg, int* index, t_nmap* nmap) {
                 if ((found_long_opt = handle_long_opt(*arg + 2, i, index, arg, nmap)) == true) return true;
             if (!is_long_opt && *(*arg + 1) == valid_opt[i].short_opt) {
                 if (!valid_opt[i].has_arg) {
-                    handle_info_args(valid_opt[i].opt, nmap->opt);
+                    handle_info_flags(valid_opt[i].opt, nmap->opt);
                     nmap->opt |= valid_opt[i].opt;
                 } else {
                     if (*(*arg + 2) == '\0') (*index)++;
