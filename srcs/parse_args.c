@@ -114,7 +114,6 @@ static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
             uint8_t last_val = atou_check(last_part, 0, 255, "CIDR IP");
             uint8_t start_range = last_val >> shift << shift;
             uint8_t end_range = start_range + (1 << shift);
-            // TODO: fix broadcast address
             for (uint8_t i = start_range; i < end_range; ++i) {
                 if (i == last_val) add_hostname(nmap, hostname, hostip);
                 else {
