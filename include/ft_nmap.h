@@ -255,10 +255,6 @@ void init_pcap(t_nmap* nmap);
 // parse_args.c
 void parse_args(int argc, char* argv[], t_nmap* nmap);
 
-// ping.c
-void send_ping(t_thread_info* th_info);
-void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet);
-
 // ports.c
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(t_nmap* nmap, uint16_t port);
@@ -279,6 +275,9 @@ void scan_connect(t_thread_info* th_info);
 
 // send_packets.c
 void* send_packets(void* arg);
+
+// send_ping.c
+void send_ping(t_thread_info* th_info);
 
 // utils.c
 bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]);

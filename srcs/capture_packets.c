@@ -6,6 +6,29 @@ extern pthread_mutex_t mutex_run;
 #define TCP_FILTERED 0b0010011000001110
 #define UDP_FILTERED 0b0010011000000110
 
+// TODO: use uint64_t directly and remove this function
+struct timeval timeval_subtract(struct timeval start, struct timeval end) {
+    struct timeval result = {
+        .tv_sec = end.tv_sec - start.tv_sec,
+        .tv_usec = end.tv_usec - start.tv_usec,
+    };
+
+    if (result.tv_usec < 0) {
+        result.tv_sec--;
+        result.tv_usec += 1000000;
+    }
+
+    return result;
+}
+
+static void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet) {
+    struct timeval now, tv;
+
+    gettimeofday(&now, NULL);
+    tv = timeval_subtract(*(struct timeval*)reply_packet, now);
+    th_info->latency = tv.tv_sec * 1000000 + tv.tv_usec;
+}
+
 static void handle_icmp(t_thread_info* th_info, const u_char* packet, const struct ip* ip) {
     uint32_t icmp_offset = SIZE_ETHERNET + ip->ip_hl * 4;
     struct icmphdr* icmp = (struct icmphdr*)(packet + icmp_offset);
@@ -31,9 +54,9 @@ static void handle_icmp(t_thread_info* th_info, const u_char* packet, const stru
         }
 
         t_port_state port_state = th_info->current_scan == SCAN_UDP
-                                      ? (mask & UDP_FILTERED                ? PORT_FILTERED
-                                         : +mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
-                                                                            : PORT_UNEXPECTED)
+                                      ? (mask & UDP_FILTERED               ? PORT_FILTERED
+                                         : mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
+                                                                           : PORT_UNEXPECTED)
                                       : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
         set_port_state(th_info, port_state, original_port);
