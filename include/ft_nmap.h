@@ -240,11 +240,12 @@ void error(char* message);
 void panic(const char* format, ...);
 void stop();
 
-// get_service_names.c
-void get_service_names(t_nmap* nmap);
+// fill_packet.c
+void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);
 
-// information.c
-void handle_info_flags(t_option_value new_opt, uint32_t nmap_opts);
+// filters.c
+void set_filter(t_thread_info* th_info, t_scan_type scan_type);
+void unset_filters(t_nmap* nmap, uint16_t t_index);
 
 // init_nmap.h
 void init_nmap(t_nmap* nmap);
@@ -252,16 +253,8 @@ void init_nmap(t_nmap* nmap);
 // init_pcap.c
 void init_pcap(t_nmap* nmap);
 
-// packet.c
-void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);
-
-// parsing.c
+// parse_args.c
 void parse_args(int argc, char* argv[], t_nmap* nmap);
-
-// pcap.c
-void set_filter(t_thread_info* th_info, t_scan_type scan_type);
-void init_pcap(t_nmap* nmap);
-void unset_filters(t_nmap* nmap, uint16_t t_index);
 
 // ping.c
 void send_ping(t_thread_info* th_info);
@@ -271,6 +264,9 @@ void handle_echo_reply(t_thread_info* th_info, uint8_t* reply_packet);
 bool get_port(uint64_t* ports, uint16_t port);
 void set_port(t_nmap* nmap, uint16_t port);
 void set_default_port_states(t_thread_info* th_info);
+
+// print_info.c
+void print_info(t_option_value new_opt, uint32_t nmap_opts);
 
 // print_scan_report.c
 void print_scan_report(t_thread_info* th_info);
@@ -284,14 +280,9 @@ void scan_connect(t_thread_info* th_info);
 // send_packets.c
 void* send_packets(void* arg);
 
-// signals.c
-void handle_sigint(int sig);
-void set_signals();
-
 // utils.c
 bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
-struct timeval timeval_subtract(struct timeval start, struct timeval end);
 uint64_t get_microseconds();
 
 // verbose.c

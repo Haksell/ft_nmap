@@ -21,7 +21,7 @@ static void print_help() {
     }
 }
 
-void handle_info_flags(t_option_value new_opt, uint32_t nmap_opts) {
+void print_info(t_option_value new_opt, uint32_t nmap_opts) {
     if (nmap_opts & new_opt) return;
     if (new_opt == OPT_VERSION) printf("ft_nmap version " VERSION "\n");
     else if (new_opt == OPT_HELP) print_help();

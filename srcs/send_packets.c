@@ -119,9 +119,8 @@ void* send_packets(void* arg) {
             pthread_mutex_lock(&mutex_run);
             th_info->current_scan = scan;
             pthread_mutex_unlock(&mutex_run);
-            if (scan == SCAN_CONN) {
-                scan_connect(th_info);
-            } else {
+            if (scan == SCAN_CONN) scan_connect(th_info);
+            else {
                 th_info->port_source = random_u32_range(1 << 15, UINT16_MAX - MAX_PORTS);
                 set_filter(th_info, scan);
                 exec_scan(th_info);

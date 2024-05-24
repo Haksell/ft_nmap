@@ -2,6 +2,19 @@
 
 extern pthread_mutex_t mutex_run;
 
+extern t_thread_globals thread_globals[MAX_HOSTNAMES];
+
+static void handle_sigint(__attribute__((unused)) int sig) { stop(); }
+
+static void set_signals() {
+    struct sigaction sa_int;
+
+    sa_int.sa_handler = handle_sigint;
+    sigemptyset(&sa_int.sa_mask);
+    sa_int.sa_flags = 0;
+    sigaction(SIGINT, &sa_int, NULL);
+}
+
 static void error_init(t_nmap* nmap, char* message) {
     error(message);
     cleanup(nmap);
@@ -42,6 +55,21 @@ static in_addr_t get_source_address() {
 
     freeifaddrs(ifaddr);
     return source_address; // TODO: Lorenzo check
+}
+
+static void get_service_name(uint16_t port, const char* proto, char buffer[MAX_SERVICE_LEN + 1]) {
+    struct servent* service = getservbyport(htons(port), proto);
+    char* service_name = service ? service->s_name : "unknown";
+    strncpy(buffer, service_name, MAX_SERVICE_LEN);
+    buffer[MAX_SERVICE_LEN] = '\0';
+}
+
+static void get_service_names(t_nmap* nmap) {
+    for (uint16_t port_index = 0; port_index < nmap->port_count; ++port_index) {
+        uint16_t port = nmap->port_array[port_index];
+        get_service_name(port, "tcp", nmap->tcp_services[port_index]);
+        get_service_name(port, "udp", nmap->udp_services[port_index]);
+    }
 }
 
 void init_nmap(t_nmap* nmap) {

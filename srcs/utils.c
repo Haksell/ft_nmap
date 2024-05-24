@@ -30,21 +30,6 @@ bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {
     return getnameinfo((struct sockaddr*)&sa, sizeof(sa), host, hostlen, NULL, 0, NI_NAMEREQD) == 0;
 }
 
-// TODO: use uint64_t directly and remove this function
-struct timeval timeval_subtract(struct timeval start, struct timeval end) {
-    struct timeval result = {
-        .tv_sec = end.tv_sec - start.tv_sec,
-        .tv_usec = end.tv_usec - start.tv_usec,
-    };
-
-    if (result.tv_usec < 0) {
-        result.tv_sec--;
-        result.tv_usec += 1000000;
-    }
-
-    return result;
-}
-
 uint64_t get_microseconds() {
     struct timeval tv;
     gettimeofday(&tv, NULL);

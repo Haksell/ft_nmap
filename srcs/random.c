@@ -1,6 +1,6 @@
 #include "ft_nmap.h"
 
-uint32_t random_u32() {
+static uint32_t random_u32() {
     static uint32_t x = 0;
     static bool init = false;
 
