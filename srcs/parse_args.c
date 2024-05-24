@@ -323,7 +323,7 @@ static void randomize_ports(t_nmap* nmap) {
     }
 }
 
-void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
+void parse_args(int argc, char* argv[], t_nmap* nmap) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--") == 0) {
             for (int j = i + 1; j < argc; ++j) add_hostname_or_cidr(nmap, argv[j]);

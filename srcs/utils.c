@@ -66,16 +66,6 @@ struct timeval timeval_subtract(struct timeval start, struct timeval end) {
     return result;
 }
 
-void print_start_time(t_nmap* nmap) {
-    nmap->start_time = get_microseconds();
-    time_t epoch_secs = nmap->start_time / 1000000;
-    struct tm* tm = localtime(&epoch_secs);
-
-    char timestamp[32];
-    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
-    printf("Starting nmap %s at %s\n", VERSION, timestamp);
-}
-
 uint64_t get_microseconds() {
     struct timeval tv;
     gettimeofday(&tv, NULL);

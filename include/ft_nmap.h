@@ -246,6 +246,9 @@ void get_service_names(t_nmap* nmap);
 // information.c
 void handle_info_flags(t_option_value new_opt, uint32_t nmap_opts);
 
+// init_nmap.h
+void init_nmap(t_nmap* nmap);
+
 // init_pcap.c
 void init_pcap(t_nmap* nmap);
 
@@ -253,7 +256,7 @@ void init_pcap(t_nmap* nmap);
 void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);
 
 // parsing.c
-void verify_arguments(int argc, char* argv[], t_nmap* nmap);
+void parse_args(int argc, char* argv[], t_nmap* nmap);
 
 // pcap.c
 void set_filter(t_thread_info* th_info, t_scan_type scan_type);
@@ -290,7 +293,6 @@ bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLE
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 in_addr_t get_source_address();
 struct timeval timeval_subtract(struct timeval start, struct timeval end);
-void print_start_time(t_nmap* nmap);
 uint64_t get_microseconds();
 
 // verbose.c
