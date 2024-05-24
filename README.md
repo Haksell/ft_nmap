@@ -39,7 +39,6 @@
 
 ## push check
 
-- [ ] fix all TODOs
 - [ ] protect all the syscalls
 - [ ] check forbidden functions
 - [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283760`
