@@ -1,7 +1,5 @@
 #include "ft_nmap.h"
 
-#define GAI_RETRY_US 100000
-
 bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]) {
     struct addrinfo hints = {.ai_family = AF_INET};
     struct addrinfo* res = NULL;
@@ -30,25 +28,6 @@ bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {
     };
 
     return getnameinfo((struct sockaddr*)&sa, sizeof(sa), host, hostlen, NULL, 0, NI_NAMEREQD) == 0;
-}
-
-in_addr_t get_source_address() {
-    struct ifaddrs *ifaddr, *ifa;
-    in_addr_t source_address = 0;
-
-    if (getifaddrs(&ifaddr) == -1) error("getifaddrs failed");
-
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET) {
-            if (strcmp(ifa->ifa_name, "lo") == 0) continue; // TODO: Lorenzo check
-            struct sockaddr_in* ipv4 = (struct sockaddr_in*)ifa->ifa_addr;
-            source_address = ipv4->sin_addr.s_addr;
-            break;
-        }
-    }
-
-    freeifaddrs(ifaddr);
-    return source_address; // TODO: Lorenzo check
 }
 
 // TODO: use uint64_t directly and remove this function

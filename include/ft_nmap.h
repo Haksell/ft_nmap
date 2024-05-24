@@ -291,7 +291,6 @@ void set_signals();
 // utils.c
 bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]);
 bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
-in_addr_t get_source_address();
 struct timeval timeval_subtract(struct timeval start, struct timeval end);
 uint64_t get_microseconds();
 

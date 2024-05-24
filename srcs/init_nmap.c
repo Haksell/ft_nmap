@@ -25,6 +25,25 @@ static void print_start_time(t_nmap* nmap) {
     printf("Starting nmap %s at %s\n", VERSION, timestamp);
 }
 
+static in_addr_t get_source_address() {
+    struct ifaddrs *ifaddr, *ifa;
+    in_addr_t source_address = 0;
+
+    if (getifaddrs(&ifaddr) == -1) error("getifaddrs failed");
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_INET) {
+            if (strcmp(ifa->ifa_name, "lo") == 0) continue; // TODO: Lorenzo check
+            struct sockaddr_in* ipv4 = (struct sockaddr_in*)ifa->ifa_addr;
+            source_address = ipv4->sin_addr.s_addr;
+            break;
+        }
+    }
+
+    freeifaddrs(ifaddr);
+    return source_address; // TODO: Lorenzo check
+}
+
 void init_nmap(t_nmap* nmap) {
     get_service_names(nmap);
     if (!(nmap->opt & OPT_SPOOF_ADDRESS)) nmap->source_address = get_source_address();
