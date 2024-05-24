@@ -36,8 +36,3 @@
 - [x] `--udp-rate`
 - [x] Various spoofs (Ctrl+F `random_u32_range`)
 - [x] `--spoof-address`
-
-## push check
-
-- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283760`
-- [ ] remove fsanitize from Makefile

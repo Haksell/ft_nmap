@@ -1,3 +1,4 @@
 scanme.nmap.org
 42.fr  google.com
 lichess.org
+8.8.8.8
