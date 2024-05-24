@@ -17,8 +17,7 @@ static void send_udp_probe(t_thread_info* th_info, uint16_t port, t_probe probe)
         0,
         (struct sockaddr*)&th_info->hostaddr,
         sizeof(th_info->hostaddr)
-    );
-    // TODO: on verifier si tout est protege!!!!!
+    ); // TODO: protect
 }
 
 static void send_packet_udp(t_thread_info* th_info, uint16_t port) {
@@ -49,8 +48,7 @@ static void send_packet_tcp(t_thread_info* th_info, uint16_t port) {
         0,
         (struct sockaddr*)&th_info->hostaddr,
         sizeof(th_info->hostaddr)
-    );
-    // TODO: lsimanic t'as enleve' la protection
+    ); // TODO: protect
 }
 
 static pthread_t create_capture_thread(t_capture_args* args) {

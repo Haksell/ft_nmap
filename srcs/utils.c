@@ -48,7 +48,7 @@ in_addr_t get_source_address() {
     }
 
     freeifaddrs(ifaddr);
-    return source_address; // a verifier lorenzo
+    return source_address; // TODO: Lorenzo check
 }
 
 // TODO: use uint64_t directly and remove this function

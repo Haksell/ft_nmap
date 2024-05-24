@@ -75,15 +75,14 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
         case SCAN_ACK:
             if (tcp->th_flags & TH_RST) port_state = PORT_UNFILTERED;
             break;
+        case SCAN_WIN:
+            if (tcp->th_flags & TH_RST) port_state = tcp->th_win ? PORT_OPEN : PORT_CLOSED;
+            break;
         case SCAN_NULL:
         case SCAN_FIN:
         case SCAN_XMAS:
             if (tcp->th_flags & TH_RST) port_state = PORT_CLOSED;
             break;
-        case SCAN_WIN:
-            if (tcp->th_flags & TH_RST) port_state = tcp->th_win ? PORT_OPEN : PORT_CLOSED;
-            break;
-        case SCAN_CONN: break; // TODO: Axel: on ne veut pas que pcap lis le connect()
     }
     pthread_mutex_unlock(&mutex_run);
 
@@ -134,7 +133,6 @@ void* capture_packets(void* args) {
     while (run) {
         int ret = pcap_dispatch(handle, -1, got_packet, (void*)th_info);
         if (ret == PCAP_ERROR_NOT_ACTIVATED || ret == PCAP_ERROR) error("pcap_loop failed");
-        // TODO: check this very sensitive code
         if (ret == PCAP_ERROR_BREAK) {
             pthread_mutex_lock(&mutex_run);
             bool should_break = (th_info->globals.sender_finished || !run);

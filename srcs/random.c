@@ -1,6 +1,5 @@
 #include "ft_nmap.h"
 
-// TODO: different seeds for different threads (_Thread_local)
 uint32_t random_u32() {
     static uint32_t x = 0;
     static bool init = false;

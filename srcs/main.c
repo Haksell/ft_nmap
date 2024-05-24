@@ -48,7 +48,7 @@ static void init(t_nmap* nmap) {
     }
 
     set_signals();
-    if (nmap->is_sudo) init_pcap(nmap); // TODO: in if block above?
+    if (nmap->is_sudo) init_pcap(nmap);
 
     init_mutex(nmap, &nmap->mutex_print);
     init_mutex(nmap, &nmap->mutex_undefined_count);

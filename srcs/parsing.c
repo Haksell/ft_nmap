@@ -129,7 +129,6 @@ static void add_hostname_or_cidr(t_nmap* nmap, char* hostname) {
 static void parse_file(char* filename, t_nmap* nmap) {
     char buffer[1024];
     size_t bytesRead;
-
     FILE* file = fopen(filename, "r");
     if (!file) panic_parsing("nmap: failed to open hosts file \"%s\": %s\n", filename, strerror(errno));
     char hostname[HOST_NAME_MAX + 1];
@@ -152,7 +151,7 @@ static void parse_file(char* filename, t_nmap* nmap) {
             }
         }
     }
-    bool read_failed = !!ferror(file); // forbidden function
+    bool read_failed = !!ferror(file);
     fclose(file);
     if (read_failed) panic_parsing("nmap: failed to read hosts file \"%s\": %s\n", filename, strerror(errno));
     hostname[hostname_idx] = '\0';
@@ -188,7 +187,6 @@ static bool handle_arg(t_option_value opt, char* value, char short_opt, char* lo
         case OPT_SPOOF_ADDRESS: nmap->source_address = parse_spoof_address(value, long_opt); break;
         case OPT_THREADS: nmap->num_threads = atou_check(value, 0, MAX_HOSTNAMES, long_opt); break;
         case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atou_check(value, 1, MAX_PORTS, long_opt)); break;
-        // TODO: specify in --help that no udp-rate is fastest
         case OPT_UDP_RATE: nmap->udp_sleep_us = 1000000 / atou_check(value, 1, 1000000, long_opt); break;
         default: break;
     }

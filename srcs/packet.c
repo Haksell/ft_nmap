@@ -40,18 +40,18 @@ static struct udphdr fill_udp_header(t_thread_info* th_info, uint16_t port, size
 
 static struct tcphdr fill_tcp_header(t_thread_info* th_info, uint16_t port) {
     struct tcphdr tcphdr = {
-        .source = htons(th_info->port_source), // randomize, mais que au debut
+        .source = htons(th_info->port_source),
         .dest = htons(port),
-        .seq = 0, // TODO! randomize peut etre
-        .ack_seq = 0, // a voir apres pour ACK
-        .doff = 5, // 5 * 32bits = 20 bytes || sur nmap : 24 bytes
+        .seq = 0, // TODO: randomize peut etre
+        .ack_seq = 0, // TODO: a voir apres pour ACK
+        .doff = 5, // TODO: 5 * 32bits = 20 bytes || sur nmap : 24 bytes
         .fin = 0,
         .syn = 0,
         .rst = 0,
         .psh = 0,
         .ack = 0,
         .urg = 0,
-        .window = htons(1024), // pas sur
+        .window = htons(1024), // TODO: pas sur
         .check = 0,
         .urg_ptr = 0,
     };
@@ -86,7 +86,7 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const u
         .ttl = random_u32_range(33, 63),
         .protocol = th_info->current_scan == SCAN_UDP ? IPPROTO_UDP : IPPROTO_TCP,
         .check = 0,
-        .saddr = th_info->nmap->source_address, // TODO: spoof possible?
+        .saddr = th_info->nmap->source_address,
         .daddr = th_info->hostaddr.sin_addr.s_addr,
     };
 
