@@ -76,7 +76,7 @@ static void parse_scan(char* value, uint16_t* scans) {
         if (comma) *comma = '\0';
 
         bool valid_scan = false;
-        for (scan_type scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+        for (t_scan_type scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
             if (!strcmp(value, scans_str[scan_type]) || (value[0] == scans_str[scan_type][0] && value[1] == '\0')) {
                 *scans |= 1 << scan_type;
                 valid_scan = true;
@@ -172,7 +172,7 @@ static in_addr_t parse_spoof_address(char* value, char* long_opt) {
     return addr;
 }
 
-static bool handle_arg(option_value opt, char* value, char short_opt, char* long_opt, t_nmap* nmap) {
+static bool handle_arg(t_option_value opt, char* value, char short_opt, char* long_opt, t_nmap* nmap) {
     if (value == NULL) {
         if (long_opt) fprintf(stderr, "nmap: option '--%s' requires an argument\n", long_opt);
         else fprintf(stderr, "nmap: option requires an argument -- '%c'\n", short_opt);
@@ -303,14 +303,14 @@ static void set_port_mappings(t_nmap* nmap) {
 
 static void set_undefined_count(t_nmap* nmap) {
     for (uint16_t i = 0; i < nmap->hostname_count; ++i) {
-        for (scan_type scan = 0; scan < SCAN_MAX; ++scan) {
+        for (t_scan_type scan = 0; scan < SCAN_MAX; ++scan) {
             nmap->hosts[i].undefined_count[scan] = nmap->port_count;
         }
     }
 }
 
 static void set_scan_count(t_nmap* nmap) {
-    for (scan_type scan = 0; scan < SCAN_MAX; ++scan) {
+    for (t_scan_type scan = 0; scan < SCAN_MAX; ++scan) {
         nmap->scan_count += (nmap->scans >> scan) & 1;
     }
 }

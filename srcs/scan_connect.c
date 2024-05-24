@@ -2,7 +2,7 @@
 
 extern volatile sig_atomic_t run;
 
-static void set_port_and_host_state(t_thread_info* th_info, port_state port_state, uint16_t port) {
+static void set_port_and_host_state(t_thread_info* th_info, t_port_state port_state, uint16_t port) {
     th_info->host->is_up = true;
     set_port_state(th_info, port_state, port);
 }

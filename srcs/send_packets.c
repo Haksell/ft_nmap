@@ -116,7 +116,7 @@ void* send_packets(void* arg) {
             send_ping(th_info);
         }
 
-        for (scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
+        for (t_scan_type scan = 0; scan < SCAN_MAX && run; ++scan) {
             if ((nmap->scans & (1 << scan)) == 0) continue;
             pthread_mutex_lock(&mutex_run);
             th_info->current_scan = scan;

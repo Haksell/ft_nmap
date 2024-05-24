@@ -13,14 +13,14 @@ typedef struct {
     bool two_columns;
 } t_paddings;
 
-static void copy_port_state_combination(t_thread_info* th_info, port_state combination[SCAN_MAX], int port_index) {
-    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+static void copy_port_state_combination(t_thread_info* th_info, t_port_state combination[SCAN_MAX], int port_index) {
+    for (t_scan_type scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
         combination[scan_type] = th_info->host->port_states[scan_type][port_index];
     }
 }
 
-static bool same_port_combination(t_thread_info* th_info, port_state combination[SCAN_MAX], int port_index) {
-    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+static bool same_port_combination(t_thread_info* th_info, t_port_state combination[SCAN_MAX], int port_index) {
+    for (t_scan_type scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
         if (combination[scan_type] != th_info->host->port_states[scan_type][port_index]) {
             return false;
         }
@@ -29,7 +29,7 @@ static bool same_port_combination(t_thread_info* th_info, port_state combination
 }
 
 static t_paddings
-compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_state_combination[SCAN_MAX]) {
+compute_paddings(t_thread_info* th_info, int hide_count, t_port_state common_port_state_combination[SCAN_MAX]) {
     t_nmap* nmap = th_info->nmap;
     t_paddings paddings = {
         .port = 4,
@@ -42,8 +42,8 @@ compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_
     for (int port_index = 0; port_index < nmap->port_count; ++port_index) {
         uint16_t port = nmap->port_array[port_index];
         if (port >= 10000) paddings.port = 5;
-        for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
-            port_state state = th_info->host->port_states[scan_type][port_index];
+        for (t_scan_type scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+            t_port_state state = th_info->host->port_states[scan_type][port_index];
             paddings.port_states[scan_type] = MAX(paddings.port_states[scan_type], port_state_info[state].strlen);
         }
         if (hide_count == 0 || !same_port_combination(th_info, common_port_state_combination, port_index)) {
@@ -58,7 +58,7 @@ compute_paddings(t_thread_info* th_info, int hide_count, port_state common_port_
     return paddings;
 }
 
-static int find_most_common_port_state_combination(t_thread_info* th_info, port_state combination[SCAN_MAX]) {
+static int find_most_common_port_state_combination(t_thread_info* th_info, t_port_state combination[SCAN_MAX]) {
     uint16_t port_count = th_info->nmap->port_count;
     int counter = 1;
     copy_port_state_combination(th_info, combination, 0);
@@ -81,14 +81,14 @@ static int find_most_common_port_state_combination(t_thread_info* th_info, port_
 static void print_scan_cell(
     t_thread_info* th_info,
     t_paddings* paddings,
-    scan_type scan_type,
+    t_scan_type scan_type,
     int port_index,
     int port,
-    port_state common_port_state_combination[SCAN_MAX]
+    t_port_state common_port_state_combination[SCAN_MAX]
 ) {
-    port_state port_state = port == HEADER_LINE ? PORT_UNDEFINED
-                            : port == HIDE_LINE ? common_port_state_combination[scan_type]
-                                                : th_info->host->port_states[scan_type][port_index];
+    t_port_state port_state = port == HEADER_LINE ? PORT_UNDEFINED
+                              : port == HIDE_LINE ? common_port_state_combination[scan_type]
+                                                  : th_info->host->port_states[scan_type][port_index];
     printf(
         "%s%-*s " WHITE,
         port == HEADER_LINE ? WHITE : port_state_info[port_state].color,
@@ -100,7 +100,7 @@ static void print_scan_cell(
 static void print_line(
     t_thread_info* th_info,
     t_paddings* paddings,
-    port_state common_port_state_combination[SCAN_MAX],
+    t_port_state common_port_state_combination[SCAN_MAX],
     int port_index
 ) {
     t_nmap* nmap = th_info->nmap;
@@ -121,7 +121,7 @@ static void print_line(
     if (nmap->scans & (1 << SCAN_CONN))
         print_scan_cell(th_info, paddings, SCAN_CONN, port_index, port, common_port_state_combination);
 
-    for (int scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
+    for (t_scan_type scan_type = 0; scan_type < SCAN_MAX; ++scan_type) {
         if (scan_type == SCAN_UDP || scan_type == SCAN_CONN) continue;
         if (nmap->scans & (1 << scan_type)) {
             print_scan_cell(th_info, paddings, scan_type, port_index, port, common_port_state_combination);
@@ -140,7 +140,7 @@ static void gotta_go_fast(
     t_thread_info* th_info,
     t_paddings* paddings,
     int hide_count,
-    port_state* common_port_state_combination,
+    t_port_state* common_port_state_combination,
     char* host
 ) {
     if (strcmp(th_info->host->name, th_info->host->hostip) == 0) {
@@ -172,7 +172,7 @@ static void print_host_is_down(t_thread_info* th_info) {
 }
 
 static void print_host_is_up(t_thread_info* th_info) {
-    port_state common_port_state_combination[SCAN_MAX];
+    t_port_state common_port_state_combination[SCAN_MAX];
     int hide_count = find_most_common_port_state_combination(th_info, common_port_state_combination);
     t_paddings paddings = compute_paddings(th_info, hide_count, common_port_state_combination);
 

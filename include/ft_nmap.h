@@ -69,17 +69,17 @@ typedef enum {
     OPT_UDP_RATE = 1 << 10,
     OPT_VERSION = 1 << 11,
     OPT_VERBOSE = 1 << 12,
-} option_value;
+} t_option_value;
 
 typedef struct {
-    option_value opt;
+    t_option_value opt;
     char short_opt;
     char* long_opt;
     bool has_arg;
     char* description;
-} option;
+} t_option;
 
-static const option valid_opt[] = {
+static const t_option valid_opt[] = {
     {OPT_FILE,          'f',  "file",          true,  "filename containing addresses to scan"              },
     {OPT_HELP,          'h',  "help",          false, "print this help screen"                             },
     {OPT_MAX_RETRIES,   '\0', "max-retries",   true,  "caps number of port scan probe retransmissions"     },
@@ -104,7 +104,7 @@ typedef enum {
     PORT_UNFILTERED,
     PORT_OPEN_FILTERED,
     PORT_UNEXPECTED
-} __attribute__((packed)) port_state;
+} __attribute__((packed)) t_port_state;
 
 typedef struct {
     char str[14];
@@ -140,14 +140,9 @@ typedef enum {
     SCAN_UDP,
     SCAN_CONN,
     SCAN_MAX,
-} scan_type;
+} t_scan_type;
 
-typedef struct {
-    scan_type type;
-    char name[5];
-} scan;
-
-static const port_state default_port_state[SCAN_MAX] = {
+static const t_port_state default_port_state[SCAN_MAX] = {
     PORT_FILTERED,
     PORT_FILTERED,
     PORT_FILTERED,
@@ -170,7 +165,7 @@ typedef struct {
 typedef struct {
     char name[HOST_NAME_MAX + 1];
     char hostip[INET_ADDRSTRLEN + 1];
-    port_state port_states[SCAN_MAX][MAX_PORTS];
+    t_port_state port_states[SCAN_MAX][MAX_PORTS];
     uint16_t undefined_count[SCAN_MAX];
     bool is_up;
 } t_host;
@@ -237,7 +232,7 @@ typedef struct t_nmap {
 } t_nmap;
 
 // capture_packets.c
-void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port);
+void set_port_state(t_thread_info* th_info, t_port_state port_state, uint16_t port);
 void* capture_packets(__attribute__((unused)) void* arg);
 
 // cleanup.c
@@ -250,7 +245,7 @@ void stop();
 void get_service_names(t_nmap* nmap);
 
 // information.c
-void handle_info_flags(option_value new_opt, uint32_t nmap_opts);
+void handle_info_flags(t_option_value new_opt, uint32_t nmap_opts);
 
 // init_pcap.c
 void init_pcap(t_nmap* nmap);
@@ -262,7 +257,7 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const u
 void verify_arguments(int argc, char* argv[], t_nmap* nmap);
 
 // pcap.c
-void set_filter(t_thread_info* th_info, scan_type scan_type);
+void set_filter(t_thread_info* th_info, t_scan_type scan_type);
 void init_pcap(t_nmap* nmap);
 void unset_filters(t_nmap* nmap, uint16_t t_index);
 

@@ -20,7 +20,7 @@ void unset_filters(t_nmap* nmap, uint16_t t_index) {
     pthread_mutex_unlock(&nmap->mutex_pcap_filter);
 }
 
-void set_filter(t_thread_info* th_info, scan_type scan_type) {
+void set_filter(t_thread_info* th_info, t_scan_type scan_type) {
     char filter_exp[256] = {0};
     char* hostip = th_info->host->hostip;
 

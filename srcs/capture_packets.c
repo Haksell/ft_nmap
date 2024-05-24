@@ -6,7 +6,7 @@ extern pthread_mutex_t mutex_run;
 #define TCP_FILTERED 0b0010011000001110
 #define UDP_FILTERED 0b0010011000000110
 
-void set_port_state(t_thread_info* th_info, port_state port_state, uint16_t port) {
+void set_port_state(t_thread_info* th_info, t_port_state port_state, uint16_t port) {
     t_nmap* nmap = th_info->nmap;
     uint16_t port_index = nmap->port_dictionary[port];
     if (port_index == MAX_PORTS) return;
@@ -45,11 +45,11 @@ static void handle_icmp(t_thread_info* th_info, const u_char* packet, const stru
             original_port = ntohs(tcp->th_dport);
         }
 
-        port_state port_state = th_info->current_scan == SCAN_UDP
-                                    ? (mask & UDP_FILTERED                ? PORT_FILTERED
-                                       : +mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
-                                                                          : PORT_UNEXPECTED)
-                                    : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
+        t_port_state port_state = th_info->current_scan == SCAN_UDP
+                                      ? (mask & UDP_FILTERED                ? PORT_FILTERED
+                                         : +mask & (1 << ICMP_PORT_UNREACH) ? PORT_CLOSED
+                                                                            : PORT_UNEXPECTED)
+                                      : (mask & TCP_FILTERED ? PORT_FILTERED : PORT_UNEXPECTED);
 
         set_port_state(th_info, port_state, original_port);
     }
@@ -64,7 +64,7 @@ static void handle_tcp(t_thread_info* th_info, const u_char* packet, const struc
         return;
     }
 
-    port_state port_state;
+    t_port_state port_state;
     pthread_mutex_lock(&mutex_run);
     switch (th_info->current_scan) {
         case SCAN_SYN:
