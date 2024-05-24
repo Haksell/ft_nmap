@@ -28,13 +28,13 @@ void send_ping(t_thread_info* th_info) {
     memcpy(packet, &icmphdr, ICMP_HDR_SIZE);
 
     struct timeval ping_time;
-    gettimeofday(&ping_time, NULL);
+    if (gettimeofday(&ping_time, NULL) == -1) error("gettimeofday failed");
     memcpy(packet + ICMP_HDR_SIZE, &ping_time, sizeof(struct timeval));
 
     icmphdr.checksum = calculate_checksum((uint16_t*)packet, icmp_packet_size);
     memcpy(packet, &icmphdr, ICMP_HDR_SIZE);
 
-    int bytes_sent = sendto(
+    sendto(
         th_info->nmap->icmp_fd,
         packet,
         icmp_packet_size,
@@ -42,5 +42,4 @@ void send_ping(t_thread_info* th_info) {
         (struct sockaddr*)&th_info->hostaddr,
         sizeof(struct sockaddr_in)
     );
-    if (bytes_sent < 0) error("Sending ping failed");
 }

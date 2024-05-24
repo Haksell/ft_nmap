@@ -29,13 +29,16 @@ static void init_mutex(t_nmap* nmap, pthread_mutex_t* mutex) {
 }
 
 static void print_start_time(t_nmap* nmap) {
+    printf("Starting nmap %s", VERSION);
     nmap->start_time = get_microseconds();
     time_t epoch_secs = nmap->start_time / 1000000;
     struct tm* tm = localtime(&epoch_secs);
 
-    char timestamp[32];
-    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
-    printf("Starting nmap %s at %s\n", VERSION, timestamp);
+    if (tm) {
+        char timestamp[32];
+        strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M %Z", tm);
+        printf(" at %s\n", timestamp);
+    } else printf("\n");
 }
 
 static in_addr_t get_source_address() {

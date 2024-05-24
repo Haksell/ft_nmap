@@ -32,6 +32,6 @@ bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {
 
 uint64_t get_microseconds() {
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    if (gettimeofday(&tv, NULL) == -1) error("gettimeofday failed");
     return tv.tv_sec * 1000000 + tv.tv_usec;
 }

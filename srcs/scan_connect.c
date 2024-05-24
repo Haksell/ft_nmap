@@ -56,8 +56,8 @@ void scan_connect(t_thread_info* th_info) {
             if (fds[i].revents & POLLOUT || fds[i].revents & POLLERR) {
                 uint16_t actual_index = nmap->opt & OPT_NO_RANDOMIZE ? i : nmap->random_indices[i];
                 int so_error;
-                getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, &so_error, &(socklen_t){sizeof(so_error)});
-
+                if (getsockopt(fds[i].fd, SOL_SOCKET, SO_ERROR, &so_error, &(socklen_t){sizeof(so_error)}) == -1)
+                    error("getsockopt failed");
                 if (so_error == 0) set_port_and_host_state(th_info, PORT_OPEN, nmap->port_array[actual_index]);
                 else if (so_error == ECONNREFUSED)
                     set_port_and_host_state(th_info, PORT_CLOSED, nmap->port_array[actual_index]);
