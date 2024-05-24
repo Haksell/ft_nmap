@@ -7,3 +7,5 @@ ft_nmap
 nmap-service-probes
 try*
 output/
+.nm_output
+scripts/allowed.txt
