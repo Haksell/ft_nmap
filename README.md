@@ -24,7 +24,7 @@
 
 ## bonus
 
-- [x] ping (latency)
+- [x] Ping (latency)
 - [x] Reverse DNS
 - [x] CIDR ranges
 - [x] `--no-randomize`
@@ -41,7 +41,7 @@
 
 - [ ] remove all TODO and useless comments
 - [ ] protect all the syscalls
-- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283760`
 - [ ] static all the functions
 - [ ] check forbidden functions
+- [ ] `valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes --track-origins=yes --max-stackframe=2283760`
 - [ ] remove fsanitize from Makefile
