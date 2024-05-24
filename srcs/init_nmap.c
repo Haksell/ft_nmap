@@ -98,13 +98,6 @@ void init_nmap(t_nmap* nmap) {
 
     if (nmap->hostname_count == 0) fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
 
-    if (nmap->opt & OPT_VERBOSE) {
-        print_hostnames(nmap);
-        print_ports(nmap, "Sequential ports", nmap->port_array);
-        if (!(nmap->opt & OPT_NO_RANDOMIZE)) print_ports(nmap, "Random indices", nmap->random_indices);
-        print_scans(nmap->scans);
-    }
-
     set_signals();
     if (nmap->is_sudo) init_pcap(nmap);
 
@@ -112,4 +105,6 @@ void init_nmap(t_nmap* nmap) {
     init_mutex(nmap, &nmap->mutex_undefined_count);
     init_mutex(nmap, &nmap->mutex_pcap_filter);
     init_mutex(nmap, &mutex_run);
+
+    if (nmap->opt & OPT_VERBOSE) print_init_verbose(nmap);
 }

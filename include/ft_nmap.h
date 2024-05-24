@@ -286,7 +286,5 @@ bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen);
 uint64_t get_microseconds();
 
 // verbose.c
-void print_hostnames(t_nmap* nmap);
 void print_payload(const u_char* payload, uint32_t size_payload);
-void print_ports(t_nmap* nmap, char* name, uint16_t* port_array);
-void print_scans(uint8_t scans);
+void print_init_verbose(t_nmap* nmap);
