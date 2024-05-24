@@ -42,16 +42,16 @@ static struct tcphdr fill_tcp_header(t_thread_info* th_info, uint16_t port) {
     struct tcphdr tcphdr = {
         .source = htons(th_info->port_source),
         .dest = htons(port),
-        .seq = 0, // TODO: randomize peut etre
-        .ack_seq = 0, // TODO: a voir apres pour ACK
-        .doff = 5, // TODO: 5 * 32bits = 20 bytes || sur nmap : 24 bytes
+        .seq = 0,
+        .ack_seq = 0,
+        .doff = 5,
         .fin = 0,
         .syn = 0,
         .rst = 0,
         .psh = 0,
         .ack = 0,
         .urg = 0,
-        .window = htons(1024), // TODO: pas sur
+        .window = htons(1024),
         .check = 0,
         .urg_ptr = 0,
     };
