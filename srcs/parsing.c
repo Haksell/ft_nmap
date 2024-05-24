@@ -183,15 +183,13 @@ static bool handle_arg(option_value opt, char* value, char short_opt, char* long
     switch (opt) {
         case OPT_FILE: parse_file(value, nmap); break;
         case OPT_PORTS: parse_ports(value, nmap); break;
-        case OPT_RETRANSMISSIONS:
-            nmap->retransmissions = atou_check(value, 0, MAX_RETRANSMISSIONS, "retransmissions");
-            break;
+        case OPT_MAX_RETRIES: nmap->max_retries = atou_check(value, 0, MAX_MAX_RETRIES, long_opt); break;
         case OPT_SCAN: parse_scan(value, &nmap->scans); break;
         case OPT_SPOOF_ADDRESS: nmap->source_address = parse_spoof_address(value, long_opt); break;
-        case OPT_THREADS: nmap->num_threads = atou_check(value, 0, MAX_HOSTNAMES, "threads"); break;
-        case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atou_check(value, 1, MAX_PORTS, "top-ports")); break;
+        case OPT_THREADS: nmap->num_threads = atou_check(value, 0, MAX_HOSTNAMES, long_opt); break;
+        case OPT_TOP_PORTS: nmap->top_ports = MAX(nmap->top_ports, atou_check(value, 1, MAX_PORTS, long_opt)); break;
         // TODO: specify in --help that no udp-rate is fastest
-        case OPT_UDP_RATE: nmap->udp_sleep_us = 1000000 / atou_check(value, 1, 1000000, "udp-rate"); break;
+        case OPT_UDP_RATE: nmap->udp_sleep_us = 1000000 / atou_check(value, 1, 1000000, long_opt); break;
         default: break;
     }
     return true;
@@ -349,7 +347,7 @@ void verify_arguments(int argc, char* argv[], t_nmap* nmap) {
     }
     if (!nmap->is_sudo) nmap->opt |= OPT_NO_PING;
 
-    if (!(nmap->opt & OPT_RETRANSMISSIONS)) nmap->retransmissions = DEFAULT_RETRANSMISSIONS;
+    if (!(nmap->opt & OPT_MAX_RETRIES)) nmap->max_retries = DEFAULT_MAX_RETRIES;
     set_top_ports(nmap);
     set_default_ports(nmap);
     set_port_mappings(nmap);

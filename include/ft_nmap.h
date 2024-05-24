@@ -49,8 +49,8 @@
 #define MAX_HOSTNAMES 250
 #define MAX_SERVICE_LEN 20
 
-#define MAX_RETRANSMISSIONS 10
-#define DEFAULT_RETRANSMISSIONS 1
+#define MAX_MAX_RETRIES 10
+#define DEFAULT_MAX_RETRIES 1
 
 #define ICMP_HDR_SIZE sizeof(struct icmphdr)
 #define SIZE_ETHERNET sizeof(struct ethhdr)
@@ -61,7 +61,7 @@ typedef enum {
     OPT_NO_PING = 1 << 2,
     OPT_NO_RANDOMIZE = 1 << 3,
     OPT_PORTS = 1 << 4,
-    OPT_RETRANSMISSIONS = 1 << 5,
+    OPT_MAX_RETRIES = 1 << 5,
     OPT_SCAN = 1 << 6,
     OPT_SPOOF_ADDRESS = 1 << 7,
     OPT_THREADS = 1 << 8,
@@ -80,20 +80,20 @@ typedef struct {
 } option;
 
 static const option valid_opt[] = {
-    {OPT_FILE,            'f',  "file",            true,  "filename containing addresses to scan"              },
-    {OPT_HELP,            'h',  "help",            false, "print this help screen"                             },
-    {OPT_NO_PING,         '\0', "no-ping",         false, "skip host discovery"                                },
-    {OPT_NO_RANDOMIZE,    '\0', "no-randomize",    false, "scan ports sequentially"                            },
-    {OPT_PORTS,           'p',  "ports",           true,  "ports to scan (e.g. 1-10 or 1,2,3 or 1,5-15)"       },
-    {OPT_RETRANSMISSIONS, 'r',  "retransmissions", true,  "caps number of port scan probe retransmissions"     },
-    {OPT_SCAN,            's',  "scans",           true,  "ACK/CONN/FIN/NULL/SYN/UDP/WIN/XMAS"                 },
-    {OPT_SPOOF_ADDRESS,   '\0', "spoof-address",   true,  "spoof source address"                               },
-    {OPT_THREADS,         't',  "threads",         true,  "use <number> parallel threads (0-250)"              },
-    {OPT_TOP_PORTS,       '\0', "top-ports",       true,  "scan <number> most common ports"                    },
-    {OPT_UDP_RATE,        'u',  "udp-rate",        true,  "send UDP packets no faster than <number> per second"},
-    {OPT_VERBOSE,         'v',  "verbose",         false, "increase verbosity level"                           },
-    {OPT_VERSION,         'V',  "version",         false, "print version number"                               },
-    {0,                   0,    NULL,              false, NULL                                                 }
+    {OPT_FILE,          'f',  "file",          true,  "filename containing addresses to scan"              },
+    {OPT_HELP,          'h',  "help",          false, "print this help screen"                             },
+    {OPT_MAX_RETRIES,   '\0', "max-retries",   true,  "caps number of port scan probe retransmissions"     },
+    {OPT_NO_PING,       '\0', "no-ping",       false, "skip host discovery"                                },
+    {OPT_NO_RANDOMIZE,  '\0', "no-randomize",  false, "scan ports sequentially"                            },
+    {OPT_PORTS,         'p',  "ports",         true,  "ports to scan (e.g. 1-10 or 1,2,3 or 1,5-15)"       },
+    {OPT_SCAN,          's',  "scans",         true,  "ACK/CONN/FIN/NULL/SYN/UDP/WIN/XMAS"                 },
+    {OPT_SPOOF_ADDRESS, '\0', "spoof-address", true,  "spoof source address"                               },
+    {OPT_THREADS,       't',  "threads",       true,  "use <number> parallel threads (0-250)"              },
+    {OPT_TOP_PORTS,     '\0', "top-ports",     true,  "scan <number> most common ports"                    },
+    {OPT_UDP_RATE,      'u',  "udp-rate",      true,  "send UDP packets no faster than <number> per second"},
+    {OPT_VERBOSE,       'v',  "verbose",       false, "increase verbosity level"                           },
+    {OPT_VERSION,       'V',  "version",       false, "print version number"                               },
+    {0,                 0,    NULL,            false, NULL                                                 }
 };
 
 typedef enum {
@@ -218,7 +218,7 @@ typedef struct t_nmap {
     uint16_t num_handles;
     uint64_t start_time;
     uint16_t top_ports;
-    uint8_t retransmissions;
+    uint8_t max_retries;
     uint32_t udp_sleep_us;
 
     char tcp_services[MAX_PORTS][MAX_SERVICE_LEN + 1];

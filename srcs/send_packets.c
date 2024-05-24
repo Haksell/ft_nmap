@@ -62,8 +62,7 @@ static pthread_t create_capture_thread(t_capture_args* args) {
 
 static void exec_scan(t_thread_info* th_info) {
     t_nmap* nmap = th_info->nmap;
-
-    for (int transmission = 0; transmission <= nmap->retransmissions; ++transmission) {
+    for (int transmission = 0; transmission <= nmap->max_retries; ++transmission) {
         for (int port_index = 0; port_index < nmap->port_count && run; ++port_index) {
             uint16_t actual_index = nmap->opt & OPT_NO_RANDOMIZE ? port_index : nmap->random_indices[port_index];
             if (th_info->host->port_states[th_info->current_scan][actual_index] != PORT_UNDEFINED) continue;
