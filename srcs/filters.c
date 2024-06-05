@@ -16,7 +16,11 @@ void unset_filters(t_nmap* nmap, uint16_t t_index) {
     static char filter_none[] = "tcp and not ip";
     pthread_mutex_lock(&nmap->mutex_pcap_filter);
     set_device_filter(thread_globals[t_index].handle_lo, nmap->device_lo, filter_none);
-    set_device_filter(thread_globals[t_index].handle_net, nmap->device_net, filter_none);
+    set_device_filter(
+        thread_globals[t_index].handle_net,
+        nmap->device_net,
+        filter_none
+    );
     pthread_mutex_unlock(&nmap->mutex_pcap_filter);
 }
 
@@ -27,7 +31,12 @@ void set_filter(t_thread_info* th_info, t_scan_type scan_type) {
     if (scan_type == SCAN_MAX) {
         sprintf(filter_exp, "icmp and src %s", hostip);
     } else if (scan_type == SCAN_UDP) {
-        sprintf(filter_exp, "(src host %s and udp) or (icmp and src %s)", hostip, hostip);
+        sprintf(
+            filter_exp,
+            "(src host %s and udp) or (icmp and src %s)",
+            hostip,
+            hostip
+        );
     } else {
         sprintf(
             filter_exp,
@@ -38,7 +47,8 @@ void set_filter(t_thread_info* th_info, t_scan_type scan_type) {
         );
     }
 
-    bpf_u_int32 current_device = th_info->globals.current_handle == th_info->globals.handle_lo
+    bpf_u_int32 current_device = th_info->globals.current_handle ==
+                                         th_info->globals.handle_lo
                                      ? th_info->nmap->device_lo
                                      : th_info->nmap->device_net;
 

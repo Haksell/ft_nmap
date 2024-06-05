@@ -54,7 +54,7 @@ help: all
 	@./$(NAME) --version --help
 
 loc:
-	@echo $(SRCS) | sort | xargs wc -l
+	@echo $(HEADERS) $(SRCS) | sort | xargs wc -l
 
 # ======= OUTSIDE VM =======
 

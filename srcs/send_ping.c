@@ -2,14 +2,11 @@
 
 static uint16_t calculate_checksum(uint16_t* packet, int length) {
     uint32_t sum = 0;
-
     while (length > 1) {
         sum += *packet++;
         length -= 2;
     }
-
     while (sum >> 16) sum = (sum & 0xFFFF) + (sum >> 16);
-
     return (uint16_t)~sum;
 }
 

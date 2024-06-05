@@ -1,12 +1,20 @@
 #include "ft_nmap.h"
 
-bool hostname_to_ip(char hostname[HOST_NAME_MAX + 1], char hostip[INET_ADDRSTRLEN + 1]) {
+bool hostname_to_ip(
+    char hostname[HOST_NAME_MAX + 1],
+    char hostip[INET_ADDRSTRLEN + 1]
+) {
     struct addrinfo hints = {.ai_family = AF_INET};
     struct addrinfo* res = NULL;
 
     int status = getaddrinfo(hostname, NULL, &hints, &res);
     if (status == 0 && res != NULL) {
-        if (!inet_ntop(AF_INET, &((struct sockaddr_in*)res->ai_addr)->sin_addr, hostip, INET_ADDRSTRLEN)) {
+        if (!inet_ntop(
+                AF_INET,
+                &((struct sockaddr_in*)res->ai_addr)->sin_addr,
+                hostip,
+                INET_ADDRSTRLEN
+            )) {
             freeaddrinfo(res);
             error("inet_ntop failed");
         }
@@ -26,8 +34,15 @@ bool ip_to_hostname(struct in_addr ip_address, char* host, size_t hostlen) {
         .sin_family = AF_INET,
         .sin_addr = ip_address,
     };
-
-    return getnameinfo((struct sockaddr*)&sa, sizeof(sa), host, hostlen, NULL, 0, NI_NAMEREQD) == 0;
+    return getnameinfo(
+               (struct sockaddr*)&sa,
+               sizeof(sa),
+               host,
+               hostlen,
+               NULL,
+               0,
+               NI_NAMEREQD
+           ) == 0;
 }
 
 uint64_t get_microseconds() {

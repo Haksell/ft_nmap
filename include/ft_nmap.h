@@ -81,7 +81,9 @@ typedef struct {
 static const t_option valid_opt[] = {
     {OPT_FILE,          'f',  "file",          true,  "filename containing addresses to scan"              },
     {OPT_HELP,          'h',  "help",          false, "print this help screen"                             },
-    {OPT_MAX_RETRIES,   '\0', "max-retries",   true,  "caps number of port scan probe retransmissions"     },
+    {OPT_MAX_RETRIES,
+     '\0',                    "max-retries",
+     true,                                            "caps number of port scan probe retransmissions"     },
     {OPT_NO_PING,       '\0', "no-ping",       false, "skip host discovery"                                },
     {OPT_NO_RANDOMIZE,  '\0', "no-randomize",  false, "scan ports sequentially"                            },
     {OPT_PORTS,         'p',  "ports",         true,  "ports to scan (e.g. 1-10 or 1,2,3 or 1,5-15)"       },
@@ -89,7 +91,9 @@ static const t_option valid_opt[] = {
     {OPT_SPOOF_ADDRESS, '\0', "spoof-address", true,  "spoof source address"                               },
     {OPT_THREADS,       't',  "threads",       true,  "use <number> parallel threads (0-250)"              },
     {OPT_TOP_PORTS,     '\0', "top-ports",     true,  "scan <number> most common ports"                    },
-    {OPT_UDP_RATE,      'u',  "udp-rate",      true,  "send UDP packets no faster than <number> per second"},
+    {OPT_UDP_RATE,
+     'u',                     "udp-rate",
+     true,                                            "send UDP packets no faster than <number> per second"},
     {OPT_VERBOSE,       'v',  "verbose",       false, "increase verbosity level"                           },
     {OPT_VERSION,       'V',  "version",       false, "print version number"                               },
     {0,                 0,    NULL,            false, NULL                                                 }
@@ -152,7 +156,8 @@ static const t_port_state default_port_state[SCAN_MAX] = {
     PORT_FILTERED,
 };
 
-static const char scans_str[][5] = {"SYN", "ACK", "WIN", "FIN", "NULL", "XMAS", "UDP", "CONN"};
+static const char scans_str[][5] =
+    {"SYN", "ACK", "WIN", "FIN", "NULL", "XMAS", "UDP", "CONN"};
 
 struct t_thread_info;
 
@@ -241,7 +246,13 @@ void panic(const char* format, ...);
 void stop();
 
 // fill_packet.c
-void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size);
+void fill_packet(
+    t_thread_info* th_info,
+    uint8_t* packet,
+    uint16_t port,
+    const uint8_t* payload,
+    size_t payload_size
+);
 
 // filters.c
 void set_filter(t_thread_info* th_info, t_scan_type scan_type);

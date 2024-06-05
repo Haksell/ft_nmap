@@ -29,20 +29,26 @@ static void print_hex_ascii_line(const u_char* payload, int len, int offset) {
 void print_payload(const u_char* payload, uint32_t size_payload) {
     printf("   Payload (%d bytes):\n", size_payload);
     for (int offset = 0; size_payload > 0; size_payload -= PAYLOAD_LINE_WIDTH) {
-        print_hex_ascii_line(payload + offset, MIN(size_payload, PAYLOAD_LINE_WIDTH), offset);
+        print_hex_ascii_line(
+            payload + offset,
+            MIN(size_payload, PAYLOAD_LINE_WIDTH),
+            offset
+        );
         offset += PAYLOAD_LINE_WIDTH;
     }
 }
 
 static void print_hostnames(t_nmap* nmap) {
     printf("Hosts: ");
-    for (int i = 0; i < nmap->hostname_count; ++i) printf(i == 0 ? "%s" : ", %s", nmap->hosts[i].name);
+    for (int i = 0; i < nmap->hostname_count; ++i)
+        printf(i == 0 ? "%s" : ", %s", nmap->hosts[i].name);
     printf("\n");
 }
 
 static void print_ports(t_nmap* nmap, char* name, uint16_t* port_array) {
     printf("%s: ", name);
-    for (int i = 0; i < nmap->port_count; ++i) printf(i == 0 ? "%d" : ",%d", port_array[i]);
+    for (int i = 0; i < nmap->port_count; ++i)
+        printf(i == 0 ? "%d" : ",%d", port_array[i]);
     printf("\n");
 }
 
@@ -63,5 +69,6 @@ void print_init_verbose(t_nmap* nmap) {
     print_hostnames(nmap);
     print_scans(nmap->scans);
     print_ports(nmap, "Sequential ports", nmap->port_array);
-    if (!(nmap->opt & OPT_NO_RANDOMIZE)) print_ports(nmap, "Random indices", nmap->random_indices);
+    if (!(nmap->opt & OPT_NO_RANDOMIZE))
+        print_ports(nmap, "Random indices", nmap->random_indices);
 }

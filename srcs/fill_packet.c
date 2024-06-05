@@ -16,18 +16,30 @@ static uint16_t calculate_checksum(uint16_t* data, size_t length) {
     return (uint16_t)~sum;
 }
 
-static uint16_t checksum(void* pseudohdr, void* hdr, size_t hdr_size, const void* payload, size_t payload_size) {
+static uint16_t checksum(
+    void* pseudohdr,
+    void* hdr,
+    size_t hdr_size,
+    const void* payload,
+    size_t payload_size
+) {
     size_t packet_size = sizeof(struct pseudohdr) + hdr_size + payload_size;
     uint8_t checksum_packet[packet_size];
 
     memcpy(checksum_packet, pseudohdr, sizeof(struct pseudohdr));
     memcpy(checksum_packet + sizeof(struct pseudohdr), hdr, hdr_size);
-    if (payload) memcpy(checksum_packet + sizeof(struct pseudohdr) + hdr_size, payload, payload_size);
+    if (payload)
+        memcpy(
+            checksum_packet + sizeof(struct pseudohdr) + hdr_size,
+            payload,
+            payload_size
+        );
 
     return calculate_checksum((uint16_t*)checksum_packet, packet_size);
 }
 
-static struct udphdr fill_udp_header(t_thread_info* th_info, uint16_t port, size_t payload_size) {
+static struct udphdr
+fill_udp_header(t_thread_info* th_info, uint16_t port, size_t payload_size) {
     struct udphdr udphdr = {
         .source = htons(th_info->port_source ^ port),
         .dest = htons(port),
@@ -68,12 +80,20 @@ static struct tcphdr fill_tcp_header(t_thread_info* th_info, uint16_t port) {
     return tcphdr;
 }
 
-void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const uint8_t* payload, size_t payload_size) {
+void fill_packet(
+    t_thread_info* th_info,
+    uint8_t* packet,
+    uint16_t port,
+    const uint8_t* payload,
+    size_t payload_size
+) {
     struct tcphdr tcphdr;
     struct udphdr udphdr;
-    uint16_t hdr_size = th_info->current_scan == SCAN_UDP ? sizeof(udphdr) : sizeof(tcphdr);
+    uint16_t hdr_size = th_info->current_scan == SCAN_UDP ? sizeof(udphdr)
+                                                          : sizeof(tcphdr);
 
-    if (th_info->current_scan == SCAN_UDP) udphdr = fill_udp_header(th_info, port, payload_size);
+    if (th_info->current_scan == SCAN_UDP)
+        udphdr = fill_udp_header(th_info, port, payload_size);
     else tcphdr = fill_tcp_header(th_info, port);
 
     struct iphdr iphdr = {
@@ -101,12 +121,26 @@ void fill_packet(t_thread_info* th_info, uint8_t* packet, uint16_t port, const u
     };
 
     if (th_info->current_scan == SCAN_UDP)
-        udphdr.check = checksum(&pseudohdr, &udphdr, sizeof(udphdr), payload, payload_size);
-    else tcphdr.check = checksum(&pseudohdr, &tcphdr, sizeof(tcphdr), payload, payload_size);
+        udphdr.check = checksum(
+            &pseudohdr,
+            &udphdr,
+            sizeof(udphdr),
+            payload,
+            payload_size
+        );
+    else
+        tcphdr.check = checksum(
+            &pseudohdr,
+            &tcphdr,
+            sizeof(tcphdr),
+            payload,
+            payload_size
+        );
 
     memcpy(packet, &iphdr, sizeof(iphdr));
     if (th_info->current_scan == SCAN_UDP) {
         memcpy(packet + sizeof(iphdr), &udphdr, sizeof(udphdr));
-        if (payload) memcpy(packet + sizeof(iphdr) + sizeof(udphdr), payload, payload_size);
+        if (payload)
+            memcpy(packet + sizeof(iphdr) + sizeof(udphdr), payload, payload_size);
     } else memcpy(packet + sizeof(iphdr), &tcphdr, sizeof(tcphdr));
 }

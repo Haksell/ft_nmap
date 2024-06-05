@@ -17,7 +17,8 @@ static pcap_t* set_handle(t_nmap* nmap, char* dev) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
     pcap_t* handle = pcap_open_live(dev, SNAP_LEN, 1, 1, errbuf);
-    if (handle == NULL) panic_init_pcap(nmap, "Couldn't open device %s: %s\n", dev, errbuf);
+    if (handle == NULL)
+        panic_init_pcap(nmap, "Couldn't open device %s: %s\n", dev, errbuf);
     if (pcap_datalink(handle) != DLT_EN10MB) {
         pcap_close(handle);
         panic_init_pcap(nmap, "%s is not an Ethernet\n", dev);

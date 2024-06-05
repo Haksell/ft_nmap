@@ -60,7 +60,8 @@ static in_addr_t get_source_address() {
     return source_address;
 }
 
-static void get_service_name(uint16_t port, const char* proto, char buffer[MAX_SERVICE_LEN + 1]) {
+static void
+get_service_name(uint16_t port, const char* proto, char buffer[MAX_SERVICE_LEN + 1]) {
     struct servent* service = getservbyport(htons(port), proto);
     char* service_name = service ? service->s_name : "unknown";
     strncpy(buffer, service_name, MAX_SERVICE_LEN);
@@ -86,17 +87,26 @@ void init_nmap(t_nmap* nmap) {
         if (nmap->udp_fd < 0) error_init(nmap, "UDP socket creation failed");
         nmap->icmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
         if (nmap->icmp_fd < 0) error_init(nmap, "ICMP socket creation failed");
-        if (setsockopt(nmap->tcp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
+        if (setsockopt(nmap->tcp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) <
+            0)
             error_init(nmap, "setsockopt IP_HDRINCL failed");
-        if (setsockopt(nmap->udp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) < 0)
+        if (setsockopt(nmap->udp_fd, IPPROTO_IP, IP_HDRINCL, &(int){1}, sizeof(int)) <
+            0)
             error_init(nmap, "setsockopt IP_HDRINCL failed");
-        if (setsockopt(nmap->icmp_fd, SOL_SOCKET, SO_BROADCAST, &(int){1}, sizeof(int)) < 0)
+        if (setsockopt(
+                nmap->icmp_fd,
+                SOL_SOCKET,
+                SO_BROADCAST,
+                &(int){1},
+                sizeof(int)
+            ) < 0)
             error_init(nmap, "setsockopt SO_BROADCAST failed");
     }
 
     print_start_time(nmap);
 
-    if (nmap->hostname_count == 0) fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
+    if (nmap->hostname_count == 0)
+        fprintf(stderr, "WARNING: No targets were specified, so 0 hosts scanned.\n");
 
     set_signals();
     if (nmap->is_sudo) init_pcap(nmap);
